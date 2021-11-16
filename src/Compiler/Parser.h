@@ -10,7 +10,7 @@ namespace ThorsAnvil::Anvil::Ice
 class Parser
 {
     public:
-        Parser(std::istream& stream, Action& action);
+        Parser(Action& action, std::istream& input = std::cin, std::ostream& output = std::cout);
         bool parse();
     private:
         Lexer           lexer;

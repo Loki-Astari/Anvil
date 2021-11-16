@@ -15,7 +15,7 @@ TEST(ParserTest, ReadIceFile)
     using ThorsAnvil::Anvil::Ice::Parser;
 
     CompileAction   action;
-    Parser          parser(file, action);
+    Parser          parser(action, file);
 
     EXPECT_TRUE(parser.parse());
 }

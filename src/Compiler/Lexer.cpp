@@ -2,8 +2,8 @@
 
 using namespace ThorsAnvil::Anvil::Ice;
 
-Lexer::Lexer(std::istream& stream, Action& action)
-    : yyFlexLexer(&stream, &std::cerr)
+Lexer::Lexer(Action& action, std::istream& input, std::ostream& output)
+    : yyFlexLexer(&input, &output)
     , action(action)
 {}
 

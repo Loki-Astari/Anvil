@@ -14,7 +14,7 @@ TEST(LexerTest, ReadSymbolsFile)
     using ThorsAnvil::Anvil::Ice::Lexer;
 
     CompileAction   action;
-    Lexer           lexer(file, action);
+    Lexer           lexer(action, file);
 
     int val;
 

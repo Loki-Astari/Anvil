@@ -15,7 +15,7 @@ class Lexer: public yyFlexLexer
 {
     Action&     action;
     public:
-        Lexer(std::istream& stream, Action& action);
+        Lexer(Action& action, std::istream& input = std::cin, std::ostream& output = std::cout);
         std::string_view lexem() const;
         virtual int yylex() override;
 };
