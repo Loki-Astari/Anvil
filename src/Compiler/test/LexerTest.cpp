@@ -24,6 +24,10 @@ TEST(LexerTest, ReadSymbolsFile)
     EXPECT_EQ(lexer.lexem(), "namespace");
 
     val = lexer.yylex();
+    EXPECT_EQ(yy::Parser::token::TYPE, val);
+    EXPECT_EQ(lexer.lexem(), "type");
+
+    val = lexer.yylex();
     EXPECT_EQ(yy::Parser::token::IDENTIFIER, val);
     EXPECT_EQ(lexer.lexem(), "Bob");
 

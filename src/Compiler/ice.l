@@ -16,6 +16,7 @@ Space               [ \t\r\n]+
 
 %%
 namespace           {return yy::Parser::token::NAMESPACE;}
+type                {return yy::Parser::token::TYPE;}
 {Identifier}        {return yy::Parser::token::IDENTIFIER;}
 ::                  {return yy::Parser::token::SCOPE;}
 \{                  {return '{';}

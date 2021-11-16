@@ -30,6 +30,7 @@ int yylex(void*, ThorsAnvil::Anvil::Ice::Lexer& lexer, ThorsAnvil::Anvil::Ice::A
 
 
 %token              NAMESPACE
+%token              TYPE
 %token              IDENTIFIER
 %token              SCOPE
 
@@ -46,7 +47,7 @@ Namespace:          NAMESPACE NameSpaceIdentifer '{' TypeList '}'
 TypeList:           Type
                 |   TypeList Type
 
-Type:               TypeIdentifer '{' ObjectList '}'
+Type:               TYPE TypeIdentifer '{' ObjectList '}'
 
 ObjectList:         Object
                 |   ObjectList Object
