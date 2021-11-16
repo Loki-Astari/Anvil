@@ -6,6 +6,7 @@
 #endif
 
 #include "Action.h"
+#include <string_view>
 
 namespace ThorsAnvil::Anvil::Ice
 {
@@ -15,7 +16,8 @@ class Lexer: public yyFlexLexer
     Action&     action;
     public:
         Lexer(std::istream& stream, Action& action);
-        virtual int yylex();
+        std::string_view lexem() const;
+        virtual int yylex() override;
 };
 
 }

@@ -14,8 +14,14 @@ class Lexer;
 class Action
 {
     public:
-        Action();
         virtual ~Action()   = 0;
+};
+
+class CompileAction: public Action
+{
+    public:
+        CompileAction();
+        virtual ~CompileAction() override;
 };
 
 }

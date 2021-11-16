@@ -12,15 +12,18 @@
 %}
 
 Identifier          [A-Za-z][A-Za-z0-9]*
+Space               [ \t\r\n]+
 
 %%
 namespace           {return yy::Parser::token::NAMESPACE;}
-Identifier          {return yy::Parser::token::IDENTIFIER;}
+{Identifier}        {return yy::Parser::token::IDENTIFIER;}
 ::                  {return yy::Parser::token::SCOPE;}
-{                   {return '{';}
-}                   {return '}';}
+\{                  {return '{';}
+\}                  {return '}';}
 :                   {return ':';}
 ;                   {return ';';}
+
+{Space}             {/* Ignore */}
 
 %%
 
