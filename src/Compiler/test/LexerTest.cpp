@@ -28,6 +28,22 @@ TEST(LexerTest, ReadSymbolsFile)
     EXPECT_EQ(lexer.lexem(), "type");
 
     val = lexer.yylex();
+    EXPECT_EQ(yy::Parser::token::OBJECT, val);
+    EXPECT_EQ(lexer.lexem(), "object");
+
+    val = lexer.yylex();
+    EXPECT_EQ(yy::Parser::token::ARRAY, val);
+    EXPECT_EQ(lexer.lexem(), "array");
+
+    val = lexer.yylex();
+    EXPECT_EQ(yy::Parser::token::MAP, val);
+    EXPECT_EQ(lexer.lexem(), "map");
+
+    val = lexer.yylex();
+    EXPECT_EQ(yy::Parser::token::FUNC, val);
+    EXPECT_EQ(lexer.lexem(), "func");
+
+    val = lexer.yylex();
     EXPECT_EQ(yy::Parser::token::IDENTIFIER, val);
     EXPECT_EQ(lexer.lexem(), "Bob");
 
@@ -36,14 +52,37 @@ TEST(LexerTest, ReadSymbolsFile)
     EXPECT_EQ(lexer.lexem(), "::");
 
     val = lexer.yylex();
+    EXPECT_EQ(yy::Parser::token::ARROW, val);
+    EXPECT_EQ(lexer.lexem(), "->");
+
+    val = lexer.yylex();
+    EXPECT_EQ(yy::Parser::token::STRING, val);
+    EXPECT_EQ(lexer.lexem(), "\"This is a String\"");
+
+    val = lexer.yylex();
     EXPECT_EQ('{', val);
 
     val = lexer.yylex();
     EXPECT_EQ('}', val);
 
     val = lexer.yylex();
+    EXPECT_EQ('(', val);
+
+    val = lexer.yylex();
+    EXPECT_EQ(')', val);
+
+    val = lexer.yylex();
     EXPECT_EQ(':', val);
 
     val = lexer.yylex();
     EXPECT_EQ(';', val);
+
+    val = lexer.yylex();
+    EXPECT_EQ('.', val);
+
+    val = lexer.yylex();
+    EXPECT_EQ(',', val);
 }
+
+
+

@@ -31,8 +31,14 @@ int yylex(void*, ThorsAnvil::Anvil::Ice::Lexer& lexer, ThorsAnvil::Anvil::Ice::A
 
 %token              NAMESPACE
 %token              TYPE
+%token              OBJECT
+%token              ARRAY
+%token              MAP
+%token              FUNC
 %token              IDENTIFIER
 %token              SCOPE
+%token              ARROW
+%token              STRING
 
 %%
 
@@ -42,24 +48,63 @@ Anvil:              NamespaceList
 NamespaceList:      Namespace
                 |   NamespaceList Namespace
 
-Namespace:          NAMESPACE NameSpaceIdentifer '{' TypeList '}'
+Namespace:          NAMESPACE NameSpaceIdentifer '{' DeclList '}'
 
-TypeList:           Type
-                |   TypeList Type
+DeclList:           Decl
+                |   DeclList Decl
 
-Type:               TYPE TypeIdentifer '{' ObjectList '}'
+Decl:               TYPE OBJECT DeclIdentifer '{' DeclList '}'
+                |   TYPE ARRAY  DeclIdentifer '{' DeclIdentifer '}'
+                |   TYPE MAP    DeclIdentifer '{' DeclIdentifer ',' DeclIdentifer '}'
+                |   TYPE FUNC   DeclIdentifer '(' ParamListOpt ')' ARROW ObjectDecl
+                |   ObjectIdentifer ':' ObjectDecl
+                |   Statement
 
-ObjectList:         Object
-                |   ObjectList Object
+ObjectDecl:         DeclIdentifer ';'
+                |   AnonDecl
 
-Object:             ObjectIdentifer ':' Type ';'
+AnonDecl:           OBJECT '{' DeclList '}'
+                |   ARRAY  '{' DeclIdentifer '}'
+                |   MAP    '{' DeclIdentifer ',' DeclIdentifer '}'
+                |   FUNC   '(' ParamList ')' ARROW ObjectDecl
+
+Statement:          Expression ';'
+Expression:         ExprFuncCall
+ExprFuncCall:       ObjectName '.' ObjectIdentifer '(' ValueListOpt ')'
+
+
+ParamListOpt:
+                |   ParamList
+ParamList:          Param
+                |   ParamList ',' Param
+Param:              ObjectIdentifer ':' DeclIdentifer
+
+ValueListOpt:
+                |   ValueList
+ValueList:          Value
+                |   ValueList ',' Value
+Value:              ObjectName
+                |   Literal
+
+ObjectName:         ObjectSpaceResolve ObjectNameResolve
+
+ObjectSpaceResolve: LocalObject
+                |   NameSpaceResolve
+
+LocalObject:        SCOPE
+
+NameSpaceResolve:   NameSpaceIdentifer
+                |   NameSpaceResolve SCOPE NameSpaceIdentifer
+
+ObjectNameResolve:  ObjectIdentifer
+                |   ObjectNameResolve '.' ObjectIdentifer
+
+Literal:            STRING
+
 
 NameSpaceIdentifer: Identifer
-TypeIdentifer:      Identifer
+DeclIdentifer:      Identifer
 ObjectIdentifer:    Identifer
-
-Type:               Identifer
-                |   Type SCOPE Identifer
 
 Identifer:          IDENTIFIER
 

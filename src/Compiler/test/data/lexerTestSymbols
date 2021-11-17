@@ -1,10 +1,20 @@
 
 namespace
 type
+object
+array
+map
+func
 Bob
 ::
+->
+"This is a String"
 {
 }
+(
+)
 :
 ;
+.
+,
 

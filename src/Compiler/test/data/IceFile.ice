@@ -1,7 +1,7 @@
 
 namespace Bob
 {
-    type Full
+    type object Full
     {
         Name:   String;
         Age:    Number;

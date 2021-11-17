@@ -4,4 +4,5 @@ ice.tab.hpp
 location.hh
 position.hh
 stack.hh
+ice.output
 
