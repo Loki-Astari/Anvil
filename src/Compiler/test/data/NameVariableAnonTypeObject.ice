@@ -1,10 +1,11 @@
 
-namespace Bob
+
+namespace Name
 {
-    type object Full
+    data: object
     {
         Name:   String;
         Age:    Number;
-    }
+    };
 }
 

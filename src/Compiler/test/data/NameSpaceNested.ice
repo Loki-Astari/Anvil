@@ -1,0 +1,8 @@
+
+namespace Name
+{
+    namespace Nest
+    {
+    }
+}
+

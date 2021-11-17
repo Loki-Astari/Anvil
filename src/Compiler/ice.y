@@ -48,36 +48,39 @@ Anvil:              NamespaceList
 NamespaceList:      Namespace
                 |   NamespaceList Namespace
 
-Namespace:          NAMESPACE NameSpaceIdentifer '{' DeclList '}'
+Namespace:          NAMESPACE NameSpaceIdentifer '{' DeclListOpt '}'
 
+DeclListOpt:
+                |   DeclList
 DeclList:           Decl
                 |   DeclList Decl
 
-Decl:               TYPE OBJECT DeclIdentifer '{' DeclList '}'
-                |   TYPE ARRAY  DeclIdentifer '{' DeclIdentifer '}'
-                |   TYPE MAP    DeclIdentifer '{' DeclIdentifer ',' DeclIdentifer '}'
-                |   TYPE FUNC   DeclIdentifer '(' ParamListOpt ')' ARROW ObjectDecl
-                |   ObjectIdentifer ':' ObjectDecl
+Decl:               NAMESPACE NameSpaceIdentifer '{' DeclListOpt '}'
+                |   TYPE OBJECT DeclIdentifer '{' DeclListOpt '}'
+                |   TYPE ARRAY  DeclIdentifer '{' ObjectDecl '}'
+                |   TYPE MAP    DeclIdentifer '{' ObjectDecl ',' ObjectDecl '}'
+                |   TYPE FUNC   DeclIdentifer '(' ParamListOpt ')' ARROW ObjectDecl ';'
+                |   ObjectIdentifer ':' ObjectDecl InitObject
                 |   Statement
-
-ObjectDecl:         DeclIdentifer ';'
-                |   AnonDecl
-
-AnonDecl:           OBJECT '{' DeclList '}'
-                |   ARRAY  '{' DeclIdentifer '}'
-                |   MAP    '{' DeclIdentifer ',' DeclIdentifer '}'
-                |   FUNC   '(' ParamList ')' ARROW ObjectDecl
-
-Statement:          Expression ';'
-Expression:         ExprFuncCall
-ExprFuncCall:       ObjectName '.' ObjectIdentifer '(' ValueListOpt ')'
-
 
 ParamListOpt:
                 |   ParamList
 ParamList:          Param
                 |   ParamList ',' Param
-Param:              ObjectIdentifer ':' DeclIdentifer
+Param:              ObjectIdentifer ':' ObjectDecl
+
+ObjectDecl:         TypeName
+                |   AnonDecl
+
+AnonDecl:           OBJECT '{' DeclListOpt '}'
+                |   ARRAY  '{' ObjectDecl '}'
+                |   MAP    '{' ObjectDecl ',' ObjectDecl '}'
+                |   FUNC   '(' ParamListOpt ')' ARROW ObjectDecl
+
+Statement:          Expression ';'
+Expression:         ExprFuncCall
+ExprFuncCall:       ObjectName '(' ValueListOpt ')'
+
 
 ValueListOpt:
                 |   ValueList
@@ -86,18 +89,15 @@ ValueList:          Value
 Value:              ObjectName
                 |   Literal
 
-ObjectName:         ObjectSpaceResolve ObjectNameResolve
+InitObject:         ';'
 
-ObjectSpaceResolve: LocalObject
-                |   NameSpaceResolve
+ObjectName:         ObjectIdentifer
+                |   NameSpaceIdentifer SCOPE ObjectName
+                |   ObjectIdentifer '.' ObjectName
+TypeName:           DeclIdentifer
+                |   NameSpaceIdentifer SCOPE TypeName
+                |   ObjectIdentifer '.' TypeName
 
-LocalObject:        SCOPE
-
-NameSpaceResolve:   NameSpaceIdentifer
-                |   NameSpaceResolve SCOPE NameSpaceIdentifer
-
-ObjectNameResolve:  ObjectIdentifer
-                |   ObjectNameResolve '.' ObjectIdentifer
 
 Literal:            STRING
 
