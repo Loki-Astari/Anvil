@@ -8,5 +8,6 @@ TARGET                      = Compiler.slib
 Ice_LDLIBS					= -lfl
 
 %/ice.lex.o:				FILE_WARNING_FLAGS += -Wno-sign-compare
+FILE_WARNING_FLAGS			= -Wno-unused-private-field
 
 include $(THORSANVIL_ROOT)/build/tools/Makefile
