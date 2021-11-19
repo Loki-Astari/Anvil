@@ -18,10 +18,16 @@ namespace ThorsAnvil::Anvil::Ice
 class Decl;
 class Container
 {
-    std::map<std::string, Decl>     names;
     public:
+        using NameMap = std::map<std::string, Decl>;
+        using NameRef = NameMap::iterator;
+
         template<typename T>
         void add(std::string const& name, T&& nameSpace);
+        Decl& get(std::string const& name);
+
+    private:
+        NameMap     names;
 };
 
 class Void
@@ -160,19 +166,41 @@ class Compiler: public Action
     std::ifstream           file;
     Parser                  parser;
     StandardScope           globalScope;
-    std::vector<std::reference_wrapper<Scope const>>  currentScope;
+    std::vector<std::reference_wrapper<Scope>>  currentScope;
+    bool                    debug;
 
     public:
-        Compiler(std::string const& fileName);
+        Compiler(std::string const& fileName, bool debug = false);
         virtual ~Compiler() override;
 
         void go();
+
+    // Action Virtual Functions override
+        virtual void log(char const* msg)                                   override;
+
+        virtual Int identifierCreate(Lexer& lexer)                          override;
+        virtual Int identifierCheckObject(Lexer& lexer, Int id)             override;
+        virtual Int identifierCheckType(Lexer& lexer, Int id)               override;
+        virtual Int identifierCheckNS(Lexer& lexer, Int id)                 override;
+
+        virtual Int fullIdentiferCreate(Lexer& lexer)                       override;
+        virtual Int fullIdentiferAddPath(Lexer& lexer, Int fp, Int id)      override;
+        virtual Int findTypeInScope(Lexer& lexer, Int fp)                   override;
 };
 
 template<typename T>
-void Container::add(std::string const& name, T&& nameSpace)
+inline void Container::add(std::string const& name, T&& nameSpace)
 {
     names[name] = std::move(nameSpace);
+}
+inline Decl& Container::get(std::string const& name)
+{
+    auto find = names.find(name);
+    if (find == names.end())
+    {
+        throw int(5);
+    }
+    return find->second;
 }
 
 }

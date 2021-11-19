@@ -1,8 +1,8 @@
 #include <gtest/gtest.h>
 
 #include "Lexer.h"
-#include "Action.h"
 #include "ice.tab.hpp"
+#include "test/CompileAction.h"
 
 #include <fstream>
 
@@ -10,7 +10,6 @@ TEST(LexerTest, ReadSymbolsFile)
 {
     std::ifstream   file("test/data/lexerTestSymbols");
 
-    using ThorsAnvil::Anvil::Ice::CompileAction;
     using ThorsAnvil::Anvil::Ice::Lexer;
 
     CompileAction   action;
