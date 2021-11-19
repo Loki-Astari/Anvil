@@ -7,9 +7,8 @@ using namespace ThorsAnvil::Anvil::Ice;
 Type::~Type()
 {}
 
-Compiler::Compiler(std::string const& fileName, bool debug)
-    : file(fileName)
-    , parser(*this, file)
+Compiler::Compiler(std::istream& input, std::ostream& output, bool debug)
+    : parser(*this, input, output)
     , debug(debug)
 {
     currentScope.push_back(std::ref(static_cast<Scope&>(globalScope)));
@@ -82,14 +81,15 @@ Int Compiler::findTypeInScope(Lexer& /*lexer*/, Int fp)
 {
     std::list<std::unique_ptr<std::string>>&    fullPath = *reinterpret_cast<std::list<std::unique_ptr<std::string>>*>(fp);
     std::cerr << "findTypeInScope: ";
-    for(auto const& path: fullPath) {
+    for (auto const& path: fullPath)
+    {
         std::cerr << (*path) << " :: ";
     }
     std::cerr << "\n";
-    for(auto const& path: fullPath)
+    for (auto const& path: fullPath)
     {
         std::string& pathSeg = *path;
-        for(auto& scope: ReversView(currentScope))
+        for (auto& scope: ReversView(currentScope))
         {
             Decl& ref = scope.get().get(pathSeg);
             ((void)ref);

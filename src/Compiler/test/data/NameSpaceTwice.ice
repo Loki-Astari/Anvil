@@ -1,9 +1,0 @@
-
-namespace Name
-{
-}
-
-namespace Twice
-{
-}
-

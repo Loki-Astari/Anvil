@@ -8,7 +8,26 @@
 
 TEST(LexerTest, ReadSymbolsFile)
 {
-    std::ifstream   file("test/data/lexerTestSymbols");
+    std::stringstream    file = buildStream(R"(
+namespace
+type
+object
+array
+map
+func
+Bob
+::
+->
+"This is a String"
+{
+}
+(
+)
+:
+;
+.
+,
+    )");
 
     using ThorsAnvil::Anvil::Ice::Lexer;
 

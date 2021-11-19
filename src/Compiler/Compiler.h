@@ -163,14 +163,13 @@ class StandardScope: public Scope
 
 class Compiler: public Action
 {
-    std::ifstream           file;
     Parser                  parser;
     StandardScope           globalScope;
     std::vector<std::reference_wrapper<Scope>>  currentScope;
     bool                    debug;
 
     public:
-        Compiler(std::string const& fileName, bool debug = false);
+        Compiler(std::istream& input = std::cin, std::ostream& output = std::cout, bool debug = false);
         virtual ~Compiler() override;
 
         void go();

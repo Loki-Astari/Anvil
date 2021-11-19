@@ -6,20 +6,15 @@
 #include "test/CompileAction.h"
 
 #include <fstream>
-
-#define EXPECT_TRUE_OR_DEBUG(check, output) \
-                                     {                                  \
-                                        try {                           \
-                                            EXPECT_TRUE(check);         \
-                                        } catch(...) {                  \
-                                            output.display(std::cout);  \
-                                            throw;                      \
-                                        }                               \
-                                      }
+#include <sstream>
 
 TEST(ParserTest, NameSpaceOnly)
 {
-    std::ifstream   file("test/data/NameSpaceOnly.ice");
+    std::stringstream    file = buildStream(R"(
+namespace Name
+{
+}
+    )");
 
     using ThorsAnvil::Anvil::Ice::Parser;
 
@@ -31,7 +26,14 @@ TEST(ParserTest, NameSpaceOnly)
 
 TEST(ParserTest,NameSpaceNested)
 {
-    std::ifstream   file("test/data/NameSpaceNested.ice");
+    std::stringstream    file = buildStream(R"(
+namespace Name
+{
+    namespace Nest
+    {
+    }
+}
+    )");
 
     using ThorsAnvil::Anvil::Ice::Parser;
 
@@ -43,7 +45,15 @@ TEST(ParserTest,NameSpaceNested)
 
 TEST(ParserTest,NameSpaceTwice)
 {
-    std::ifstream   file("test/data/NameSpaceTwice.ice");
+    std::stringstream    file = buildStream(R"(
+namespace Name
+{
+}
+
+namespace Twice
+{
+}
+    )");
 
     using ThorsAnvil::Anvil::Ice::Parser;
 
@@ -55,7 +65,12 @@ TEST(ParserTest,NameSpaceTwice)
 
 TEST(ParserTest,NameStatExprFuncCall)
 {
-    std::ifstream   file("test/data/NameStatExprFuncCall.ice");
+    std::stringstream    file = buildStream(R"(
+namespace Name
+{
+    Console::print("Hello World");
+}
+    )");
 
     using ThorsAnvil::Anvil::Ice::Parser;
 
@@ -67,7 +82,12 @@ TEST(ParserTest,NameStatExprFuncCall)
 
 TEST(ParserTest,NameTypeArray)
 {
-    std::ifstream   file("test/data/NameTypeArray.ice");
+    std::stringstream    file = buildStream(R"(
+namespace Name
+{
+    type array TypeArray { Std::String }
+}
+    )");
 
     using ThorsAnvil::Anvil::Ice::Parser;
 
@@ -79,7 +99,12 @@ TEST(ParserTest,NameTypeArray)
 
 TEST(ParserTest,NameTypeFunc)
 {
-    std::ifstream   file("test/data/NameTypeFunc.ice");
+    std::stringstream    file = buildStream(R"(
+namespace Name
+{
+    type func TypeFunc(value: Std::Int) -> Std::String;
+}
+    )");
 
     using ThorsAnvil::Anvil::Ice::Parser;
 
@@ -91,7 +116,12 @@ TEST(ParserTest,NameTypeFunc)
 
 TEST(ParserTest,NameTypeMap)
 {
-    std::ifstream   file("test/data/NameTypeMap.ice");
+    std::stringstream    file = buildStream(R"(
+namespace Name
+{
+    type map TypeMap { Std::String, Std::Int}
+}
+    )");
 
     using ThorsAnvil::Anvil::Ice::Parser;
 
@@ -103,7 +133,16 @@ TEST(ParserTest,NameTypeMap)
 
 TEST(ParserTest,NameTypeObject)
 {
-    std::ifstream   file("test/data/NameTypeObject.ice");
+    std::stringstream    file = buildStream(R"(
+namespace Name
+{
+    type object TypeObject
+    {
+        name:   Std::String;
+        age:    Std::Int;
+    }
+}
+    )");
 
     using ThorsAnvil::Anvil::Ice::Parser;
 
@@ -115,7 +154,12 @@ TEST(ParserTest,NameTypeObject)
 
 TEST(ParserTest,NameVariableAnonTypeArray)
 {
-    std::ifstream   file("test/data/NameVariableAnonTypeArray.ice");
+    std::stringstream    file = buildStream(R"(
+namespace Name
+{
+    data : array { Std::Int };
+}
+    )");
 
     using ThorsAnvil::Anvil::Ice::Parser;
 
@@ -127,7 +171,12 @@ TEST(ParserTest,NameVariableAnonTypeArray)
 
 TEST(ParserTest,NameVariableAnonTypeFunc)
 {
-    std::ifstream   file("test/data/NameVariableAnonTypeFunc.ice");
+    std::stringstream    file = buildStream(R"(
+namespace Name
+{
+    data : func(value: Std::Int, error: Std::String) -> Std::Number;
+}
+    )");
 
     using ThorsAnvil::Anvil::Ice::Parser;
 
@@ -139,7 +188,12 @@ TEST(ParserTest,NameVariableAnonTypeFunc)
 
 TEST(ParserTest,NameVariableAnonTypeMap)
 {
-    std::ifstream   file("test/data/NameVariableAnonTypeMap.ice");
+    std::stringstream    file = buildStream(R"(
+namespace Name
+{
+    data : map { Std::Int, Std::String };
+}
+    )");
 
     using ThorsAnvil::Anvil::Ice::Parser;
 
@@ -151,7 +205,16 @@ TEST(ParserTest,NameVariableAnonTypeMap)
 
 TEST(ParserTest,NameVariableAnonTypeObject)
 {
-    std::ifstream   file("test/data/NameVariableAnonTypeObject.ice");
+    std::stringstream    file = buildStream(R"(
+namespace Name
+{
+    data: object
+    {
+        Name:   String;
+        Age:    Number;
+    };
+}
+    )");
 
     using ThorsAnvil::Anvil::Ice::Parser;
 
@@ -163,7 +226,12 @@ TEST(ParserTest,NameVariableAnonTypeObject)
 
 TEST(ParserTest,NameVariableDecl)
 {
-    std::ifstream   file("test/data/NameVariableDecl.ice");
+    std::stringstream    file = buildStream(R"(
+namespace Name
+{
+    data: Std::String;
+}
+    )");
 
     using ThorsAnvil::Anvil::Ice::Parser;
 
