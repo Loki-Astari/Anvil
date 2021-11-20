@@ -37,7 +37,7 @@ Int Semantic::identifierCreate(Lexer& lexer)
  *      Functions
  *      Closures.
  */
-Int Semantic::identifierCheckObject(Lexer& /*lexer*/, Int id)
+Int Semantic::identifierCheckObject(Lexer& lexer, Int id)
 {
     std::string&    identifier = *reinterpret_cast<std::string*>(id);
     if (std::islower(identifier[0]))
@@ -45,14 +45,14 @@ Int Semantic::identifierCheckObject(Lexer& /*lexer*/, Int id)
         return id;
     }
     delete &identifier;
-    return -1;
+    error(lexer, "Invalid Identifier for Object");
 }
 
 /*
  * Type names are greater than three characters long,
  * start with an uppercase letter and don't contain underscore.
  */
-Int Semantic::identifierCheckType(Lexer& /*lexer*/, Int id)
+Int Semantic::identifierCheckType(Lexer& lexer, Int id)
 {
     std::string&    identifier = *reinterpret_cast<std::string*>(id);
     if ((std::isupper(identifier[0])) && (identifier.size() > 3) && (identifier.find('_') == std::string::npos))
@@ -60,14 +60,14 @@ Int Semantic::identifierCheckType(Lexer& /*lexer*/, Int id)
         return id;
     }
     delete &identifier;
-    return -1;
+    error(lexer, "Invalid Identifier for Type");
 }
 
 /*
  * Namespace names start with an upper case letter, and each upper case letter is prefixed by underscore.
  * Either the name is shorter than 4 characters or if 4 or more contains at least two capitols.
  */
-Int Semantic::identifierCheckNS(Lexer& /*lexer*/, Int id)
+Int Semantic::identifierCheckNS(Lexer& lexer, Int id)
 {
     std::string&    identifier = *reinterpret_cast<std::string*>(id);
 
@@ -87,7 +87,7 @@ Int Semantic::identifierCheckNS(Lexer& /*lexer*/, Int id)
             return id;
     }
     delete &identifier;
-    return -1;
+    error(lexer, "Invalid Identifier for Namespace");
 }
 
 Int Semantic::fullIdentiferCreate(Lexer& /*lexer*/)

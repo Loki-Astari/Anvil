@@ -120,23 +120,14 @@ Literal:            STRING
 NameSpaceIdentifer: Identifer                                           {
                                                                             action.log("NameSpaceIdentifer: Identifer");
                                                                             $$ = action.identifierCheckNS(lexer, $1);
-                                                                            if ($$ == -1) {
-                                                                                error(yylloc, "Invalid Identifier for Namespace");
-                                                                            }
                                                                         }
 TypeIdentifer:      Identifer                                           {
                                                                             action.log("TypeIdentifer:      Identifer");
                                                                             $$ = action.identifierCheckType(lexer, $1);
-                                                                            if ($$ == -1) {
-                                                                                error(yylloc, "Invalid Identifier for Type");
-                                                                            }
                                                                         }
 ObjectIdentifer:    Identifer                                           {
                                                                             action.log("ObjectIdentifer:    Identifer");
                                                                             $$ = action.identifierCheckObject(lexer, $1);
-                                                                            if ($$ == -1) {
-                                                                                error(yylloc, "Invalid Identifier for Object");
-                                                                            }
                                                                         }
 
 Identifer:          IDENTIFIER                                          {

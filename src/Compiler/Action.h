@@ -23,8 +23,8 @@ class Action
         virtual ~Action();
 
         // Messaging
-        virtual void log(char const* msg);
-        virtual void error(Lexer& lexer, std::string const& msg);
+        void log(char const* msg);
+        [[ noreturn ]] void error(Lexer& lexer, std::string const& msg);
 
         // Lexing
         virtual void invalidCharacter(Lexer& lexer)                                 {addToLine(lexer);error(lexer, "Invalid Character");}
