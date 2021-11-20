@@ -21,6 +21,15 @@ void Action::log(char const* msg)
     output << msg << "\n";
 }
 
+void Action::token(Lexer& lexer)
+{
+#pragma vera-pushoff
+    using namespace std::string_literals;
+#pragma vera-pop
+    log("Token: "s .append(lexer.lexem()).c_str());
+    addToLine(lexer);
+}
+
 void Action::error(Lexer& lexer, std::string const& msg)
 {
     std::stringstream extended;

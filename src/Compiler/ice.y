@@ -59,8 +59,8 @@ Decl:               NAMESPACE NameSpaceIdentifer '{' DeclListOpt '}'    {action.
                 |   TYPE ARRAY  TypeIdentifer '{' ObjectDecl '}'        {action.log("Decl:               TYPE ARRAY TypeIdentifer { ObjectDecl }");}
                 |   TYPE MAP    TypeIdentifer '{' ObjectDecl ',' ObjectDecl '}'
                                                                         {action.log("Decl:               TYPE MAP TypeIdentifer { ObjectDecl , ObjectDecl }");}
-                |   TYPE FUNC   TypeIdentifer '(' ParamListOpt ')'
-                    ARROW ObjectDecl ';'                                {action.log("Decl:               TYPE FUNC TypeIdentifer ( ParamListOpt ) -> ObjectDecl ;");}
+                |   TYPE FUNC   TypeIdentifer '{' ParamListOpt ARROW ObjectDecl '}'
+                                                                        {action.log("Decl:               TYPE FUNC TypeIdentifer ( ParamListOpt ) -> ObjectDecl ;");}
                 |   ObjectIdentifer ':' ObjectDecl InitObject           {action.log("Decl:               ObjectIdentifer : ObjectDecl InitObject");}
                 |   Statement                                           {action.log("Decl:               Statement");}
 
@@ -76,7 +76,7 @@ ObjectDecl:         TypeName                                            {action.
 AnonDecl:           OBJECT '{' DeclListOpt '}'                          {action.log("AnonDecl:           OBJECT { DeclListOpt }");}
                 |   ARRAY  '{' ObjectDecl '}'                           {action.log("AnonDecl:           ARRAY { ObjectDecl }");}
                 |   MAP    '{' ObjectDecl ',' ObjectDecl '}'            {action.log("AnonDecl:           MAP { ObjectDecl , ObjectDecl }");}
-                |   FUNC   '(' ParamListOpt ')' ARROW ObjectDecl        {action.log("AnonDecl:           FUNC ( ParamListOpt ) -> ObjectDecl");}
+                |   FUNC   '{' ParamListOpt ARROW ObjectDecl '}'        {action.log("AnonDecl:           FUNC { ParamListOpt -> ObjectDecl }");}
 
 Statement:          Expression ';'                                      {action.log("Statement:          Expression ;");}
 Expression:         ExprFuncCall                                        {action.log("Expression:         ExprFuncCall");}

@@ -28,9 +28,9 @@ class Action
 
         // Lexing
         virtual void invalidCharacter(Lexer& lexer)                                 {addToLine(lexer);error(lexer, "Invalid Character");}
-        virtual void token(Lexer& lexer)                                            {addToLine(lexer);}
         virtual void ignoreSpace(Lexer& lexer)                                      {addToLine(lexer);}
         virtual void newLine(Lexer& lexer)                                          {resetLine(lexer);}
+        virtual void token(Lexer& lexer);
 
 
         // Parsing

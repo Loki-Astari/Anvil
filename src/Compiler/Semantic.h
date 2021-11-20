@@ -19,59 +19,122 @@ class Decl;
 class Container
 {
     public:
-        using NameMap = std::map<std::string, Decl>;
+        using NameMap = std::map<std::string, std::unique_ptr<Decl>>;
         using NameRef = NameMap::iterator;
 
         template<typename T>
-        void add(std::string const& name, T&& nameSpace);
-        Decl& get(std::string const& name);
+        void add(T&& decl);
+        virtual std::string const& contName() const = 0;
+        std::pair<bool, NameRef> get(std::string const& name);
 
     private:
         NameMap     names;
 };
 
-class Void
+enum class DeclType {Void, Namespace, TypeObject, TypeArray, TypeMap, TypeFunc, Object, Statement};
+
+class Decl
 {
+    std::string name;
+    public:
+        Decl(std::string const& name)
+            : name(name)
+        {}
+        virtual ~Decl() = 0;
+        virtual DeclType declType() const = 0;
+        std::string const& declName() const                                                 {return name;}
+        virtual std::pair<bool, Container::NameRef> find(std::string const& /*name*/)       {return {false, {}};}
 };
 
-class Namespace: public Container
-{
-};
-
-class Type
+class Namespace: public Decl, public Container
 {
     public:
+        Namespace(std::string const& name)
+            : Decl(name)
+        {}
+        virtual std::string const& contName() const override                                {return declName();}
+        virtual DeclType declType() const override                                          {return DeclType::Namespace;}
+        virtual std::pair<bool, Container::NameRef> find(std::string const& name) override  {return get(name);}
+};
+
+class Type: public Decl
+{
+    public:
+        Type(std::string const& name)
+            : Decl(name)
+        {}
         virtual ~Type() = 0;
+};
+
+class Void: public Type
+{
+    public:
+        Void()
+            : Type("Void")
+        {}
+        virtual DeclType declType() const override                                          {return DeclType::Void;}
 };
 
 class TypeObject: public Type, public Container
 {
+    public:
+        TypeObject(std::string const& name)
+            : Type(name)
+        {}
+        virtual std::string const& contName() const override                                {return declName();}
+        virtual DeclType declType() const override                                          {return DeclType::TypeObject;}
+        virtual std::pair<bool, Container::NameRef> find(std::string const& name) override  {return get(name);}
 };
 
 class TypeArray: public Type
 {
+    public:
+        TypeArray(std::string const& name)
+            : Type(name)
+        {}
+        virtual DeclType declType() const override                                          {return DeclType::TypeArray;}
 };
 
 class TypeMap: public Type
 {
+    public:
+        TypeMap(std::string const& name)
+            : Type(name)
+        {}
+        virtual DeclType declType() const override                                          {return DeclType::TypeMap;}
 };
 
 class TypeFunc: public Type
 {
-};
-
-class Object
-{
-    Type const&   type;
     public:
-        Object(Type const& type)
-            : type(type)
+        TypeFunc(std::string const& name)
+            : Type(name)
         {}
+        virtual DeclType declType() const override                                          {return DeclType::TypeFunc;}
 };
 
-class Statement
+class Object: public Decl
 {
+    Type const&   objectType;
+    public:
+        Object(std::string const& name, Type const& objectType)
+            : Decl(name)
+            , objectType(objectType)
+        {}
+        virtual DeclType declType() const override                                          {return DeclType::Object;}
+        // TODO This will need to be overridden
+        virtual std::pair<bool, Container::NameRef> find(std::string const&) override       {return {false, {}};}
 };
+
+class Statement: public Decl
+{
+    public:
+        Statement()
+            : Decl("Statement")
+        {}
+        virtual DeclType declType() const override                                          {return DeclType::Statement;}
+};
+
 using UPVoid        = std::unique_ptr<Void>;
 using UPNamespace   = std::unique_ptr<Namespace>;
 using UPTypeObject  = std::unique_ptr<TypeObject>;
@@ -81,83 +144,36 @@ using UPTypeFunc    = std::unique_ptr<TypeFunc>;
 using UPObject      = std::unique_ptr<Object>;
 using UPStatement   = std::unique_ptr<Statement>;
 
-enum class DeclType {Void, Namespace, TypeObject, TypeArray, TypeMap, TypeFunc, Object, Statement};
-using DeclValue = std::variant<UPVoid, UPNamespace, UPTypeObject, UPTypeArray, UPTypeMap, UPTypeFunc, UPObject, UPStatement>;
+using Scope = Container;
 
-class Decl
-{
-    DeclType    type;
-    DeclValue   value;
-    public:
-        // Temporary;
-        DeclType const&   getType() const {return type;}
-        DeclValue const&  getValue() const {return value;}
-
-        Decl()
-            : type(DeclType::Void)
-            , value(std::make_unique<Void>())
-        {}
-        Decl(UPNamespace&& nameSpace)
-            : type(DeclType::Namespace)
-            , value(std::move(nameSpace))
-        {}
-        Decl(UPTypeObject&& typeObject)
-            : type(DeclType::TypeObject)
-            , value(std::move(typeObject))
-        {}
-        Decl(UPTypeArray&& typeArray)
-            : type(DeclType::TypeArray)
-            , value(std::move(typeArray))
-        {}
-        Decl(UPTypeMap&& typeMap)
-            : type(DeclType::TypeMap)
-            , value(std::move(typeMap))
-        {}
-        Decl(UPTypeFunc&& typeFund)
-            : type(DeclType::TypeFunc)
-            , value(std::move(typeFund))
-        {}
-        Decl(UPObject&& object)
-            : type(DeclType::Object)
-            , value(std::move(object))
-        {}
-        Decl(UPStatement&& statement)
-            : type(DeclType::Statement)
-            , value(std::move(statement))
-        {}
-};
-
-class Scope: public Container
-{
-};
-
-class StandardScope: public Scope
+class StandardScope: public Namespace
 {
     public:
         StandardScope()
+            : Namespace("") // Its the global scope so has no name
         {
-            UPTypeFunc    consolePrintMethodType(new TypeFunc);
-            UPObject      consolePrintMethodFunc(new Object(*consolePrintMethodType));
+            UPTypeFunc    consolePrintMethodType(new TypeFunc("Print"));
+            UPObject      consolePrintMethodFunc(new Object("print", *consolePrintMethodType));
 
-            UPTypeObject  consoleType(new TypeObject);
-            consoleType->add("Print", std::move(consolePrintMethodType));
-            consoleType->add("print", std::move(consolePrintMethodFunc));
+            UPTypeObject  consoleType(new TypeObject("Console"));
+            consoleType->add(std::move(consolePrintMethodType));
+            consoleType->add(std::move(consolePrintMethodFunc));
 
-            UPObject      consoleObject(new Object(*consoleType));
+            UPObject      consoleObject(new Object("console", *consoleType));
 
-            UPNamespace   system(new Namespace);
-            system->add("Console", std::move(consoleType));
-            system->add("console", std::move(consoleObject));
+            UPNamespace   system(new Namespace("Sys"));
+            system->add(std::move(consoleType));
+            system->add(std::move(consoleObject));
 
-            add("System", std::move(system));
+            add(std::move(system));
 
-            UPNamespace   standard(new Namespace);
-            UPTypeObject  typeInt(new TypeObject);
-            UPTypeObject  typeString(new TypeObject);
+            UPNamespace   standard(new Namespace("Std"));
+            UPTypeObject  typeInt(new TypeObject("Integer"));
+            UPTypeObject  typeString(new TypeObject("String"));
 
-            standard->add("Int", std::move(typeInt));
-            standard->add("String", std::move(typeString));
-            add("Std",    std::move(standard));
+            standard->add(std::move(typeInt));
+            standard->add(std::move(typeString));
+            add(std::move(standard));
         }
 };
 
@@ -186,18 +202,14 @@ class Semantic: public Action
 };
 
 template<typename T>
-inline void Container::add(std::string const& name, T&& nameSpace)
+inline void Container::add(T&& decl)
 {
-    names[name] = std::move(nameSpace);
+    names[decl->declName()] = std::move(decl);
 }
-inline Decl& Container::get(std::string const& name)
+inline std::pair<bool, Container::NameRef> Container::get(std::string const& name)
 {
     auto find = names.find(name);
-    if (find == names.end())
-    {
-        throw int(5);
-    }
-    return find->second;
+    return {find != names.end(), find};
 }
 
 }

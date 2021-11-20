@@ -113,7 +113,7 @@ TEST(ParserTest,NameTypeFunc)
     std::stringstream    file = buildStream(R"(
 namespace Name
 {
-    type func TypeFunc(value: Std::Int) -> Std::String;
+    type func TypeFunc{value: Std::Integer -> Std::String}
 }
     )");
 
@@ -132,7 +132,7 @@ TEST(ParserTest,NameTypeMap)
     std::stringstream    file = buildStream(R"(
 namespace Name
 {
-    type map TypeMap { Std::String, Std::Int}
+    type map TypeMap { Std::String, Std::Integer}
 }
     )");
 
@@ -154,7 +154,7 @@ namespace Name
     type object TypeObject
     {
         name:   Std::String;
-        age:    Std::Int;
+        age:    Std::Integer;
     }
 }
     )");
@@ -174,7 +174,7 @@ TEST(ParserTest,NameVariableAnonTypeArray)
     std::stringstream    file = buildStream(R"(
 namespace Name
 {
-    data : array { Std::Int };
+    data : array { Std::Integer };
 }
     )");
 
@@ -193,7 +193,7 @@ TEST(ParserTest,NameVariableAnonTypeFunc)
     std::stringstream    file = buildStream(R"(
 namespace Name
 {
-    data : func(value: Std::Int, error: Std::String) -> Std::Number;
+    data : func{value: Std::Integer, error: Std::String -> Std::Number};
 }
     )");
 
@@ -212,7 +212,7 @@ TEST(ParserTest,NameVariableAnonTypeMap)
     std::stringstream    file = buildStream(R"(
 namespace Name
 {
-    data : map { Std::Int, Std::String };
+    data : map { Std::Integer, Std::String };
 }
     )");
 

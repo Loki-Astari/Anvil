@@ -30,8 +30,9 @@ Bob
     )");
 
     using ThorsAnvil::Anvil::Ice::Lexer;
+    std::stringstream   output;
 
-    Action          action;
+    Action          action(output);
     Lexer           lexer(action, file);
 
     int val;

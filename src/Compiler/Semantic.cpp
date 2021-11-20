@@ -5,6 +5,9 @@
 
 using namespace ThorsAnvil::Anvil::Ice;
 
+Decl::~Decl()
+{}
+
 Type::~Type()
 {}
 
@@ -75,7 +78,9 @@ Int Semantic::identifierCheckNS(Lexer& lexer, Int id)
     auto findUpperNotPrefixedByUnderScore = [&lastUnderscore](char x)
     {
         if (std::isupper(x) && !lastUnderscore)
+        {
             return true;
+        }
         lastUnderscore = x == '_';
         return false;
     };
@@ -84,7 +89,9 @@ Int Semantic::identifierCheckNS(Lexer& lexer, Int id)
     {
         auto find = std::find_if(std::begin(identifier), std::end(identifier), findUpperNotPrefixedByUnderScore);
         if (find == std::end(identifier))
+        {
             return id;
+        }
     }
     delete &identifier;
     error(lexer, "Invalid Identifier for Namespace");
@@ -115,24 +122,66 @@ struct ReversView
     auto end()   {return range.rend();}
 };
 
-Int Semantic::findTypeInScope(Lexer& /*lexer*/, Int fp)
+Int Semantic::findTypeInScope(Lexer& lexer, Int fp)
 {
-    std::list<std::unique_ptr<std::string>>&    fullPath = *reinterpret_cast<std::list<std::unique_ptr<std::string>>*>(fp);
-    std::cerr << "findTypeInScope: ";
-    for (auto const& path: fullPath)
+    std::unique_ptr<std::list<std::unique_ptr<std::string>>>    fullPath(reinterpret_cast<std::list<std::unique_ptr<std::string>>*>(fp));
+    std::string  fullPathString;
+    std::string  partialMatch;
+
+    Decl*   decl = nullptr;
+    bool    rootOfPath = true;
+    for (auto& path: *fullPath)
     {
-        std::cerr << (*path) << " :: ";
-    }
-    std::cerr << "\n";
-    for (auto const& path: fullPath)
-    {
+        fullPathString += *path;
+        fullPathString += "::";
+
         std::string& pathSeg = *path;
-        for (auto& scope: ReversView(currentScope))
+        if (rootOfPath)
         {
-            Decl& ref = scope.get().get(pathSeg);
-            ((void)ref);
+            for (auto& scopeRef: ReversView(currentScope))
+            {
+                auto& scope = scopeRef.get();
+                auto find = scope.get(pathSeg);
+                if (find.first)
+                {
+                    for (auto& scopeRefForward: currentScope)
+                    {
+                        auto& scopeForward = scopeRefForward.get();
+                        if (&scopeForward == &scope)
+                        {
+                            break;
+                        }
+                        partialMatch += scope.contName();
+                        partialMatch += "::";
+                    }
+                    partialMatch += *path;
+                    partialMatch += "::";
+                    decl = &(*(find.second->second));
+                    break;
+                }
+            }
+            rootOfPath = false;
+            continue;
+        }
+
+        if (decl == nullptr)
+        {
+            continue;
+        }
+
+        auto find = decl->find(pathSeg);
+        decl = nullptr;
+        if (find.first)
+        {
+            decl = &(*(find.second->second));
         }
     }
-    std::cerr << "Return\n";
-    return 0;
+    if (decl == nullptr)
+    {
+#pragma vera-pushoff
+        using namespace std::string_literals;
+#pragma vera-pop
+        error(lexer, "Could Not Find Type: "s + fullPathString + "   Found partial Match: " + partialMatch);
+    }
+    return reinterpret_cast<Int>(decl);
 }
