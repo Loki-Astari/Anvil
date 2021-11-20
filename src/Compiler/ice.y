@@ -14,7 +14,7 @@ using ThorsAnvil::Anvil::Ice::Action;
 
 
 //namespace ThorsAnvial::Anvil::Ice {
-int yylex(void*, ThorsAnvil::Anvil::Ice::Lexer& lexer, ThorsAnvil::Anvil::Ice::Action& action);
+int yylex(void*, ThorsAnvil::Anvil::Ice::Lexer& lexer);
 //}
 
 #define YYSTYPE ThorsAnvil::Anvil::Ice::Int
@@ -26,7 +26,6 @@ int yylex(void*, ThorsAnvil::Anvil::Ice::Lexer& lexer, ThorsAnvil::Anvil::Ice::A
 %parse-param {Lexer&  lexer}
 %parse-param {Action& action}
 %lex-param   {Lexer&  lexer}
-%lex-param   {Action& action}
 
 
 %token              NAMESPACE
@@ -42,13 +41,13 @@ int yylex(void*, ThorsAnvil::Anvil::Ice::Lexer& lexer, ThorsAnvil::Anvil::Ice::A
 
 %%
 
-Anvil:              NamespaceList                                       {action.log("Anvil:              NamespaceList");}
+Anvil:              NamespaceList                                       {action.log("Anvil:              NamespaceList");$$ = 0;YYACCEPT;}
 
 
 NamespaceList:      Namespace                                           {action.log("NamespaceList:      Namespace");}
                 |   NamespaceList Namespace                             {action.log("NamespaceList:      NamespaceList Namespace");}
 
-Namespace:          NAMESPACE NameSpaceIdentifer '{' DeclListOpt '}'    {action.log("Namespace:          NAMESPACE NameSpaceIdentifer { DeclListOpt }");}
+Namespace:          NAMESPACE NameSpaceIdentifer '{' DeclListOpt '}'    {action.log("Namespace:          NAMESPACE NameSpaceIdentifer { DeclListOpt }"); $$ = 0;}
 
 DeclListOpt:                                                            {action.log("DeclListOpt:        >EMPTY<");}
                 |   DeclList                                            {action.log("DeclListOpt:        DeclList");}
@@ -97,47 +96,66 @@ ObjectName:         ObjectIdentifer                                     {action.
                 |   NameSpaceIdentifer SCOPE ObjectName                 {action.log("ObjectName:         NameSpaceIdentifer :: ObjectName");}
                 |   ObjectIdentifer '.' ObjectName                      {action.log("ObjectName:         ObjectIdentifer . ObjectName");}
 
-TypeName:           TypeNameFull                                        {action.log("TypeName:           TypeNameFull");
-                                                                         $$ = action.findTypeInScope(lexer, $1);}
-TypeNameFull:       TypeIdentifer                                       {action.log("TypeNameFull:       TypeIdentifer");
-                                                                         $$ = action.fullIdentiferCreate(lexer); action.fullIdentiferAddPath(lexer, $$, $1);}
-                |   NameSpaceIdentifer SCOPE TypeNameFull               {action.log("TypeNameFull:       NameSpaceIdentifer :: TypeNameFull");
-                                                                         $$ = $3; action.fullIdentiferAddPath(lexer, $$, $1);}
-                |   TypeIdentifer SCOPE TypeNameFull                    {action.log("TypeNameFull:        TypeIdentifer :: TypeNameFull");
-                                                                         $$ = $3; action.fullIdentiferAddPath(lexer, $$, $1);}
+TypeName:           TypeNameFull                                        {
+                                                                            action.log("TypeName:           TypeNameFull");
+                                                                            $$ = action.findTypeInScope(lexer, $1);
+                                                                        }
+TypeNameFull:       TypeIdentifer                                       {
+                                                                            action.log("TypeNameFull:       TypeIdentifer");
+                                                                            $$ = action.fullIdentiferCreate(lexer); action.fullIdentiferAddPath(lexer, $$, $1);
+                                                                        }
+                |   NameSpaceIdentifer SCOPE TypeNameFull               {
+                                                                            action.log("TypeNameFull:       NameSpaceIdentifer :: TypeNameFull");
+                                                                            $$ = $3; action.fullIdentiferAddPath(lexer, $$, $1);
+                                                                        }
+                |   TypeIdentifer SCOPE TypeNameFull                    {
+                                                                            action.log("TypeNameFull:        TypeIdentifer :: TypeNameFull");
+                                                                            $$ = $3; action.fullIdentiferAddPath(lexer, $$, $1);
+                                                                        }
 
 
 Literal:            STRING
 
 
-NameSpaceIdentifer: Identifer                                           {action.log("NameSpaceIdentifer: Identifer");
-                                                                         $$ = action.identifierCheckNS(lexer, $1);}
-TypeIdentifer:      Identifer                                           {action.log("TypeIdentifer:      Identifer");
-                                                                         $$ = action.identifierCheckType(lexer, $1);}
-ObjectIdentifer:    Identifer                                           {action.log("ObjectIdentifer:    Identifer");
-                                                                         $$ = action.identifierCheckObject(lexer, $1);}
+NameSpaceIdentifer: Identifer                                           {
+                                                                            action.log("NameSpaceIdentifer: Identifer");
+                                                                            $$ = action.identifierCheckNS(lexer, $1);
+                                                                            if ($$ == -1) {
+                                                                                error(yylloc, "Invalid Identifier for Namespace");
+                                                                            }
+                                                                        }
+TypeIdentifer:      Identifer                                           {
+                                                                            action.log("TypeIdentifer:      Identifer");
+                                                                            $$ = action.identifierCheckType(lexer, $1);
+                                                                            if ($$ == -1) {
+                                                                                error(yylloc, "Invalid Identifier for Type");
+                                                                            }
+                                                                        }
+ObjectIdentifer:    Identifer                                           {
+                                                                            action.log("ObjectIdentifer:    Identifer");
+                                                                            $$ = action.identifierCheckObject(lexer, $1);
+                                                                            if ($$ == -1) {
+                                                                                error(yylloc, "Invalid Identifier for Object");
+                                                                            }
+                                                                        }
 
-Identifer:          IDENTIFIER                                          {action.log("Identifer:          IDENTIFIER");
-                                                                         $$ = action.identifierCreate(lexer);}
+Identifer:          IDENTIFIER                                          {
+                                                                            action.log("Identifer:          IDENTIFIER");
+                                                                            $$ = action.identifierCreate(lexer);
+                                                                        }
 
 
 
 %%
 
-#include <iostream>
-#include <sstream>
 
-int yylex(void*, Lexer& lexer, Action& action)
+int yylex(void*, Lexer& lexer)
 {
-    (void)action;
     return lexer.yylex();
 }
 
-void yy::Parser::error(yy::location const&, std::string const& msg)
+void yy::Parser::error(yy::location const& /*location*/, std::string const& msg)
 {
-    std::string lastToken(lexer.YYText(), lexer.YYText() + lexer.YYLeng());
-    std::stringstream extended;
-    extended << "yy::Parser::error: Error: " << msg << " -> Last Token: " << lastToken << " At line: " << lexer.lineno();
-    throw std::runtime_error(extended.str());
+    action.error(lexer, msg);
 }
 

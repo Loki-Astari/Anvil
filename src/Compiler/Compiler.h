@@ -166,17 +166,15 @@ class Compiler: public Action
     Parser                  parser;
     StandardScope           globalScope;
     std::vector<std::reference_wrapper<Scope>>  currentScope;
-    bool                    debug;
 
     public:
-        Compiler(std::istream& input = std::cin, std::ostream& output = std::cout, bool debug = false);
+        Compiler(std::istream& input = std::cin, std::ostream& output = std::cout);
         virtual ~Compiler() override;
 
-        void go();
+        bool go();
+        void display(std::ostream& stream);
 
     // Action Virtual Functions override
-        virtual void log(char const* msg)                                   override;
-
         virtual Int identifierCreate(Lexer& lexer)                          override;
         virtual Int identifierCheckObject(Lexer& lexer, Int id)             override;
         virtual Int identifierCheckType(Lexer& lexer, Int id)               override;

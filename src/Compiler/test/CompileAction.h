@@ -10,8 +10,35 @@
                                         try {                           \
                                             EXPECT_TRUE(check);         \
                                         } catch(...) {                  \
-                                            output.display(std::cout);  \
+                                            std::cerr << "TRUE: FAIL\n";\
+                                            std::cerr << output.rdbuf();\
                                             throw;                      \
+                                        }                               \
+                                      }
+#define EXPECT_FALSE_OR_DEBUG(check, output) \
+                                     {                                  \
+                                        try {                           \
+                                            EXPECT_FALSE(check);        \
+                                        } catch(...) {                  \
+                                            std::cerr << "FALSE FAIL\n";\
+                                            std::cerr << output.rdbuf();\
+                                            throw;                      \
+                                        }                               \
+                                      }
+#define EXPECT_THROW_OR_DEBUG(check, msg, output) \
+                                     {                                  \
+                                        try {                           \
+                                            check;                      \
+                                            std::cerr << "THROW FAIL (Throw expected but did not happen)\n";\
+                                            std::cerr << output.rdbuf();\
+                                        } catch(std::exception const& e)\
+                                        {                               \
+                                            std::string error(e.what());\
+                                            if (error.find(msg) == std::string::npos) {\
+                                                std::cerr << "THROW FAIL (Throw happened but not expected message)\n" \
+                                                          << error << "\n"  \
+                                                          << output.rdbuf();\
+                                            }                           \
                                         }                               \
                                       }
 
@@ -21,20 +48,5 @@ inline std::stringstream buildStream(char const* buffer)
     stream << buffer;
     return stream;
 }
-
-class CompileAction: public ThorsAnvil::Anvil::Ice::Action
-{
-    std::stringstream   log;
-    public:
-        CompileAction()
-            : Action(log)
-        {}
-        ~CompileAction() {}
-
-        void display(std::ostream& out)
-        {
-            out << log.str();
-        }
-};
 
 #endif

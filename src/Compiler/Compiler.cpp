@@ -1,15 +1,16 @@
 #include "Compiler.h"
 #include <string>
 #include <list>
+#include <cctype>
 
 using namespace ThorsAnvil::Anvil::Ice;
 
 Type::~Type()
 {}
 
-Compiler::Compiler(std::istream& input, std::ostream& output, bool debug)
-    : parser(*this, input, output)
-    , debug(debug)
+Compiler::Compiler(std::istream& input, std::ostream& output)
+    : Action(output)
+    , parser(*this, input, output)
 {
     currentScope.push_back(std::ref(static_cast<Scope&>(globalScope)));
 }
@@ -18,38 +19,75 @@ Compiler::~Compiler()
 {
 }
 
-void Compiler::go()
+bool Compiler::go()
 {
-    parser.parse();
+    return parser.parse();
 }
 
 // Action Override
-void Compiler::log(char const* msg)
-{
-    if (debug)
-    {
-        std::cerr << msg << "\n";
-    }
-}
-
 Int Compiler::identifierCreate(Lexer& lexer)
 {
     return reinterpret_cast<Int>(new std::string(lexer.lexem()));
 }
 
+/*
+ * Object names all start with a lowercase letter
+ * An object is anything that can be passed as a parameter.
+ *      Values
+ *      Functions
+ *      Closures.
+ */
 Int Compiler::identifierCheckObject(Lexer& /*lexer*/, Int id)
 {
-    return id;
+    std::string&    identifier = *reinterpret_cast<std::string*>(id);
+    if (std::islower(identifier[0]))
+    {
+        return id;
+    }
+    delete &identifier;
+    return -1;
 }
 
+/*
+ * Type names are greater than three characters long,
+ * start with an uppercase letter and don't contain underscore.
+ */
 Int Compiler::identifierCheckType(Lexer& /*lexer*/, Int id)
 {
-    return id;
+    std::string&    identifier = *reinterpret_cast<std::string*>(id);
+    if ((std::isupper(identifier[0])) && (identifier.size() > 3) && (identifier.find('_') == std::string::npos))
+    {
+        return id;
+    }
+    delete &identifier;
+    return -1;
 }
 
+/*
+ * Namespace names start with an upper case letter, and each upper case letter is prefixed by underscore.
+ * Either the name is shorter than 4 characters or if 4 or more contains at least two capitols.
+ */
 Int Compiler::identifierCheckNS(Lexer& /*lexer*/, Int id)
 {
-    return id;
+    std::string&    identifier = *reinterpret_cast<std::string*>(id);
+
+    bool lastUnderscore = true;
+    auto findUpperNotPrefixedByUnderScore = [&lastUnderscore](char x)
+    {
+        if (std::isupper(x) && !lastUnderscore)
+            return true;
+        lastUnderscore = x == '_';
+        return false;
+    };
+
+    if ((std::isupper(identifier[0])) && ((identifier.size() <= 3) || (std::find_if(std::begin(identifier) + 1, std::end(identifier), [](char x){return std::isupper(x);}) != identifier.end())))
+    {
+        auto find = std::find_if(std::begin(identifier), std::end(identifier), findUpperNotPrefixedByUnderScore);
+        if (find == std::end(identifier))
+            return id;
+    }
+    delete &identifier;
+    return -1;
 }
 
 Int Compiler::fullIdentiferCreate(Lexer& /*lexer*/)

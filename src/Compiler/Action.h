@@ -15,12 +15,25 @@ class Lexer;
 class Action
 {
     std::ostream&   output;
+    std::string     currentLine;
+    std::size_t     lineNo;
+    std::size_t     offset;
     public:
         Action(std::ostream& output = std::cerr);
-        virtual ~Action()   = 0;
+        virtual ~Action();
 
+        // Messaging
         virtual void log(char const* msg);
+        virtual void error(Lexer& lexer, std::string const& msg);
 
+        // Lexing
+        virtual void invalidCharacter(Lexer& lexer)                                 {addToLine(lexer);error(lexer, "Invalid Character");}
+        virtual void token(Lexer& lexer)                                            {addToLine(lexer);}
+        virtual void ignoreSpace(Lexer& lexer)                                      {addToLine(lexer);}
+        virtual void newLine(Lexer& lexer)                                          {resetLine(lexer);}
+
+
+        // Parsing
         virtual Int identifierCreate(Lexer& /*lexer*/)                              {return 0;}
         virtual Int identifierCheckObject(Lexer& /*lexer*/, Int /*id*/)             {return 0;}
         virtual Int identifierCheckType(Lexer& /*lexer*/, Int /*id*/)               {return 0;}
@@ -29,6 +42,9 @@ class Action
         virtual Int fullIdentiferCreate(Lexer& /*lexer*/)                           {return 0;}
         virtual Int fullIdentiferAddPath(Lexer& /*lexer*/, Int /*fp*/, Int /*id*/)  {return 0;}
         virtual Int findTypeInScope(Lexer& /*lexer*/, Int /*fp*/)                   {return 0;}
+    private:
+        void addToLine(Lexer& lexer);
+        void resetLine(Lexer& lexer);
 
 };
 

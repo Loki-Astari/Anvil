@@ -31,7 +31,7 @@ Bob
 
     using ThorsAnvil::Anvil::Ice::Lexer;
 
-    CompileAction   action;
+    Action          action;
     Lexer           lexer(action, file);
 
     int val;
