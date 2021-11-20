@@ -1,11 +1,11 @@
 #include <gtest/gtest.h>
 
-#include "Compiler.h"
+#include "Semantic.h"
 #include "test/CompileAction.h"
 
-TEST(CompilerTest, ShortNameSpaceIsValid)
+TEST(SemanticTest, ShortNameSpaceIsValid)
 {
-    using ThorsAnvil::Anvil::Ice::Compiler;
+    using ThorsAnvil::Anvil::Ice::Semantic;
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
 namespace Std
@@ -13,13 +13,13 @@ namespace Std
 }
 )");
 
-    Compiler          compiler(file, result);
+    Semantic          compiler(file, result);
     EXPECT_TRUE_OR_DEBUG(compiler.go(), result);
 }
 
-TEST(CompilerTest, LongNameSpaceIsValid)
+TEST(SemanticTest, LongNameSpaceIsValid)
 {
-    using ThorsAnvil::Anvil::Ice::Compiler;
+    using ThorsAnvil::Anvil::Ice::Semantic;
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
 namespace Complex_Space
@@ -27,13 +27,13 @@ namespace Complex_Space
 }
 )");
 
-    Compiler          compiler(file, result);
+    Semantic          compiler(file, result);
     EXPECT_TRUE_OR_DEBUG(compiler.go(), result);
 }
 
-TEST(CompilerTest, ShortNameSpaceIsInValid_NoCap)
+TEST(SemanticTest, ShortNameSpaceIsInValid_NoCap)
 {
-    using ThorsAnvil::Anvil::Ice::Compiler;
+    using ThorsAnvil::Anvil::Ice::Semantic;
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
 namespace std
@@ -41,13 +41,13 @@ namespace std
 }
 )");
 
-    Compiler          compiler(file, result);
+    Semantic          compiler(file, result);
     EXPECT_THROW_OR_DEBUG(compiler.go(), "Invalid Identifier for Namespace", result);
 }
 
-TEST(CompilerTest, LongNameSpaceIsInValid_NoUnderScore)
+TEST(SemanticTest, LongNameSpaceIsInValid_NoUnderScore)
 {
-    using ThorsAnvil::Anvil::Ice::Compiler;
+    using ThorsAnvil::Anvil::Ice::Semantic;
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
 namespace ComplexSpace
@@ -55,13 +55,13 @@ namespace ComplexSpace
 }
 )");
 
-    Compiler          compiler(file, result);
+    Semantic          compiler(file, result);
     EXPECT_THROW_OR_DEBUG(compiler.go(), "Invalid Identifier for Namespace", result);
 }
 
-TEST(CompilerTest, LongNameSpaceIsInValid_NoSecondCap)
+TEST(SemanticTest, LongNameSpaceIsInValid_NoSecondCap)
 {
-    using ThorsAnvil::Anvil::Ice::Compiler;
+    using ThorsAnvil::Anvil::Ice::Semantic;
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
 namespace Complex_space
@@ -69,13 +69,13 @@ namespace Complex_space
 }
 )");
 
-    Compiler          compiler(file, result);
+    Semantic          compiler(file, result);
     EXPECT_THROW_OR_DEBUG(compiler.go(), "Invalid Identifier for Namespace", result);
 }
 
-TEST(CompilerTest, LongNameSpaceIsInValid_NoFirstCap)
+TEST(SemanticTest, LongNameSpaceIsInValid_NoFirstCap)
 {
-    using ThorsAnvil::Anvil::Ice::Compiler;
+    using ThorsAnvil::Anvil::Ice::Semantic;
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
 namespace complex_Space
@@ -83,13 +83,13 @@ namespace complex_Space
 }
 )");
 
-    Compiler          compiler(file, result);
+    Semantic          compiler(file, result);
     EXPECT_THROW_OR_DEBUG(compiler.go(), "Invalid Identifier for Namespace", result);
 }
 
-TEST(CompilerTest, LongNameSpaceIsInValid_CapNoUnderScore)
+TEST(SemanticTest, LongNameSpaceIsInValid_CapNoUnderScore)
 {
-    using ThorsAnvil::Anvil::Ice::Compiler;
+    using ThorsAnvil::Anvil::Ice::Semantic;
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
 namespace Complex_SpaceX
@@ -97,7 +97,7 @@ namespace Complex_SpaceX
 }
 )");
 
-    Compiler          compiler(file, result);
+    Semantic          compiler(file, result);
     EXPECT_THROW_OR_DEBUG(compiler.go(), "Invalid Identifier for Namespace", result);
 }
 

@@ -161,15 +161,15 @@ class StandardScope: public Scope
         }
 };
 
-class Compiler: public Action
+class Semantic: public Action
 {
     Parser                  parser;
     StandardScope           globalScope;
     std::vector<std::reference_wrapper<Scope>>  currentScope;
 
     public:
-        Compiler(std::istream& input = std::cin, std::ostream& output = std::cout);
-        virtual ~Compiler() override;
+        Semantic(std::istream& input = std::cin, std::ostream& output = std::cout);
+        virtual ~Semantic() override;
 
         bool go();
         void display(std::ostream& stream);

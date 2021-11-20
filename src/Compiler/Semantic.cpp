@@ -1,4 +1,4 @@
-#include "Compiler.h"
+#include "Semantic.h"
 #include <string>
 #include <list>
 #include <cctype>
@@ -8,24 +8,24 @@ using namespace ThorsAnvil::Anvil::Ice;
 Type::~Type()
 {}
 
-Compiler::Compiler(std::istream& input, std::ostream& output)
+Semantic::Semantic(std::istream& input, std::ostream& output)
     : Action(output)
     , parser(*this, input, output)
 {
     currentScope.push_back(std::ref(static_cast<Scope&>(globalScope)));
 }
 
-Compiler::~Compiler()
+Semantic::~Semantic()
 {
 }
 
-bool Compiler::go()
+bool Semantic::go()
 {
     return parser.parse();
 }
 
 // Action Override
-Int Compiler::identifierCreate(Lexer& lexer)
+Int Semantic::identifierCreate(Lexer& lexer)
 {
     return reinterpret_cast<Int>(new std::string(lexer.lexem()));
 }
@@ -37,7 +37,7 @@ Int Compiler::identifierCreate(Lexer& lexer)
  *      Functions
  *      Closures.
  */
-Int Compiler::identifierCheckObject(Lexer& /*lexer*/, Int id)
+Int Semantic::identifierCheckObject(Lexer& /*lexer*/, Int id)
 {
     std::string&    identifier = *reinterpret_cast<std::string*>(id);
     if (std::islower(identifier[0]))
@@ -52,7 +52,7 @@ Int Compiler::identifierCheckObject(Lexer& /*lexer*/, Int id)
  * Type names are greater than three characters long,
  * start with an uppercase letter and don't contain underscore.
  */
-Int Compiler::identifierCheckType(Lexer& /*lexer*/, Int id)
+Int Semantic::identifierCheckType(Lexer& /*lexer*/, Int id)
 {
     std::string&    identifier = *reinterpret_cast<std::string*>(id);
     if ((std::isupper(identifier[0])) && (identifier.size() > 3) && (identifier.find('_') == std::string::npos))
@@ -67,7 +67,7 @@ Int Compiler::identifierCheckType(Lexer& /*lexer*/, Int id)
  * Namespace names start with an upper case letter, and each upper case letter is prefixed by underscore.
  * Either the name is shorter than 4 characters or if 4 or more contains at least two capitols.
  */
-Int Compiler::identifierCheckNS(Lexer& /*lexer*/, Int id)
+Int Semantic::identifierCheckNS(Lexer& /*lexer*/, Int id)
 {
     std::string&    identifier = *reinterpret_cast<std::string*>(id);
 
@@ -90,12 +90,12 @@ Int Compiler::identifierCheckNS(Lexer& /*lexer*/, Int id)
     return -1;
 }
 
-Int Compiler::fullIdentiferCreate(Lexer& /*lexer*/)
+Int Semantic::fullIdentiferCreate(Lexer& /*lexer*/)
 {
     return reinterpret_cast<Int>(new std::list<std::unique_ptr<std::string>>{});
 }
 
-Int Compiler::fullIdentiferAddPath(Lexer& /*lexer*/, Int fp, Int id)
+Int Semantic::fullIdentiferAddPath(Lexer& /*lexer*/, Int fp, Int id)
 {
     std::list<std::unique_ptr<std::string>>&    fullPath = *reinterpret_cast<std::list<std::unique_ptr<std::string>>*>(fp);
     std::string*                                identifier = reinterpret_cast<std::string*>(id);
@@ -115,7 +115,7 @@ struct ReversView
     auto end()   {return range.rend();}
 };
 
-Int Compiler::findTypeInScope(Lexer& /*lexer*/, Int fp)
+Int Semantic::findTypeInScope(Lexer& /*lexer*/, Int fp)
 {
     std::list<std::unique_ptr<std::string>>&    fullPath = *reinterpret_cast<std::list<std::unique_ptr<std::string>>*>(fp);
     std::cerr << "findTypeInScope: ";
