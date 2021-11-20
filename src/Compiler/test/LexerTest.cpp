@@ -2,7 +2,7 @@
 
 #include "Lexer.h"
 #include "ice.tab.hpp"
-#include "test/CompileAction.h"
+#include "test/Utility.h"
 
 #include <fstream>
 

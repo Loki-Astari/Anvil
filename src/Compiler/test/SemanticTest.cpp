@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 
 #include "Semantic.h"
-#include "test/CompileAction.h"
+#include "test/Utility.h"
 
 TEST(SemanticTest, ShortNameSpaceIsValid)
 {
