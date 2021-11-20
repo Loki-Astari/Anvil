@@ -1,7 +1,6 @@
 #ifndef TEST_COMPILE_ACTION
 #define TEST_COMPILE_ACTION
 
-#include "Action.h"
 #include <sstream>
 
 
