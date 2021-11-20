@@ -37,6 +37,7 @@
                                                 std::cerr << "THROW FAIL (Throw happened but not expected message)\n" \
                                                           << error << "\n"  \
                                                           << output.rdbuf();\
+                                                throw;                  \
                                             }                           \
                                         }                               \
                                       }

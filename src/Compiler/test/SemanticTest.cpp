@@ -418,5 +418,49 @@ namespace Good_Name_Space
     EXPECT_THROW_OR_DEBUG(compiler.go(), "Invalid Identifier for Object", result);
 }
 
+TEST(SemanticTest, FindDeclInScopeValid)
+{
+    using ThorsAnvil::Anvil::Ice::Semantic;
+    std::stringstream   result;
+    std::stringstream   file = buildStream(R"(
+namespace Good_Name_Space
+{
+    type array MyArray { Std::Integer }
+}
+)");
 
+    Semantic          compiler(file, result);
+    EXPECT_TRUE(compiler.go());
+    //EXPECT_THROW_OR_DEBUG(compiler.go(), "Invalid Identifier for Object", result);
+}
+
+TEST(SemanticTest, FindDeclInScopeInValid_BadNameSpace)
+{
+    using ThorsAnvil::Anvil::Ice::Semantic;
+    std::stringstream   result;
+    std::stringstream   file = buildStream(R"(
+namespace Good_Name_Space
+{
+    type array MyArray { Ftd::Integer }
+}
+)");
+
+    Semantic          compiler(file, result);
+    EXPECT_THROW_OR_DEBUG(compiler.go(), "Could Not Find Type", result);
+}
+
+TEST(SemanticTest, FindDeclInScopeInValid_BadType)
+{
+    using ThorsAnvil::Anvil::Ice::Semantic;
+    std::stringstream   result;
+    std::stringstream   file = buildStream(R"(
+namespace Good_Name_Space
+{
+    type array MyArray { Std::FFInteger }
+}
+)");
+
+    Semantic          compiler(file, result);
+    EXPECT_THROW_OR_DEBUG(compiler.go(), "Could Not Find Type", result);
+}
 

@@ -27,6 +27,7 @@ Bob
 ;
 .
 ,
+$
     )");
 
     using ThorsAnvil::Anvil::Ice::Lexer;
@@ -101,6 +102,9 @@ Bob
 
     val = lexer.yylex();
     EXPECT_EQ(',', val);
+
+    EXPECT_THROW_OR_DEBUG(val = lexer.yylex(), "Invalid Character", output);
+
 }
 
 
