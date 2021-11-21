@@ -176,7 +176,7 @@ Int Semantic::findTypeInScope(Lexer& lexer, Int fp)
                         }
                     }
 
-                    // Add the current path segment 
+                    // Add the current path segment
                     partialMatch += (pathSeg + "::");
 
                     // So far so we good we have found the first part decl that matches the fullPath.

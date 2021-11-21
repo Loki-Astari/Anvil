@@ -30,7 +30,6 @@ int yylex(void*, ThorsAnvil::Anvil::Ice::Lexer& lexer);
 
 %token              NAMESPACE
 %token              TYPE
-%token              OBJECT
 %token              ARRAY
 %token              MAP
 %token              FUNC
@@ -55,12 +54,12 @@ DeclList:           Decl                                                {action.
                 |   DeclList Decl                                       {action.log("DeclList:           DeclList Decl");}
 
 Decl:               NAMESPACE NameSpaceIdentifer '{' DeclListOpt '}'    {action.log("Decl:               NAMESPACE NameSpaceIdentifer { DeclListOpt }");}
-                |   TYPE OBJECT TypeIdentifer '{' DeclListOpt '}'       {action.log("Decl:               TYPE OBJECT TypeIdentifer { DeclListOpt }");}
-                |   TYPE ARRAY  TypeIdentifer '{' ObjectDecl '}'        {action.log("Decl:               TYPE ARRAY TypeIdentifer { ObjectDecl }");}
-                |   TYPE MAP    TypeIdentifer '{' ObjectDecl ',' ObjectDecl '}'
-                                                                        {action.log("Decl:               TYPE MAP TypeIdentifer { ObjectDecl , ObjectDecl }");}
-                |   TYPE FUNC   TypeIdentifer '{' ParamListOpt ARROW ObjectDecl '}'
-                                                                        {action.log("Decl:               TYPE FUNC TypeIdentifer ( ParamListOpt ) -> ObjectDecl ;");}
+                |   TYPE TypeIdentifer '{' DeclListOpt '}'              {action.log("Decl:               TYPE TypeIdentifer { DeclListOpt }");}
+                |   ARRAY  TypeIdentifer '{' ObjectDecl '}'             {action.log("Decl:               ARRAY TypeIdentifer { ObjectDecl }");}
+                |   MAP    TypeIdentifer '{' ObjectDecl ',' ObjectDecl '}'
+                                                                        {action.log("Decl:               MAP TypeIdentifer { ObjectDecl , ObjectDecl }");}
+                |   FUNC   TypeIdentifer '{' ParamListOpt ARROW ObjectDecl '}'
+                                                                        {action.log("Decl:               FUNC TypeIdentifer ( ParamListOpt ) -> ObjectDecl ;");}
                 |   ObjectIdentifer ':' ObjectDecl InitObject           {action.log("Decl:               ObjectIdentifer : ObjectDecl InitObject");}
                 |   Statement                                           {action.log("Decl:               Statement");}
 
@@ -73,7 +72,7 @@ Param:              ObjectIdentifer ':' ObjectDecl                      {action.
 ObjectDecl:         TypeName                                            {action.log("ObjectDecl:         TypeName");}
                 |   AnonDecl                                            {action.log("ObjectDecl:         AnonDecl");}
 
-AnonDecl:           OBJECT '{' DeclListOpt '}'                          {action.log("AnonDecl:           OBJECT { DeclListOpt }");}
+AnonDecl:           TYPE   '{' DeclListOpt '}'                          {action.log("AnonDecl:           TYPE { DeclListOpt }");}
                 |   ARRAY  '{' ObjectDecl '}'                           {action.log("AnonDecl:           ARRAY { ObjectDecl }");}
                 |   MAP    '{' ObjectDecl ',' ObjectDecl '}'            {action.log("AnonDecl:           MAP { ObjectDecl , ObjectDecl }");}
                 |   FUNC   '{' ParamListOpt ARROW ObjectDecl '}'        {action.log("AnonDecl:           FUNC { ParamListOpt -> ObjectDecl }");}

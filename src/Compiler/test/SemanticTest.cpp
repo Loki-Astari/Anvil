@@ -108,7 +108,7 @@ TEST(SemanticTest, TypeNameObjectValid)
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
 {
-    type object ObjectName
+    type TypeName
     {
         name : Std::String;
         age  : Std::Integer;
@@ -127,7 +127,7 @@ TEST(SemanticTest, TypeNameArrayValid)
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
 {
-    type array ArrayName { Std::Integer}
+    array ArrayName { Std::Integer}
 }
 )");
 
@@ -142,7 +142,7 @@ TEST(SemanticTest, TypeNameMapValid)
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
 {
-    type map MapName { Std::String, Std::Integer}
+    map MapName { Std::String, Std::Integer}
 }
 )");
 
@@ -157,7 +157,7 @@ TEST(SemanticTest, TypeNameFuncValid)
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
 {
-    type func FuncName { value: Std::String -> Std::Integer }
+    func FuncName { value: Std::String -> Std::Integer }
 }
 )");
 
@@ -172,7 +172,7 @@ TEST(SemanticTest, TypeNameObjectInValid_FirstLower)
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
 {
-    type object objectName
+    type typeName
     {
         name : Std::String;
         age  : Std::Integer;
@@ -191,7 +191,7 @@ TEST(SemanticTest, TypeNameArrayInValid_FirstLower)
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
 {
-    type array arrayName { Std::Integer}
+    array arrayName { Std::Integer}
 }
 )");
 
@@ -206,7 +206,7 @@ TEST(SemanticTest, TypeNameMapInValid_FirstLower)
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
 {
-    type map mapName { Std::String, Std::Integer}
+    map mapName { Std::String, Std::Integer}
 }
 )");
 
@@ -221,7 +221,7 @@ TEST(SemanticTest, TypeNameFuncInValid_FirstLower)
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
 {
-    type func funcName { value: Std::String -> Std::Integer }
+    func funcName { value: Std::String -> Std::Integer }
 }
 )");
 
@@ -236,7 +236,7 @@ TEST(SemanticTest, TypeNameObjectInValid_UnderScore)
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
 {
-    type object Object_Name
+    type Type_Name
     {
         name : Std::String;
         age  : Std::Integer;
@@ -255,7 +255,7 @@ TEST(SemanticTest, TypeNameArrayInValid_UnderScore)
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
 {
-    type array Array_Name { Std::Integer}
+    array Array_Name { Std::Integer}
 }
 )");
 
@@ -270,7 +270,7 @@ TEST(SemanticTest, TypeNameMapInValid_UnderScore)
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
 {
-    type map Map_Name { Std::String, Std::Integer}
+    map Map_Name { Std::String, Std::Integer}
 }
 )");
 
@@ -285,7 +285,7 @@ TEST(SemanticTest, TypeNameFuncInValid_UnderScore)
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
 {
-    type func Func_Name { value: Std::String -> Std::Integer }
+    func Func_Name { value: Std::String -> Std::Integer }
 }
 )");
 
@@ -301,7 +301,7 @@ TEST(SemanticTest, TypeNameObjectInValid_Short)
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
 {
-    type object Obj
+    type Typ
     {
         name : Std::String;
         age  : Std::Integer;
@@ -320,7 +320,7 @@ TEST(SemanticTest, TypeNameArrayInValid_Short)
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
 {
-    type array Arr { Std::Integer}
+    array Arr { Std::Integer}
 }
 )");
 
@@ -335,7 +335,7 @@ TEST(SemanticTest, TypeNameMapInValid_Short)
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
 {
-    type map Map { Std::String, Std::Integer}
+    map Map { Std::String, Std::Integer}
 }
 )");
 
@@ -350,7 +350,7 @@ TEST(SemanticTest, TypeNameFuncInValid_Short)
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
 {
-    type func Fun { value: Std::String -> Std::Integer }
+    func Fun { value: Std::String -> Std::Integer }
 }
 )");
 
@@ -425,7 +425,7 @@ TEST(SemanticTest, FindDeclInScopeValid)
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
 {
-    type array MyArray { Std::Integer }
+    array MyArray { Std::Integer }
 }
 )");
 
@@ -441,7 +441,7 @@ TEST(SemanticTest, FindDeclInScopeInValid_BadNameSpace)
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
 {
-    type array MyArray { Ftd::Integer }
+    array MyArray { Ftd::Integer }
 }
 )");
 
@@ -456,7 +456,7 @@ TEST(SemanticTest, FindDeclInScopeInValid_BadType)
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
 {
-    type array MyArray { Std::FFInteger }
+    array MyArray { Std::FFInteger }
 }
 )");
 

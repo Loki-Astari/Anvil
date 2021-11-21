@@ -11,7 +11,6 @@ TEST(LexerTest, ReadSymbolsFile)
     std::stringstream    file = buildStream(R"(
 namespace
 type
-object
 array
 map
 func
@@ -46,10 +45,6 @@ $
     val = lexer.yylex();
     EXPECT_EQ(yy::Parser::token::TYPE, val);
     EXPECT_EQ(lexer.lexem(), "type");
-
-    val = lexer.yylex();
-    EXPECT_EQ(yy::Parser::token::OBJECT, val);
-    EXPECT_EQ(lexer.lexem(), "object");
 
     val = lexer.yylex();
     EXPECT_EQ(yy::Parser::token::ARRAY, val);

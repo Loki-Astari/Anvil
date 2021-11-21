@@ -22,7 +22,6 @@ String              \"[^"]*\"
 
 namespace           {action.token(*this);return yy::Parser::token::NAMESPACE;}
 type                {action.token(*this);return yy::Parser::token::TYPE;}
-object              {action.token(*this);return yy::Parser::token::OBJECT;}
 array               {action.token(*this);return yy::Parser::token::ARRAY;}
 map                 {action.token(*this);return yy::Parser::token::MAP;}
 func                {action.token(*this);return yy::Parser::token::FUNC;}

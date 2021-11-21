@@ -94,7 +94,7 @@ TEST(ParserTest,NameTypeArray)
     std::stringstream    file = buildStream(R"(
 namespace Name
 {
-    type array TypeArray { Std::String }
+    array TypeArray { Std::String }
 }
     )");
 
@@ -113,7 +113,7 @@ TEST(ParserTest,NameTypeFunc)
     std::stringstream    file = buildStream(R"(
 namespace Name
 {
-    type func TypeFunc{value: Std::Integer -> Std::String}
+    func TypeFunc{value: Std::Integer -> Std::String}
 }
     )");
 
@@ -132,7 +132,7 @@ TEST(ParserTest,NameTypeMap)
     std::stringstream    file = buildStream(R"(
 namespace Name
 {
-    type map TypeMap { Std::String, Std::Integer}
+    map TypeMap { Std::String, Std::Integer}
 }
     )");
 
@@ -151,7 +151,7 @@ TEST(ParserTest,NameTypeObject)
     std::stringstream    file = buildStream(R"(
 namespace Name
 {
-    type object TypeObject
+    type TypeObject
     {
         name:   Std::String;
         age:    Std::Integer;
@@ -231,7 +231,7 @@ TEST(ParserTest,NameVariableAnonTypeObject)
     std::stringstream    file = buildStream(R"(
 namespace Name
 {
-    data: object
+    data: type
     {
         Name:   String;
         Age:    Number;
