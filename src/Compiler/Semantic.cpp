@@ -11,11 +11,12 @@ Decl::~Decl()
 Type::~Type()
 {}
 
-Semantic::Semantic(std::istream& input, std::ostream& output)
+Semantic::Semantic(Scope& globalScope, std::istream& input, std::ostream& output)
     : Action(output)
     , parser(*this, input, output)
+    , globalScope(globalScope)
 {
-    currentScope.push_back(std::ref(static_cast<Scope&>(globalScope)));
+    currentScope.emplace_back(globalScope);
 }
 
 Semantic::~Semantic()
@@ -109,6 +110,20 @@ Int Semantic::fullIdentiferAddPath(Lexer& /*lexer*/, Int fp, Int id)
     fullPath->emplace_front(std::move(identifier));
     fullPath.release();
     return fp;
+}
+
+Int Semantic::paramListCreate(Lexer& /*lexer*/)
+{
+    return reinterpret_cast<Int>(new ParamList);
+}
+
+Int Semantic::paramListAdd(Lexer& /*lexer*/, Int pl, Int type)
+{
+    std::unique_ptr<ParamList>  paramList(reinterpret_cast<ParamList*>(pl));
+    Type&                       typeInfo(*reinterpret_cast<Type*>(type));
+    paramList->emplace_back(typeInfo);
+    paramList.release();
+    return pl;
 }
 
 template<typename T>
@@ -216,5 +231,76 @@ Int Semantic::findTypeInScope(Lexer& lexer, Int fp)
     }
     // All is good we found a decl.
     // This is owned by a scope so return it but we don't need to destroy it.
-    return reinterpret_cast<Int>(decl);
+    return reinterpret_cast<Int>(dynamic_cast<Type*>(decl));
+}
+
+Int Semantic::scopeAddNamespace(Lexer& /*lexer*/, Int name)
+{
+    std::unique_ptr<std::string> namespaceName(reinterpret_cast<std::string*>(name));
+    Scope& topScope = currentScope.back().get();
+    Namespace& newNameSpace = topScope.add(std::make_unique<Namespace>(*namespaceName));
+    currentScope.emplace_back(newNameSpace);
+
+    return reinterpret_cast<Int>(&dynamic_cast<Scope&>(newNameSpace));
+}
+
+Int Semantic::scopeAddClass(Lexer& /*lexer*/, Int name)
+{
+    std::unique_ptr<std::string> className(reinterpret_cast<std::string*>(name));
+    Scope& topScope = currentScope.back().get();
+    Class& newClass = topScope.add(std::make_unique<Class>(*className));
+    currentScope.emplace_back(newClass);
+
+    return reinterpret_cast<Int>(&dynamic_cast<Scope&>(newClass));
+}
+
+Int Semantic::scopeAddArray(Lexer& /*lexer*/, Int name, Int type)
+{
+    std::unique_ptr<std::string>    arrayName(reinterpret_cast<std::string*>(name));
+    Type&                           typeInfo(*reinterpret_cast<Type*>(type));
+
+    Scope& topScope = currentScope.back().get();
+    Array& newArray = topScope.add(std::make_unique<Array>(*arrayName, typeInfo));
+
+    return reinterpret_cast<Int>(&dynamic_cast<Decl&>(newArray));
+}
+
+Int Semantic::scopeAddMap(Lexer& /*lexer*/, Int name, Int key, Int value)
+{
+    std::unique_ptr<std::string>    mapName(reinterpret_cast<std::string*>(name));
+    Type&                           keyInfo(*reinterpret_cast<Type*>(key));
+    Type&                           valueInfo(*reinterpret_cast<Type*>(value));
+
+    Scope& topScope = currentScope.back().get();
+    Map& newMap = topScope.add(std::make_unique<Map>(*mapName, keyInfo, valueInfo));
+
+    return reinterpret_cast<Int>(&dynamic_cast<Decl&>(newMap));
+}
+
+Int Semantic::scopeAddFunc(Lexer& /*lexer*/, Int name, Int pl, Int ret)
+{
+    std::unique_ptr<std::string>    funcName(reinterpret_cast<std::string*>(name));
+    std::unique_ptr<ParamList>      paramList(reinterpret_cast<ParamList*>(pl));
+    Type&                           retInfo(*reinterpret_cast<Type*>(ret));
+
+    Scope& topScope = currentScope.back().get();
+    Func& newFunc = topScope.add(std::make_unique<Func>(*funcName, *paramList, retInfo));
+
+    return reinterpret_cast<Int>(&dynamic_cast<Decl&>(newFunc));
+}
+
+Int Semantic::scopeClose(Lexer& lexer, Int oldScopeId)
+{
+    Scope& topScope = currentScope.back().get();
+    currentScope.pop_back();
+    Int topScopeId = reinterpret_cast<Int>(&topScope);
+    if (topScopeId != oldScopeId)
+    {
+#pragma vera-pushoff
+        using namespace std::string_literals;
+#pragma vera-pop
+        Scope& oldScope = *reinterpret_cast<Scope*>(oldScopeId);
+        error(lexer, "Bad Scope Closure: Expecting: >"s + oldScope.contName() + "<  Current: >" + topScope.contName() + "< ");
+    }
+    return 0;
 }

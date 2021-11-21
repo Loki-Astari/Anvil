@@ -113,7 +113,7 @@ TEST(ParserTest,NameTypeFunc)
     std::stringstream    file = buildStream(R"(
 namespace Name
 {
-    func TypeFunc{value: Std::Integer -> Std::String}
+    func TypeFunc{Std::Integer -> Std::String}
 }
     )");
 
@@ -151,7 +151,7 @@ TEST(ParserTest,NameTypeObject)
     std::stringstream    file = buildStream(R"(
 namespace Name
 {
-    type TypeObject
+    class ClassName
     {
         name:   Std::String;
         age:    Std::Integer;
@@ -193,7 +193,7 @@ TEST(ParserTest,NameVariableAnonTypeFunc)
     std::stringstream    file = buildStream(R"(
 namespace Name
 {
-    data : func{value: Std::Integer, error: Std::String -> Std::Number};
+    data : func{Std::Integer, Std::String -> Std::Number};
 }
     )");
 
@@ -231,7 +231,7 @@ TEST(ParserTest,NameVariableAnonTypeObject)
     std::stringstream    file = buildStream(R"(
 namespace Name
 {
-    data: type
+    data: class
     {
         Name:   String;
         Age:    Number;

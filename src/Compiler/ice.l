@@ -21,7 +21,7 @@ String              \"[^"]*\"
 {String}            {action.token(*this);return yy::Parser::token::STRING;}
 
 namespace           {action.token(*this);return yy::Parser::token::NAMESPACE;}
-type                {action.token(*this);return yy::Parser::token::TYPE;}
+class               {action.token(*this);return yy::Parser::token::CLASS;}
 array               {action.token(*this);return yy::Parser::token::ARRAY;}
 map                 {action.token(*this);return yy::Parser::token::MAP;}
 func                {action.token(*this);return yy::Parser::token::FUNC;}

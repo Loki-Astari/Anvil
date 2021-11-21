@@ -7,6 +7,7 @@
 
 #include <fstream>
 #include <map>
+#include <list>
 #include <variant>
 #include <vector>
 
@@ -23,15 +24,25 @@ class Container
         using NameRef = NameMap::iterator;
 
         template<typename T>
-        void add(T&& decl);
+        T& add(std::unique_ptr<T>&& decl);
         virtual std::string const& contName() const = 0;
         std::pair<bool, NameRef> get(std::string const& name);
 
     private:
         NameMap     names;
+
+        friend std::ostream& operator<<(std::ostream& stream, Container const& cont)
+        {
+            stream << "Container: " << cont.contName() << "\n";
+            for (auto const& value: cont.names)
+            {
+                stream << "\t" << value.first << ":\n";
+            }
+            return stream;
+        }
 };
 
-enum class DeclType {Void, Namespace, TypeObject, TypeArray, TypeMap, TypeFunc, Object, Statement};
+enum class DeclType {Void, Namespace, Class, Array, Map, Func, Object, Statement};
 
 class Decl
 {
@@ -66,6 +77,8 @@ class Type: public Decl
         virtual ~Type() = 0;
 };
 
+using ParamList = std::list<std::reference_wrapper<Type>>;
+
 class Void: public Type
 {
     public:
@@ -75,42 +88,52 @@ class Void: public Type
         virtual DeclType declType() const override                                          {return DeclType::Void;}
 };
 
-class TypeObject: public Type, public Container
+class Class: public Type, public Container
 {
     public:
-        TypeObject(std::string const& name)
+        Class(std::string const& name)
             : Type(name)
         {}
         virtual std::string const& contName() const override                                {return declName();}
-        virtual DeclType declType() const override                                          {return DeclType::TypeObject;}
+        virtual DeclType declType() const override                                          {return DeclType::Class;}
         virtual std::pair<bool, Container::NameRef> find(std::string const& name) override  {return get(name);}
 };
 
-class TypeArray: public Type
+class Array: public Type
 {
+    Type&   memberType;
     public:
-        TypeArray(std::string const& name)
+        Array(std::string const& name, Type& memberType)
             : Type(name)
+            , memberType(memberType)
         {}
-        virtual DeclType declType() const override                                          {return DeclType::TypeArray;}
+        virtual DeclType declType() const override                                          {return DeclType::Array;}
 };
 
-class TypeMap: public Type
+class Map: public Type
 {
+    Type&   keyType;
+    Type&   valueType;
     public:
-        TypeMap(std::string const& name)
+        Map(std::string const& name, Type& keyType, Type& valueType)
             : Type(name)
+            , keyType(keyType)
+            , valueType(valueType)
         {}
-        virtual DeclType declType() const override                                          {return DeclType::TypeMap;}
+        virtual DeclType declType() const override                                          {return DeclType::Map;}
 };
 
-class TypeFunc: public Type
+class Func: public Type
 {
+    ParamList   paramList;
+    Type&       returnType;
     public:
-        TypeFunc(std::string const& name)
+        Func(std::string const& name, ParamList& paramList, Type& returnType)
             : Type(name)
+            , paramList(paramList)
+            , returnType(returnType)
         {}
-        virtual DeclType declType() const override                                          {return DeclType::TypeFunc;}
+        virtual DeclType declType() const override                                          {return DeclType::Func;}
 };
 
 class Object: public Decl
@@ -137,10 +160,10 @@ class Statement: public Decl
 
 using UPVoid        = std::unique_ptr<Void>;
 using UPNamespace   = std::unique_ptr<Namespace>;
-using UPTypeObject  = std::unique_ptr<TypeObject>;
-using UPTypeArray   = std::unique_ptr<TypeArray>;
-using UPTypeMap     = std::unique_ptr<TypeMap>;
-using UPTypeFunc    = std::unique_ptr<TypeFunc>;
+using UPClass       = std::unique_ptr<Class>;
+using UPArray       = std::unique_ptr<Array>;
+using UPMap         = std::unique_ptr<Map>;
+using UPFunc        = std::unique_ptr<Func>;
 using UPObject      = std::unique_ptr<Object>;
 using UPStatement   = std::unique_ptr<Statement>;
 
@@ -152,10 +175,30 @@ class StandardScope: public Namespace
         StandardScope()
             : Namespace("") // Its the global scope so has no name
         {
-            UPTypeFunc    consolePrintMethodType(new TypeFunc("Print"));
+            // Add void to the global scope
+            UPVoid        typeVoidPtr(new Void);
+            Void&         typeVoid = add(std::move(typeVoidPtr));
+
+            // Add "Std" namespace to the global scope.
+            // Here we have the standard basic types.
+            UPClass       typeIntPtr(new Class("Integer"));
+            UPClass       typeStringPtr(new Class("String"));
+
+            UPNamespace   standard(new Namespace("Std"));
+            Class&        typeInt = standard->add(std::move(typeIntPtr));
+            Class&        typeString = standard->add(std::move(typeStringPtr));
+            add(std::move(standard));
+            ((void)typeInt);
+
+            // Add "Sys" namespace to the global scope.
+            // This has object to interact with the computer.
+            //  console
+            ParamList     consoleParamList;
+            consoleParamList.emplace_back(typeString);
+            UPFunc        consolePrintMethodType(new Func("Print", consoleParamList, typeVoid));
             UPObject      consolePrintMethodFunc(new Object("print", *consolePrintMethodType));
 
-            UPTypeObject  consoleType(new TypeObject("Console"));
+            UPClass  consoleType(new Class("Console"));
             consoleType->add(std::move(consolePrintMethodType));
             consoleType->add(std::move(consolePrintMethodFunc));
 
@@ -167,24 +210,17 @@ class StandardScope: public Namespace
 
             add(std::move(system));
 
-            UPNamespace   standard(new Namespace("Std"));
-            UPTypeObject  typeInt(new TypeObject("Integer"));
-            UPTypeObject  typeString(new TypeObject("String"));
-
-            standard->add(std::move(typeInt));
-            standard->add(std::move(typeString));
-            add(std::move(standard));
         }
 };
 
 class Semantic: public Action
 {
-    Parser                  parser;
-    StandardScope           globalScope;
+    Parser      parser;
+    Scope&      globalScope;
     std::vector<std::reference_wrapper<Scope>>  currentScope;
 
     public:
-        Semantic(std::istream& input = std::cin, std::ostream& output = std::cout);
+        Semantic(Scope& globalScope, std::istream& input = std::cin, std::ostream& output = std::cout);
         virtual ~Semantic() override;
 
         bool go();
@@ -198,13 +234,28 @@ class Semantic: public Action
 
         virtual Int fullIdentiferCreate(Lexer& lexer)                       override;
         virtual Int fullIdentiferAddPath(Lexer& lexer, Int fp, Int id)      override;
+
+        virtual Int paramListCreate(Lexer& lexer)                           override;
+        virtual Int paramListAdd(Lexer& lexer, Int pl, Int type)            override;
+
         virtual Int findTypeInScope(Lexer& lexer, Int fp)                   override;
+
+        virtual Int scopeAddNamespace(Lexer& lexer, Int name)               override;
+        virtual Int scopeAddClass(Lexer& lexer, Int name)                   override;
+        virtual Int scopeAddArray(Lexer& lexer, Int name, Int type)         override;
+        virtual Int scopeAddMap(Lexer& lexer, Int name, Int key, Int value) override;
+        virtual Int scopeAddFunc(Lexer& lexer, Int name, Int param, Int ret)override;
+        //virtual Int scopeAddObject(Lexer& lexer, Int name, Int)                 override;
+        //virtual Int scopeAddStatement(Lexer& lexer, Int s)                      override;
+        virtual Int scopeClose(Lexer& lexer, Int oldSCope)                  override;
 };
 
 template<typename T>
-inline void Container::add(T&& decl)
+inline T& Container::add(std::unique_ptr<T>&& decl)
 {
-    names[decl->declName()] = std::move(decl);
+    auto& location = names[decl->declName()];
+    location = std::move(decl);
+    return dynamic_cast<T&>(*location);
 }
 inline std::pair<bool, Container::NameRef> Container::get(std::string const& name)
 {
