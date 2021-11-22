@@ -4,6 +4,7 @@
 #include "Action.h"
 #include "Lexer.h"
 #include "Parser.h"
+#include "Storage.h"
 
 #include <fstream>
 #include <map>
@@ -77,8 +78,6 @@ class Type: public Decl
         virtual ~Type() = 0;
 };
 
-using ParamList = std::list<std::reference_wrapper<Type>>;
-
 class Void: public Type
 {
     public:
@@ -128,7 +127,7 @@ class Func: public Type
     ParamList   paramList;
     Type&       returnType;
     public:
-        Func(std::string const& name, ParamList& paramList, Type& returnType)
+        Func(std::string const& name, ParamList paramList, Type& returnType)
             : Type(name)
             , paramList(paramList)
             , returnType(returnType)
@@ -218,6 +217,7 @@ class Semantic: public Action
     Parser      parser;
     Scope&      globalScope;
     std::vector<std::reference_wrapper<Scope>>  currentScope;
+    Storage     storage;
 
     public:
         Semantic(Scope& globalScope, std::istream& input = std::cin, std::ostream& output = std::cout);

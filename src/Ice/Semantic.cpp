@@ -31,7 +31,7 @@ bool Semantic::go()
 // Action Override
 Int Semantic::identifierCreate(Lexer& lexer)
 {
-    return reinterpret_cast<Int>(new std::string(lexer.lexem()));
+    return storage.add(std::string(lexer.lexem()));
 }
 
 /*
@@ -43,10 +43,9 @@ Int Semantic::identifierCreate(Lexer& lexer)
  */
 Int Semantic::identifierCheckObject(Lexer& lexer, Int id)
 {
-    std::unique_ptr<std::string>    identifier(reinterpret_cast<std::string*>(id));
-    if (std::islower((*identifier)[0]))
+    std::string&    identifier(storage.get<std::string>(id));
+    if (std::islower(identifier[0]))
     {
-        identifier.release();
         return id;
     }
     error(lexer, "Invalid Identifier for Object");
@@ -58,10 +57,9 @@ Int Semantic::identifierCheckObject(Lexer& lexer, Int id)
  */
 Int Semantic::identifierCheckType(Lexer& lexer, Int id)
 {
-    std::unique_ptr<std::string>    identifier(reinterpret_cast<std::string*>(id));
-    if ((std::isupper((*identifier)[0])) && (identifier->size() > 3) && (identifier->find('_') == std::string::npos))
+    std::string&    identifier(storage.get<std::string>(id));
+    if ((std::isupper(identifier[0])) && (identifier.size() > 3) && (identifier.find('_') == std::string::npos))
     {
-        identifier.release();
         return id;
     }
     error(lexer, "Invalid Identifier for Type");
@@ -73,7 +71,7 @@ Int Semantic::identifierCheckType(Lexer& lexer, Int id)
  */
 Int Semantic::identifierCheckNS(Lexer& lexer, Int id)
 {
-    std::unique_ptr<std::string>    identifier(reinterpret_cast<std::string*>(id));
+    std::string&    identifier(storage.get<std::string>(id));
 
     bool lastUnderscore = true;
     auto findUpperNotPrefixedByUnderScore = [&lastUnderscore](char x)
@@ -86,12 +84,11 @@ Int Semantic::identifierCheckNS(Lexer& lexer, Int id)
         return false;
     };
 
-    if ((std::isupper((*identifier)[0])) && ((identifier->size() <= 3) || (std::find_if(std::begin(*identifier) + 1, std::end(*identifier), [](char x){return std::isupper(x);}) != identifier->end())))
+    if ((std::isupper(identifier[0])) && ((identifier.size() <= 3) || (std::find_if(std::begin(identifier) + 1, std::end(identifier), [](char x){return std::isupper(x);}) != identifier.end())))
     {
-        auto find = std::find_if(std::begin(*identifier), std::end(*identifier), findUpperNotPrefixedByUnderScore);
-        if (find == std::end(*identifier))
+        auto find = std::find_if(std::begin(identifier), std::end(identifier), findUpperNotPrefixedByUnderScore);
+        if (find == std::end(identifier))
         {
-            identifier.release();
             return id;
         }
     }
@@ -100,29 +97,33 @@ Int Semantic::identifierCheckNS(Lexer& lexer, Int id)
 
 Int Semantic::fullIdentiferCreate(Lexer& /*lexer*/)
 {
-    return reinterpret_cast<Int>(new std::list<std::unique_ptr<std::string>>{});
+    return storage.add(FullIdent{});
 }
 
 Int Semantic::fullIdentiferAddPath(Lexer& /*lexer*/, Int fp, Int id)
 {
-    std::unique_ptr<std::list<std::unique_ptr<std::string>>>    fullPath(reinterpret_cast<std::list<std::unique_ptr<std::string>>*>(fp));
-    std::unique_ptr<std::string>                                identifier(reinterpret_cast<std::string*>(id));
-    fullPath->emplace_front(std::move(identifier));
-    fullPath.release();
+    FullIdent&      fullIdent(storage.get<FullIdent>(fp));
+    std::string&    identifier(storage.get<std::string>(id));
+
+    fullIdent.emplace_front(std::move(identifier));
+    storage.release(id);
+
     return fp;
 }
 
 Int Semantic::paramListCreate(Lexer& /*lexer*/)
 {
-    return reinterpret_cast<Int>(new ParamList);
+    return storage.add(ParamList{});
 }
 
 Int Semantic::paramListAdd(Lexer& /*lexer*/, Int pl, Int type)
 {
-    std::unique_ptr<ParamList>  paramList(reinterpret_cast<ParamList*>(pl));
-    Type&                       typeInfo(*reinterpret_cast<Type*>(type));
-    paramList->emplace_back(typeInfo);
-    paramList.release();
+    ParamList&      paramList(storage.get<ParamList>(pl));
+    TypeRef&        typeRef(storage.get<TypeRef>(type));
+
+    paramList.emplace_back(std::move(typeRef));
+    storage.release(type);
+
     return pl;
 }
 
@@ -140,11 +141,11 @@ struct ReversView
 
 Int Semantic::findTypeInScope(Lexer& lexer, Int fp)
 {
-    std::unique_ptr<std::list<std::unique_ptr<std::string>>>    fullPath(reinterpret_cast<std::list<std::unique_ptr<std::string>>*>(fp));
+    FullIdent&  fullIdent(storage.get<FullIdent>(fp));
 
     // Strings used to build error message if needed.
-    std::string  fullPathString;
-    std::string  partialMatch;
+    std::string     fullPathString;
+    std::string     partialMatch;
 
     // The object we are trying to find.
     Decl*   decl = nullptr;
@@ -152,16 +153,13 @@ Int Semantic::findTypeInScope(Lexer& lexer, Int fp)
     // Special case element in the path.
     bool    rootOfPath = true;
 
-    // Loop over all members of the fullPath.
-    for (auto& path: *fullPath)
+    // Loop over all members of the fullIdent.
+    for (auto& path: fullIdent)
     {
-        // For ease of use get a reference to the string rather than using the std::unique_ptr
-        std::string const& pathSeg = *path;
-
         // Each time through the loop build the fullPAthString.
         // To get a good error message we must loop over all the path members
         // and not break out of the loop early.
-        fullPathString += (pathSeg + "::");
+        fullPathString += (path + "::");
 
         // The first time through the loop (for the root element of the type identifier only)
         if (rootOfPath)
@@ -174,7 +172,7 @@ Int Semantic::findTypeInScope(Lexer& lexer, Int fp)
                 auto& scope = scopeRef.get();
 
                 // Search the current scope of the first path segment.
-                auto find = scope.get(pathSeg);
+                auto find = scope.get(path);
                 if (find.first)
                 {
                     // We found it in this scope.
@@ -192,9 +190,9 @@ Int Semantic::findTypeInScope(Lexer& lexer, Int fp)
                     }
 
                     // Add the current path segment
-                    partialMatch += (pathSeg + "::");
+                    partialMatch += (path + "::");
 
-                    // So far so we good we have found the first part decl that matches the fullPath.
+                    // So far so we good we have found the first part decl that matches the fullIdent.
                     decl = &(*(find.second->second));
                     break;
                 }
@@ -211,8 +209,8 @@ Int Semantic::findTypeInScope(Lexer& lexer, Int fp)
         }
 
         // We are doing well we have the latest decl now we must find the next
-        // decl inside this that matches the next part of the fullPath
-        auto find = decl->find(pathSeg);
+        // decl inside this that matches the next part of the fullIdent
+        auto find = decl->find(path);
         decl = nullptr;
         if (find.first)
         {
@@ -231,76 +229,95 @@ Int Semantic::findTypeInScope(Lexer& lexer, Int fp)
     }
     // All is good we found a decl.
     // This is owned by a scope so return it but we don't need to destroy it.
-    return reinterpret_cast<Int>(dynamic_cast<Type*>(decl));
+
+    storage.release(fp);
+    return storage.add(TypeRef{dynamic_cast<Type&>(*decl)});
 }
 
 Int Semantic::scopeAddNamespace(Lexer& /*lexer*/, Int name)
 {
-    std::unique_ptr<std::string> namespaceName(reinterpret_cast<std::string*>(name));
-    Scope& topScope = currentScope.back().get();
-    Namespace& newNameSpace = topScope.add(std::make_unique<Namespace>(*namespaceName));
+    std::string&    namespaceName(storage.get<std::string>(name));
+    Scope&          topScope = currentScope.back().get();
+    Namespace&      newNameSpace = topScope.add(std::make_unique<Namespace>(std::move(namespaceName)));
+
     currentScope.emplace_back(newNameSpace);
 
-    return reinterpret_cast<Int>(&dynamic_cast<Scope&>(newNameSpace));
+    storage.release(name);
+    return storage.add(ScopeRef{dynamic_cast<Scope&>(newNameSpace)});
 }
 
 Int Semantic::scopeAddClass(Lexer& /*lexer*/, Int name)
 {
-    std::unique_ptr<std::string> className(reinterpret_cast<std::string*>(name));
-    Scope& topScope = currentScope.back().get();
-    Class& newClass = topScope.add(std::make_unique<Class>(*className));
+    std::string&    className(storage.get<std::string>(name));
+    Scope&          topScope = currentScope.back().get();
+    Class&          newClass = topScope.add(std::make_unique<Class>(std::move(className)));
+
     currentScope.emplace_back(newClass);
 
-    return reinterpret_cast<Int>(&dynamic_cast<Scope&>(newClass));
+    storage.release(name);
+    return storage.add(ScopeRef{dynamic_cast<Scope&>(newClass)});
 }
 
 Int Semantic::scopeAddArray(Lexer& /*lexer*/, Int name, Int type)
 {
-    std::unique_ptr<std::string>    arrayName(reinterpret_cast<std::string*>(name));
-    Type&                           typeInfo(*reinterpret_cast<Type*>(type));
+    std::string&    arrayName(storage.get<std::string>(name));
+    Type&           typeInfo(storage.get<TypeRef>(type).get());
 
-    Scope& topScope = currentScope.back().get();
-    Array& newArray = topScope.add(std::make_unique<Array>(*arrayName, typeInfo));
+    Scope&          topScope = currentScope.back().get();
+    Array&          newArray = topScope.add(std::make_unique<Array>(std::move(arrayName), typeInfo));
 
-    return reinterpret_cast<Int>(&dynamic_cast<Decl&>(newArray));
+    storage.release(name);
+    storage.release(type);
+    return storage.add(TypeRef{dynamic_cast<Type&>(newArray)});
 }
 
 Int Semantic::scopeAddMap(Lexer& /*lexer*/, Int name, Int key, Int value)
 {
-    std::unique_ptr<std::string>    mapName(reinterpret_cast<std::string*>(name));
-    Type&                           keyInfo(*reinterpret_cast<Type*>(key));
-    Type&                           valueInfo(*reinterpret_cast<Type*>(value));
+    std::string&    mapName(storage.get<std::string>(name));
+    Type&           keyInfo(storage.get<TypeRef>(key).get());
+    Type&           valueInfo(storage.get<TypeRef>(value).get());
 
-    Scope& topScope = currentScope.back().get();
-    Map& newMap = topScope.add(std::make_unique<Map>(*mapName, keyInfo, valueInfo));
+    Scope&          topScope = currentScope.back().get();
+    Map&            newMap = topScope.add(std::make_unique<Map>(std::move(mapName), keyInfo, valueInfo));
 
-    return reinterpret_cast<Int>(&dynamic_cast<Decl&>(newMap));
+    storage.release(name);
+    storage.release(key);
+    storage.release(value);
+    return storage.add(TypeRef{dynamic_cast<Type&>(newMap)});
 }
 
 Int Semantic::scopeAddFunc(Lexer& /*lexer*/, Int name, Int pl, Int ret)
 {
-    std::unique_ptr<std::string>    funcName(reinterpret_cast<std::string*>(name));
-    std::unique_ptr<ParamList>      paramList(reinterpret_cast<ParamList*>(pl));
-    Type&                           retInfo(*reinterpret_cast<Type*>(ret));
+    std::string&    funcName(storage.get<std::string>(name));
+    ParamList&      paramList(storage.get<ParamList>(pl));
+    Type&           retInfo(storage.get<TypeRef>(ret).get());
 
-    Scope& topScope = currentScope.back().get();
-    Func& newFunc = topScope.add(std::make_unique<Func>(*funcName, *paramList, retInfo));
+    Scope&          topScope = currentScope.back().get();
+    Func&           newFunc = topScope.add(std::make_unique<Func>(std::move(funcName), std::move(paramList), retInfo));
 
-    return reinterpret_cast<Int>(&dynamic_cast<Decl&>(newFunc));
+    storage.release(name);
+    storage.release(pl);
+    storage.release(ret);
+    return storage.add(TypeRef{dynamic_cast<Type&>(newFunc)});
 }
 
 Int Semantic::scopeClose(Lexer& lexer, Int oldScopeId)
 {
-    Scope& topScope = currentScope.back().get();
+    Scope&          topScope = currentScope.back().get();
+    Scope&          oldScope(storage.get<ScopeRef>(oldScopeId).get());
+
     currentScope.pop_back();
-    Int topScopeId = reinterpret_cast<Int>(&topScope);
-    if (topScopeId != oldScopeId)
+    if (&topScope != &oldScope)
     {
 #pragma vera-pushoff
         using namespace std::string_literals;
 #pragma vera-pop
-        Scope& oldScope = *reinterpret_cast<Scope*>(oldScopeId);
+
         error(lexer, "Bad Scope Closure: Expecting: >"s + oldScope.contName() + "<  Current: >" + topScope.contName() + "< ");
     }
-    return 0;
+
+    storage.release(oldScopeId);
+    Class*          scopeToClass = dynamic_cast<Class*>(&oldScope); // Could by nullptr as this by Namespace
+    Type&           classToType = dynamic_cast<Type&>(*scopeToClass);
+    return storage.add(TypeRef{classToType});
 }
