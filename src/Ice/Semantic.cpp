@@ -29,6 +29,46 @@ bool Semantic::go()
 }
 
 // Action Override
+void Semantic::assertNoStorage(Int value)
+{
+    if (value != 0)
+    {
+        throw std::runtime_error("Internal Compiler Error: Expecting Storage to have been released");
+    }
+}
+
+void Semantic::releaseStorage(Int value)
+{
+    storage.release(value);
+}
+
+char hex(std::size_t halfByte)
+{
+    return halfByte < 10
+                ? '0' + halfByte
+                : 'a' + (halfByte - 10);
+}
+
+void generateHexName(std::string& name, std::size_t count)
+{
+    for (int loop = 0; loop < 16; ++loop)
+    {
+        name[loop+1] = hex((count >> (loop * 4)) & 0xF);
+    }
+}
+
+Int Semantic::generateAnonName()
+{
+    static std::size_t count = 0;
+
+    // 64 bit Size: Convert to hex => 16 bit
+    // Prefix with dollar => 17bit
+    std::string name(17, '$');
+    generateHexName(name, count);
+
+    return storage.add(std::move(name));
+}
+
 Int Semantic::identifierCreate(Lexer& lexer)
 {
     return storage.add(std::string(lexer.lexem()));

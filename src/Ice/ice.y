@@ -66,7 +66,9 @@ Decl:               NAMESPACE NameSpaceIdentifer '{'                    {
                                                                         }
                                                      DeclListOpt '}'    {
                                                                             action.log("Decl:               NAMESPACE NameSpaceIdentifer { DeclListOpt } P2B");
-                                                                            $$ = action.scopeClose(lexer, $4);
+                                                                            action.releaseStorage(action.scopeClose(lexer, $4));
+                                                                            action.assertNoStorage($5);
+                                                                            $$ = 0;
                                                                         }
 
                 |   CLASS   TypeIdentifer '{'                           {
@@ -75,27 +77,35 @@ Decl:               NAMESPACE NameSpaceIdentifer '{'                    {
                                                                         }
                                              DeclListOpt '}'            {
                                                                             action.log("Decl:               CLASS TypeIdentifer { DeclListOpt } P2");
-                                                                            $$ = action.scopeClose(lexer, $4);
+                                                                            action.releaseStorage(action.scopeClose(lexer, $4));
+                                                                            action.assertNoStorage($5);
+                                                                            $$ = 0;
                                                                         }
                 |   ARRAY  TypeIdentifer '{' ObjectDecl '}'             {
                                                                             action.log("Decl:               ARRAY TypeIdentifer { ObjectDecl }");
-                                                                            $$ = action.scopeAddArray(lexer, $2, $4);
+                                                                            action.releaseStorage(action.scopeAddArray(lexer, $2, $4));
+                                                                            $$ = 0;
                                                                         }
                 |   MAP    TypeIdentifer '{' ObjectDecl ',' ObjectDecl '}' {
                                                                             action.log("Decl:               MAP TypeIdentifer { ObjectDecl , ObjectDecl }");
-                                                                            $$ = action.scopeAddMap(lexer, $2, $4, $6);
+                                                                            action.releaseStorage(action.scopeAddMap(lexer, $2, $4, $6));
+                                                                            $$ = 0;
                                                                         }
                 |   FUNC   TypeIdentifer '{' ParamListOpt ARROW ObjectDecl '}' {
                                                                             action.log("Decl:               FUNC TypeIdentifer ( ParamListOpt ) -> ObjectDecl ;");
-                                                                            $$ = action.scopeAddFunc(lexer, $2, $4, $6);
+                                                                            action.releaseStorage(action.scopeAddFunc(lexer, $2, $4, $6));
+                                                                            $$ = 0;
                                                                         }
                 |   ObjectIdentifer ':' ObjectDecl InitObject           {
                                                                             action.log("Decl:               ObjectIdentifer : ObjectDecl InitObject");
-                                                                            $$ = action.scopeAddObject(lexer, $1, $2);
+                                                                            // TODO
+                                                                            // action.releaseStorage(action.scopeAddObject(lexer, $1, $3));
+                                                                            $$ = 0;
                                                                         }
                 |   Statement                                           {
                                                                             action.log("Decl:               Statement");
-                                                                            $$ = action.scopeAddStatement(lexer, $1);
+                                                                            action.releaseStorage(action.scopeAddStatement(lexer, $1));
+                                                                            $$ = 0;
                                                                         }
 
 ParamListOpt:                                                           {
@@ -115,13 +125,36 @@ ParamList:          ObjectDecl                                          {
                                                                             $$ = action.paramListAdd(lexer, $1, $3);
                                                                         }
 
-ObjectDecl:         TypeName                                            {action.log("ObjectDecl:         TypeName");}
-                |   AnonDecl                                            {action.log("ObjectDecl:         AnonDecl");}
+ObjectDecl:         TypeName                                            {
+                                                                            action.log("ObjectDecl:         TypeName");
+                                                                            $$ = $1;
+                                                                        }
+                |   AnonDecl                                            {
+                                                                            action.log("ObjectDecl:         AnonDecl");
+                                                                            $$ = $1;
+                                                                        }
 
-AnonDecl:           CLASS  '{' DeclListOpt '}'                          {action.log("AnonDecl:           CLASS { DeclListOpt }");}
-                |   ARRAY  '{' ObjectDecl '}'                           {action.log("AnonDecl:           ARRAY { ObjectDecl }");}
-                |   MAP    '{' ObjectDecl ',' ObjectDecl '}'            {action.log("AnonDecl:           MAP { ObjectDecl , ObjectDecl }");}
-                |   FUNC   '{' ParamListOpt ARROW ObjectDecl '}'        {action.log("AnonDecl:           FUNC { ParamListOpt -> ObjectDecl }");}
+AnonDecl:           CLASS  '{'                                          {
+                                                                            action.log("AnonDecl:           CLASS { DeclListOpt } P1");
+                                                                            $$ = action.scopeAddClass(lexer, action.generateAnonName());
+                                                                        }
+                               DeclListOpt '}'                          {
+                                                                            action.log("AnonDecl:           CLASS { DeclListOpt } P2");
+                                                                            $$ = action.scopeClose(lexer, $3);
+                                                                            action.assertNoStorage($4);
+                                                                        }
+                |   ARRAY  '{' ObjectDecl '}'                           {
+                                                                            action.log("AnonDecl:           ARRAY { ObjectDecl }");
+                                                                            $$ = action.scopeAddArray(lexer, action.generateAnonName(), $3);
+                                                                        }
+                |   MAP    '{' ObjectDecl ',' ObjectDecl '}'            {
+                                                                            action.log("AnonDecl:           MAP { ObjectDecl , ObjectDecl }");
+                                                                            $$ = action.scopeAddMap(lexer, action.generateAnonName(), $3, $5);
+                                                                        }
+                |   FUNC   '{' ParamListOpt ARROW ObjectDecl '}'        {
+                                                                            action.log("AnonDecl:           FUNC { ParamListOpt -> ObjectDecl }");
+                                                                            $$ = action.scopeAddFunc(lexer, action.generateAnonName(), $3, $5);
+                                                                        }
 
 Statement:          Expression ';'                                      {action.log("Statement:          Expression ;");}
 Expression:         ExprFuncCall                                        {action.log("Expression:         ExprFuncCall");}

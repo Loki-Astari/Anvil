@@ -227,6 +227,10 @@ class Semantic: public Action
         void display(std::ostream& stream);
 
     // Action Virtual Functions override
+        virtual void assertNoStorage(Int)                                   override;
+        virtual void releaseStorage(Int)                                    override;
+        virtual Int  generateAnonName()                                     override;
+
         virtual Int identifierCreate(Lexer& lexer)                          override;
         virtual Int identifierCheckObject(Lexer& lexer, Int id)             override;
         virtual Int identifierCheckType(Lexer& lexer, Int id)               override;
