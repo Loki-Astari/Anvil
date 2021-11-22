@@ -143,6 +143,7 @@ class Object: public Decl
             : Decl(name)
             , objectType(objectType)
         {}
+        Type const& getType() const                                                         {return objectType;}
         virtual DeclType declType() const override                                          {return DeclType::Object;}
         // TODO This will need to be overridden
         virtual std::pair<bool, Container::NameRef> find(std::string const&) override       {return {false, {}};}
