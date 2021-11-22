@@ -29,15 +29,15 @@ bool Semantic::go()
 }
 
 // Action Override
-void Semantic::assertNoStorage(Int value)
+void Semantic::assertNoStorage(Lexer& lexer, Int value)
 {
     if (value != 0)
     {
-        throw std::runtime_error("Internal Compiler Error: Expecting Storage to have been released");
+        error(lexer, "Internal Compiler Error: Expecting Storage to have been released");
     }
 }
 
-void Semantic::releaseStorage(Int value)
+void Semantic::releaseStorage(Lexer&, Int value)
 {
     storage.release(value);
 }
@@ -57,7 +57,7 @@ void generateHexName(std::string& name, std::size_t count)
     }
 }
 
-Int Semantic::generateAnonName()
+Int Semantic::generateAnonName(Lexer&)
 {
     static std::size_t count = 0;
 
@@ -341,6 +341,19 @@ Int Semantic::scopeAddFunc(Lexer& /*lexer*/, Int name, Int pl, Int ret)
     return storage.add(TypeRef{dynamic_cast<Type&>(newFunc)});
 }
 
+Int Semantic::scopeAddObject(Lexer& /*lexer*/, Int name, Int type)
+{
+    std::string&    objectName(storage.get<std::string>(name));
+    Type&           typeInfo(storage.get<TypeRef>(type).get());
+
+    Scope&          topScope = currentScope.back().get();
+    topScope.add(std::make_unique<Object>(std::move(objectName), typeInfo));
+
+    storage.release(name);
+    storage.release(type);
+    return 0;
+}
+
 Int Semantic::scopeClose(Lexer& lexer, Int oldScopeId)
 {
     Scope&          topScope = currentScope.back().get();
@@ -358,6 +371,10 @@ Int Semantic::scopeClose(Lexer& lexer, Int oldScopeId)
 
     storage.release(oldScopeId);
     Class*          scopeToClass = dynamic_cast<Class*>(&oldScope); // Could by nullptr as this by Namespace
+    if (scopeToClass == nullptr)
+    {
+        return 0;
+    }
     Type&           classToType = dynamic_cast<Type&>(*scopeToClass);
     return storage.add(TypeRef{classToType});
 }

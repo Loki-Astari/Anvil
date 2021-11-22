@@ -227,9 +227,9 @@ class Semantic: public Action
         void display(std::ostream& stream);
 
     // Action Virtual Functions override
-        virtual void assertNoStorage(Int)                                   override;
-        virtual void releaseStorage(Int)                                    override;
-        virtual Int  generateAnonName()                                     override;
+        virtual void assertNoStorage(Lexer&, Int)                           override;
+        virtual void releaseStorage(Lexer&, Int)                            override;
+        virtual Int  generateAnonName(Lexer&)                               override;
 
         virtual Int identifierCreate(Lexer& lexer)                          override;
         virtual Int identifierCheckObject(Lexer& lexer, Int id)             override;
@@ -249,7 +249,7 @@ class Semantic: public Action
         virtual Int scopeAddArray(Lexer& lexer, Int name, Int type)         override;
         virtual Int scopeAddMap(Lexer& lexer, Int name, Int key, Int value) override;
         virtual Int scopeAddFunc(Lexer& lexer, Int name, Int param, Int ret)override;
-        //virtual Int scopeAddObject(Lexer& lexer, Int name, Int)                 override;
+        virtual Int scopeAddObject(Lexer& lexer, Int name, Int)             override;
         //virtual Int scopeAddStatement(Lexer& lexer, Int s)                      override;
         virtual Int scopeClose(Lexer& lexer, Int oldSCope)                  override;
 };

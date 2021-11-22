@@ -34,9 +34,9 @@ class Action
 
 
         // Parsing
-        virtual void assertNoStorage(Int)                                               {}
-        virtual void releaseStorage(Int)                                                {}
-        virtual Int  generateAnonName()                                                 {return 0;}
+        virtual void assertNoStorage(Lexer&, Int)                                       {}
+        virtual void releaseStorage(Lexer&, Int)                                        {}
+        virtual Int  generateAnonName(Lexer&)                                           {return 0;}
 
         virtual Int identifierCreate(Lexer& /*lexer*/)                                  {return 0;}
         virtual Int identifierCheckObject(Lexer& /*lexer*/, Int /*id*/)                 {return 0;}

@@ -52,13 +52,31 @@ Namespace:          NAMESPACE NameSpaceIdentifer '{'                    {
                                                                         }
                                                      DeclListOpt '}'    {
                                                                             action.log("Decl:               NAMESPACE NameSpaceIdentifer { DeclListOpt } P2A");
-                                                                            $$ = action.scopeClose(lexer, $4);
+                                                                            action.assertNoStorage(lexer, action.scopeClose(lexer, $4));
+                                                                            action.assertNoStorage(lexer, $5);
+                                                                            $$ = 0;
                                                                         }
 
-DeclListOpt:                                                            {action.log("DeclListOpt:        >EMPTY<");}
-                |   DeclList                                            {action.log("DeclListOpt:        DeclList");}
-DeclList:           Decl                                                {action.log("DeclList:           Decl");}
-                |   DeclList Decl                                       {action.log("DeclList:           DeclList Decl");}
+DeclListOpt:                                                            {
+                                                                            action.log("DeclListOpt:        >EMPTY<");
+                                                                            $$ = 0;
+                                                                        }
+                |   DeclList                                            {
+                                                                            action.log("DeclListOpt:        DeclList");
+                                                                            action.assertNoStorage(lexer, $1);
+                                                                            $$ = 0;
+                                                                        }
+DeclList:           Decl                                                {
+                                                                            action.log("DeclList:           Decl");
+                                                                            action.assertNoStorage(lexer, $1);
+                                                                            $$ = 0;
+                                                                        }
+                |   DeclList Decl                                       {
+                                                                            action.log("DeclList:           DeclList Decl");
+                                                                            action.assertNoStorage(lexer, $1);
+                                                                            action.assertNoStorage(lexer, $2);
+                                                                            $$ = 0;
+                                                                        }
 
 Decl:               NAMESPACE NameSpaceIdentifer '{'                    {
                                                                             action.log("Decl:               NAMESPACE NameSpaceIdentifer { DeclListOpt } P1B");
@@ -66,8 +84,8 @@ Decl:               NAMESPACE NameSpaceIdentifer '{'                    {
                                                                         }
                                                      DeclListOpt '}'    {
                                                                             action.log("Decl:               NAMESPACE NameSpaceIdentifer { DeclListOpt } P2B");
-                                                                            action.releaseStorage(action.scopeClose(lexer, $4));
-                                                                            action.assertNoStorage($5);
+                                                                            action.assertNoStorage(lexer, action.scopeClose(lexer, $4));
+                                                                            action.assertNoStorage(lexer, $5);
                                                                             $$ = 0;
                                                                         }
 
@@ -77,34 +95,35 @@ Decl:               NAMESPACE NameSpaceIdentifer '{'                    {
                                                                         }
                                              DeclListOpt '}'            {
                                                                             action.log("Decl:               CLASS TypeIdentifer { DeclListOpt } P2");
-                                                                            action.releaseStorage(action.scopeClose(lexer, $4));
-                                                                            action.assertNoStorage($5);
+                                                                            action.releaseStorage(lexer, action.scopeClose(lexer, $4));
+                                                                            action.assertNoStorage(lexer, $5);
                                                                             $$ = 0;
                                                                         }
                 |   ARRAY  TypeIdentifer '{' ObjectDecl '}'             {
                                                                             action.log("Decl:               ARRAY TypeIdentifer { ObjectDecl }");
-                                                                            action.releaseStorage(action.scopeAddArray(lexer, $2, $4));
+                                                                            action.releaseStorage(lexer, action.scopeAddArray(lexer, $2, $4));
                                                                             $$ = 0;
                                                                         }
                 |   MAP    TypeIdentifer '{' ObjectDecl ',' ObjectDecl '}' {
                                                                             action.log("Decl:               MAP TypeIdentifer { ObjectDecl , ObjectDecl }");
-                                                                            action.releaseStorage(action.scopeAddMap(lexer, $2, $4, $6));
+                                                                            action.releaseStorage(lexer, action.scopeAddMap(lexer, $2, $4, $6));
                                                                             $$ = 0;
                                                                         }
                 |   FUNC   TypeIdentifer '{' ParamListOpt ARROW ObjectDecl '}' {
                                                                             action.log("Decl:               FUNC TypeIdentifer ( ParamListOpt ) -> ObjectDecl ;");
-                                                                            action.releaseStorage(action.scopeAddFunc(lexer, $2, $4, $6));
+                                                                            action.releaseStorage(lexer, action.scopeAddFunc(lexer, $2, $4, $6));
                                                                             $$ = 0;
                                                                         }
                 |   ObjectIdentifer ':' ObjectDecl InitObject           {
                                                                             action.log("Decl:               ObjectIdentifer : ObjectDecl InitObject");
-                                                                            // TODO
-                                                                            // action.releaseStorage(action.scopeAddObject(lexer, $1, $3));
+                                                                            // TODO Use InitObject
+                                                                            action.assertNoStorage(lexer, action.scopeAddObject(lexer, $1, $3));
                                                                             $$ = 0;
                                                                         }
                 |   Statement                                           {
                                                                             action.log("Decl:               Statement");
-                                                                            action.releaseStorage(action.scopeAddStatement(lexer, $1));
+                                                                            // TODO
+                                                                            // action.releaseStorage(lexer, action.scopeAddStatement(lexer, $1));
                                                                             $$ = 0;
                                                                         }
 
@@ -136,24 +155,24 @@ ObjectDecl:         TypeName                                            {
 
 AnonDecl:           CLASS  '{'                                          {
                                                                             action.log("AnonDecl:           CLASS { DeclListOpt } P1");
-                                                                            $$ = action.scopeAddClass(lexer, action.generateAnonName());
+                                                                            $$ = action.scopeAddClass(lexer, action.generateAnonName(lexer));
                                                                         }
                                DeclListOpt '}'                          {
                                                                             action.log("AnonDecl:           CLASS { DeclListOpt } P2");
                                                                             $$ = action.scopeClose(lexer, $3);
-                                                                            action.assertNoStorage($4);
+                                                                            action.assertNoStorage(lexer, $4);
                                                                         }
                 |   ARRAY  '{' ObjectDecl '}'                           {
                                                                             action.log("AnonDecl:           ARRAY { ObjectDecl }");
-                                                                            $$ = action.scopeAddArray(lexer, action.generateAnonName(), $3);
+                                                                            $$ = action.scopeAddArray(lexer, action.generateAnonName(lexer), $3);
                                                                         }
                 |   MAP    '{' ObjectDecl ',' ObjectDecl '}'            {
                                                                             action.log("AnonDecl:           MAP { ObjectDecl , ObjectDecl }");
-                                                                            $$ = action.scopeAddMap(lexer, action.generateAnonName(), $3, $5);
+                                                                            $$ = action.scopeAddMap(lexer, action.generateAnonName(lexer), $3, $5);
                                                                         }
                 |   FUNC   '{' ParamListOpt ARROW ObjectDecl '}'        {
                                                                             action.log("AnonDecl:           FUNC { ParamListOpt -> ObjectDecl }");
-                                                                            $$ = action.scopeAddFunc(lexer, action.generateAnonName(), $3, $5);
+                                                                            $$ = action.scopeAddFunc(lexer, action.generateAnonName(lexer), $3, $5);
                                                                         }
 
 Statement:          Expression ';'                                      {action.log("Statement:          Expression ;");}
