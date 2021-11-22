@@ -1,5 +1,5 @@
 THORSANVIL_ROOT             = $(realpath ../)
 
-TARGET                      = Compiler Anvil
+TARGET                      = Ice Anvil
 
 include $(THORSANVIL_ROOT)/build/tools/Project.Makefile
