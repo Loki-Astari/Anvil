@@ -10,71 +10,21 @@
 namespace ThorsAnvil::Anvil::Ice
 {
 
-/*
-Anvil:              NamespaceList
-
-
-NamespaceList:      Namespace
-                |   NamespaceList Namespace
-
-Namespace:          NAMESPACE NameSpaceIdentifer '{' DeclListOpt '}'
-
-DeclListOpt:
-                |   DeclList
-DeclList:           Decl
-                |   DeclList Decl
-
-Decl:               => Decl*
-
-ParamListOpt:       new std::list<std::reference_wrapper<Type>>
-ParamList:          new std::list<std::reference_wrapper<Type>>
-
-ObjectDecl:         => Type*
-
-AnonDecl:           => Type*
-
-Statement:          Expression ';'
-Expression:         ExprFuncCall
-ExprFuncCall:       ObjectName '(' ValueListOpt ')'
-
-ValueListOpt:
-                |   ValueList
-ValueList:          Value
-                |   ValueList ',' Value
-Value:              ObjectName
-                |   Literal
-
-InitObject:         ';'
-
-ObjectName:         ObjectIdentifer
-                |   NameSpaceIdentifer SCOPE ObjectName
-                |   ObjectIdentifer '.' ObjectName
-
-TypeName:           => Type*
-TypeNameFull:       => new std::list<std::unique_ptr<std::string>>
-
-Literal:            => ???
-
-NameSpaceIdentifer: => new std::string
-TypeIdentifer:      => new std::string
-ObjectIdentifer:    => new std::string
-
-Identifer:          => new std::string
-*/
-
 class Type;
+class Object;
 class Decl;
 class Container;
 
 using Scope = Container;
 
 using TypeRef   = std::reference_wrapper<Type>;
+using ObjectRef = std::reference_wrapper<Object>;
 using DeclRef   = std::reference_wrapper<Decl>;
 using ScopeRef  = std::reference_wrapper<Scope>;
 using ParamList = std::list<TypeRef>;
+using ObjectList= std::list<ObjectRef>;
 using FullIdent = std::list<std::string>;
-
-using Data = std::variant<Int, TypeRef, DeclRef, ScopeRef, ParamList, FullIdent, std::string>;
+using Data = std::variant<Int, TypeRef, ObjectRef, DeclRef, ScopeRef, ParamList, ObjectList, FullIdent, std::string>;
 
 class Storage
 {

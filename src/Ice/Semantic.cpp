@@ -57,7 +57,7 @@ void generateHexName(std::string& name, std::size_t count)
     }
 }
 
-Int Semantic::generateAnonName(Lexer&)
+std::string Semantic::generateAnonNameString()
 {
     static std::size_t count = 0;
 
@@ -65,7 +65,12 @@ Int Semantic::generateAnonName(Lexer&)
     // Prefix with dollar => 17bit
     std::string name(17, '$');
     generateHexName(name, count);
+    return name;
+}
 
+Int Semantic::generateAnonName(Lexer&)
+{
+    std::string name = generateAnonNameString();
     return storage.add(std::move(name));
 }
 
@@ -167,6 +172,22 @@ Int Semantic::paramListAdd(Lexer& /*lexer*/, Int pl, Int type)
     return pl;
 }
 
+Int Semantic::objectListCreate(Lexer& /*lexer*/)
+{
+    return storage.add(ObjectList{});
+}
+
+Int Semantic::objectListAdd(Lexer& /*lexer*/, Int ol, Int object)
+{
+    ObjectList&     objectList(storage.get<ObjectList>(ol));
+    ObjectRef&      objectRef(storage.get<ObjectRef>(object));
+
+    objectList.emplace_back(std::move(objectRef));
+    storage.release(object);
+
+    return ol;
+}
+
 template<typename T>
 struct ReversView
 {
@@ -179,7 +200,47 @@ struct ReversView
     auto end()   {return range.rend();}
 };
 
-Int Semantic::findTypeInScope(Lexer& lexer, Int fp)
+Decl* Semantic::searchScopeForIdentifier(std::string const& path, std::string& partialMatch)
+{
+    Decl* result = nullptr;
+
+    // search the scopes from the current one back to the global scope to see
+    // if we can can find the type identifier root element.
+    for (auto& scopeRef: ReversView(currentScope))
+    {
+        // For ease of use.
+        auto& scope = scopeRef.get();
+
+        // Search the current scope of the first path segment.
+        auto find = scope.get(path);
+        if (find.first)
+        {
+            // We found it in this scope.
+            // For better error message loop from the global scope out to this scope
+            // To build the "absolute" path of the type identifier we have found.
+            for (auto& scopeRefForward: currentScope)
+            {
+                auto& scopeForward = scopeRefForward.get();
+                partialMatch += (scope.contName() + "::");
+
+                if (&scopeForward == &scope)
+                {
+                    break;
+                }
+            }
+
+            // Add the current path segment
+            partialMatch += (path + "::");
+
+            // So far so we good we have found the first part decl that matches the fullIdent.
+            result = &(*(find.second->second));
+            break;
+        }
+    }
+    return result;
+}
+
+Decl&  Semantic::searchScopeForPath(Lexer& lexer, Int fp)
 {
     FullIdent&  fullIdent(storage.get<FullIdent>(fp));
 
@@ -204,39 +265,7 @@ Int Semantic::findTypeInScope(Lexer& lexer, Int fp)
         // The first time through the loop (for the root element of the type identifier only)
         if (rootOfPath)
         {
-            // search the scopes from the current one back to the global scope to see
-            // if we can can find the type identifier root element.
-            for (auto& scopeRef: ReversView(currentScope))
-            {
-                // For ease of use.
-                auto& scope = scopeRef.get();
-
-                // Search the current scope of the first path segment.
-                auto find = scope.get(path);
-                if (find.first)
-                {
-                    // We found it in this scope.
-                    // For better error message loop from the global scope out to this scope
-                    // To build the "absolute" path of the type identifier we have found.
-                    for (auto& scopeRefForward: currentScope)
-                    {
-                        auto& scopeForward = scopeRefForward.get();
-                        partialMatch += (scope.contName() + "::");
-
-                        if (&scopeForward == &scope)
-                        {
-                            break;
-                        }
-                    }
-
-                    // Add the current path segment
-                    partialMatch += (path + "::");
-
-                    // So far so we good we have found the first part decl that matches the fullIdent.
-                    decl = &(*(find.second->second));
-                    break;
-                }
-            }
+            decl = searchScopeForIdentifier(path, partialMatch);
             rootOfPath = false;
             continue;
         }
@@ -269,9 +298,21 @@ Int Semantic::findTypeInScope(Lexer& lexer, Int fp)
     }
     // All is good we found a decl.
     // This is owned by a scope so return it but we don't need to destroy it.
+    return *decl;
+}
 
+Int Semantic::findTypeInScope(Lexer& lexer, Int fp)
+{
+    Decl&  decl = searchScopeForPath(lexer, fp);
     storage.release(fp);
-    return storage.add(TypeRef{dynamic_cast<Type&>(*decl)});
+    return storage.add(TypeRef{dynamic_cast<Type&>(decl)});
+}
+
+Int Semantic::findObjectInScope(Lexer& lexer, Int fp)
+{
+    Decl&  decl = searchScopeForPath(lexer, fp);
+    storage.release(fp);
+    return storage.add(ObjectRef{dynamic_cast<Object&>(decl)});
 }
 
 Int Semantic::scopeAddNamespace(Lexer& /*lexer*/, Int name)
@@ -377,4 +418,31 @@ Int Semantic::scopeClose(Lexer& lexer, Int oldScopeId)
     }
     Type&           classToType = dynamic_cast<Type&>(*scopeToClass);
     return storage.add(TypeRef{classToType});
+}
+
+Int Semantic::addLiteralString(Lexer& lexer)
+{
+    std::string objectName = generateAnonNameString();
+    Type& stringType = getScopeSymbol<Type>(globalScope, "Std", "String");
+
+    // TODO: Literal needs to be a const
+    Scope& literalScope = getScopeSymbol<Namespace>(globalScope, "$Literal");
+    Object& literalObject = literalScope.add(std::make_unique<Literal<std::string>>(std::move(objectName), stringType, std::string(lexer.lexem())));
+
+    return storage.add(ObjectRef{literalObject});
+}
+
+Int Semantic::createFuncCall(Lexer& /*lexer*/, Int /*obj*/, Int /*param*/)
+{
+/*
+    std::string objectName = generateAnonNameString();
+    Type& stringType = getScopeSymbol<Type>(globalScope, "Std", "String");
+
+    // TODO: Literal needs to be a const
+    Scope& literalScope = getScopeSymbol<Namespace>(globalScope, "$Literal");
+    Object& literalObject = literalScope.add(std::make_unique<Literal<std::string>>(std::move(objectName), stringType, std::string(lexer.lexem())));
+
+    return storage.add(ObjectRef{literalObject});
+*/
+    return 0;
 }

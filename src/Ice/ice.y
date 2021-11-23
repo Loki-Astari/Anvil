@@ -40,11 +40,21 @@ int yylex(void*, ThorsAnvil::Anvil::Ice::Lexer& lexer);
 
 %%
 
-Anvil:              NamespaceList                                       {action.log("Anvil:              NamespaceList");$$ = 0;YYACCEPT;}
+Anvil:              NamespaceList                                       {
+                                                                            action.log("Anvil:              NamespaceList");$$ = 0;YYACCEPT;
+                                                                            action.assertNoStorage(lexer, $1);
+                                                                        }
 
 
-NamespaceList:      Namespace                                           {action.log("NamespaceList:      Namespace");}
-                |   NamespaceList Namespace                             {action.log("NamespaceList:      NamespaceList Namespace");}
+NamespaceList:      Namespace                                           {
+                                                                            action.log("NamespaceList:      Namespace");
+                                                                            action.assertNoStorage(lexer, $1);
+                                                                        }
+                |   NamespaceList Namespace                             {
+                                                                            action.log("NamespaceList:      NamespaceList Namespace");
+                                                                            action.assertNoStorage(lexer, $1);
+                                                                            action.assertNoStorage(lexer, $2);
+                                                                        }
 
 Namespace:          NAMESPACE NameSpaceIdentifer '{'                    {
                                                                             action.log("Namespace:          NAMESPACE NameSpaceIdentifer { DeclListOpt } P1A");
@@ -177,21 +187,65 @@ AnonDecl:           CLASS  '{'                                          {
 
 Statement:          Expression ';'                                      {action.log("Statement:          Expression ;");}
 Expression:         ExprFuncCall                                        {action.log("Expression:         ExprFuncCall");}
-ExprFuncCall:       ObjectName '(' ValueListOpt ')'                     {action.log("ExprFuncCall:       ObjectName ( ValueListOpt )");}
+ExprFuncCall:       ObjectName '(' ValueListOpt ')'                     {
+                                                                            action.log("ExprFuncCall:       ObjectName ( ValueListOpt )");
+                                                                            $$ = action.createFuncCall(lexer, $1, $3);
+                                                                        }
 
 
-ValueListOpt:                                                           {action.log("ValueListOpt:       >EMPTY<");}
-                |   ValueList                                           {action.log("ValueListOpt:       ValueList");}
-ValueList:          Value                                               {action.log("ValueList:          Value");}
-                |   ValueList ',' Value                                 {action.log("ValueList:          ValueList , Value");}
-Value:              ObjectName                                          {action.log("Value:              ObjectName");}
-                |   Literal                                             {action.log("Value:              Literal");}
+ValueListOpt:                                                           {
+                                                                            action.log("ValueListOpt:       >EMPTY<");
+                                                                            $$ = action.objectListCreate(lexer);
+                                                                        }
+                |   ValueList                                           {
+                                                                            action.log("ValueListOpt:       ValueList");
+                                                                            $$ = $1;
+                                                                        }
+ValueList:          Value                                               {
+                                                                            action.log("ValueList:          Value");
+                                                                            $$ = action.objectListAdd(lexer, action.objectListCreate(lexer), $1);
+                                                                        }
+                |   ValueList ',' Value                                 {
+                                                                            action.log("ValueList:          ValueList , Value");
+                                                                            $$ = action.objectListAdd(lexer, $1, $2);
+                                                                        }
+Value:              ObjectName                                          {
+                                                                            action.log("Value:              ObjectName");
+                                                                            $$ = $1;
+                                                                        }
+                |   Literal                                             {
+                                                                            action.log("Value:              Literal");
+                                                                            $$ = $1;
+                                                                        }
 
 InitObject:         ';'                                                 {action.log("InitObject:         ;");}
 
-ObjectName:         ObjectIdentifer                                     {action.log("ObjectName:         ObjectIdentifer");}
-                |   NameSpaceIdentifer SCOPE ObjectName                 {action.log("ObjectName:         NameSpaceIdentifer :: ObjectName");}
-                |   ObjectIdentifer '.' ObjectName                      {action.log("ObjectName:         ObjectIdentifer . ObjectName");}
+ObjectName:         ObjectNameFull                                      {
+                                                                            action.log("ObjectName:         ObjectNameFull");
+                                                                            $$ = action.findObjectInScope(lexer, $1);
+                                                                        }
+
+
+ObjectNameFull:     ObjectNamePart                                      {
+                                                                            action.log("ObjectNameFull:     ObjectNamePart");
+                                                                            $$ = $1;
+                                                                        }
+                |   NameSpaceIdentifer SCOPE ObjectNameFull             {
+                                                                            action.log("ObjectNameFull:     NameSpaceIdentifer :: ObjectName");
+                                                                            $$ = action.fullIdentiferAddPath(lexer, $3, $1);
+                                                                        }
+                |   TypeIdentifer SCOPE ObjectNameFull                  {
+                                                                            action.log("ObjectNameFull:     TypeIdentifer :: ObjectName");
+                                                                            $$ = action.fullIdentiferAddPath(lexer, $3, $1);
+                                                                        }
+ObjectNamePart:     ObjectIdentifer                                     {
+                                                                            action.log("ObjectNamePart:     ObjectIdentifer");
+                                                                            $$ = action.fullIdentiferAddPath(lexer, action.fullIdentiferCreate(lexer), $1);
+                                                                        }
+                |   ObjectNamePart '.' ObjectIdentifer                  {
+                                                                            action.log("ObjectNamePart:     ObjectNamePart . ObjectIdentifer");
+                                                                            $$ = action.fullIdentiferAddPath(lexer, $3, $1);
+                                                                        }
 
 TypeName:           TypeNameFull                                        {
                                                                             action.log("TypeName:           TypeNameFull");
@@ -211,8 +265,10 @@ TypeNameFull:       TypeIdentifer                                       {
                                                                         }
 
 
-Literal:            STRING
-
+Literal:            STRING                                              {
+                                                                            action.log("Literal:            STRING");
+                                                                            $$ = action.addLiteralString(lexer);
+                                                                        }
 
 NameSpaceIdentifer: Identifer                                           {
                                                                             action.log("NameSpaceIdentifer: Identifer");

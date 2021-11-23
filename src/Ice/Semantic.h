@@ -22,12 +22,12 @@ class Container
 {
     public:
         using NameMap = std::map<std::string, std::unique_ptr<Decl>>;
-        using NameRef = NameMap::iterator;
+        using NameRef = NameMap::const_iterator;
 
         template<typename T>
         T& add(std::unique_ptr<T>&& decl);
         virtual std::string const& contName() const = 0;
-        std::pair<bool, NameRef> get(std::string const& name);
+        std::pair<bool, NameRef> get(std::string const& name) const;
 
     private:
         NameMap     names;
@@ -55,7 +55,7 @@ class Decl
         virtual ~Decl() = 0;
         virtual DeclType declType() const = 0;
         std::string const& declName() const                                                 {return name;}
-        virtual std::pair<bool, Container::NameRef> find(std::string const& /*name*/)       {return {false, {}};}
+        virtual std::pair<bool, Container::NameRef> find(std::string const& /*name*/) const {return {false, {}};}
 };
 
 class Namespace: public Decl, public Container
@@ -66,7 +66,7 @@ class Namespace: public Decl, public Container
         {}
         virtual std::string const& contName() const override                                {return declName();}
         virtual DeclType declType() const override                                          {return DeclType::Namespace;}
-        virtual std::pair<bool, Container::NameRef> find(std::string const& name) override  {return get(name);}
+        virtual std::pair<bool, Container::NameRef> find(std::string const& name) const override {return get(name);}
 };
 
 class Type: public Decl
@@ -95,7 +95,7 @@ class Class: public Type, public Container
         {}
         virtual std::string const& contName() const override                                {return declName();}
         virtual DeclType declType() const override                                          {return DeclType::Class;}
-        virtual std::pair<bool, Container::NameRef> find(std::string const& name) override  {return get(name);}
+        virtual std::pair<bool, Container::NameRef> find(std::string const& name) const override {return get(name);}
 };
 
 class Array: public Type
@@ -145,8 +145,18 @@ class Object: public Decl
         {}
         Type const& getType() const                                                         {return objectType;}
         virtual DeclType declType() const override                                          {return DeclType::Object;}
-        // TODO This will need to be overridden
-        virtual std::pair<bool, Container::NameRef> find(std::string const&) override       {return {false, {}};}
+        virtual std::pair<bool, Container::NameRef> find(std::string const& name) const override {return objectType.find(name);}
+};
+
+template<typename T>
+class Literal: public Object
+{
+    T value;
+    public:
+        Literal(std::string const& name, Type const& objectType, T const& value)
+            : Object(name, objectType)
+            , value(value)
+        {}
 };
 
 class Statement: public Decl
@@ -210,6 +220,13 @@ class StandardScope: public Namespace
 
             add(std::move(system));
 
+            // Special scope to hold all literals.
+            UPNamespace   literal(new Namespace("$Literal"));
+            add(std::move(literal));
+
+            // Special scope to hold all Code.
+            UPNamespace   code(new Namespace("$Code"));
+            add(std::move(code));
         }
 };
 
@@ -243,7 +260,11 @@ class Semantic: public Action
         virtual Int paramListCreate(Lexer& lexer)                           override;
         virtual Int paramListAdd(Lexer& lexer, Int pl, Int type)            override;
 
+        virtual Int objectListCreate(Lexer& lexer)                          override;
+        virtual Int objectListAdd(Lexer& lexer, Int ol, Int object)         override;
+
         virtual Int findTypeInScope(Lexer& lexer, Int fp)                   override;
+        virtual Int findObjectInScope(Lexer& lexer, Int fp)                 override;
 
         virtual Int scopeAddNamespace(Lexer& lexer, Int name)               override;
         virtual Int scopeAddClass(Lexer& lexer, Int name)                   override;
@@ -253,6 +274,20 @@ class Semantic: public Action
         virtual Int scopeAddObject(Lexer& lexer, Int name, Int)             override;
         //virtual Int scopeAddStatement(Lexer& lexer, Int s)                      override;
         virtual Int scopeClose(Lexer& lexer, Int oldSCope)                  override;
+
+        virtual Int addLiteralString(Lexer& lexer)                          override;
+
+        virtual Int createFuncCall(Lexer& lexer, Int obj, Int param)        override;
+    private:
+        Decl& searchScopeForPath(Lexer& lexer, Int fp);
+        Decl* searchScopeForIdentifier(std::string const& path, std::string& partialMatch);
+        std::string  generateAnonNameString();
+
+        template<typename T>
+        T& getScopeSymbol(Scope& scope, std::string const& name);
+
+        template<typename T, typename... Args>
+        T& getScopeSymbol(Scope& scope, std::string const& name, Args&... path);
 };
 
 template<typename T>
@@ -262,10 +297,49 @@ inline T& Container::add(std::unique_ptr<T>&& decl)
     location = std::move(decl);
     return dynamic_cast<T&>(*location);
 }
-inline std::pair<bool, Container::NameRef> Container::get(std::string const& name)
+inline std::pair<bool, Container::NameRef> Container::get(std::string const& name) const
 {
     auto find = names.find(name);
     return {find != names.end(), find};
+}
+
+template<typename T>
+T& Semantic::getScopeSymbol(Scope& scope, std::string const& name)
+{
+    auto find = scope.get(name);
+    //ASSERT_TRUE(find.first);
+    if (!find.first)
+    {
+        throw std::runtime_error("Not Found");
+    }
+
+    Decl*  decl         = find.second->second.get();
+    return *(dynamic_cast<T*>(decl));
+}
+
+template<typename T, typename... Args>
+T& Semantic::getScopeSymbol(Scope& scope, std::string const& name, Args&... path)
+{
+    auto find = scope.get(name);
+    //ASSERT_TRUE(find.first);
+    if (!find.first)
+    {
+        throw std::runtime_error("Not Found");
+    }
+
+    Decl*  decl         = find.second->second.get();
+
+    Class* classDecl    = dynamic_cast<Class*>(decl);
+    if (classDecl)
+    {
+        return getScopeSymbol<T>(dynamic_cast<Scope&>(*classDecl), path...);
+    }
+    Namespace* namespaceDecl    = dynamic_cast<Namespace*>(decl);
+    if (namespaceDecl)
+    {
+        return getScopeSymbol<T>(dynamic_cast<Scope&>(*namespaceDecl), path...);
+    }
+    throw std::runtime_error("Not a valid Scope Path");
 }
 
 }

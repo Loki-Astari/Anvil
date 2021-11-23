@@ -49,7 +49,11 @@ class Action
         virtual Int paramListCreate(Lexer& /*lexer*/)                                   {return 0;}
         virtual Int paramListAdd(Lexer& /*lexer*/, Int /*pl*/, Int /*type*/)            {return 0;}
 
+        virtual Int objectListCreate(Lexer& /*lexer*/)                                  {return 0;}
+        virtual Int objectListAdd(Lexer& /*lexer*/, Int /*ol*/, Int /*object*/)         {return 0;}
+
         virtual Int findTypeInScope(Lexer& /*lexer*/, Int /*fp*/)                       {return 0;}
+        virtual Int findObjectInScope(Lexer& /*lexer*/, Int /*fp*/)                     {return 0;}
 
         virtual Int scopeAddNamespace(Lexer& /*lexer*/, Int /*name*/)                   {return 0;}
         virtual Int scopeAddClass(Lexer& /*lexer*/, Int /*name*/)                       {return 0;}
@@ -60,6 +64,9 @@ class Action
         virtual Int scopeAddStatement(Lexer& /*lexer*/, Int /*s*/)                      {return 0;}
         virtual Int scopeClose(Lexer& /*lexer*/, Int /*oldSCope*/)                      {return 0;}
 
+        virtual Int addLiteralString(Lexer& /*lexer*/)                                  {return 0;}
+
+        virtual Int createFuncCall(Lexer& /*lexer*/, Int /*obj*/, Int /*param*/)        {return 0;}
     private:
         void addToLine(Lexer& lexer);
         void resetLine(Lexer& lexer);
