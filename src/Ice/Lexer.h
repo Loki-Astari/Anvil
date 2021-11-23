@@ -13,11 +13,11 @@ namespace ThorsAnvil::Anvil::Ice
 
 class Lexer: public yyFlexLexer
 {
-    Action&     action;
     public:
-        Lexer(Action& action, std::istream& input = std::cin, std::ostream& output = std::cout);
+        Lexer(std::istream& input = std::cin, std::ostream& output = std::cout);
         std::string_view lexem() const;
-        virtual int yylex() override;
+        virtual int yylex() override {throw std::runtime_error("Wrong Lex Called");}
+        virtual int yylexWithAction(Action& action);
 };
 
 }

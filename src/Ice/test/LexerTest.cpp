@@ -32,73 +32,73 @@ $
     using ThorsAnvil::Anvil::Ice::Lexer;
     std::stringstream   output;
 
-    Action          action(output);
-    Lexer           lexer(action, file);
+    Lexer           lexer(file);
+    Action          action(lexer, output);
 
     int val;
 
 
-    val = lexer.yylex();
+    val = lexer.yylexWithAction(action);
     EXPECT_EQ(yy::Parser::token::NAMESPACE, val);
     EXPECT_EQ(lexer.lexem(), "namespace");
 
-    val = lexer.yylex();
+    val = lexer.yylexWithAction(action);
     EXPECT_EQ(yy::Parser::token::CLASS, val);
     EXPECT_EQ(lexer.lexem(), "class");
 
-    val = lexer.yylex();
+    val = lexer.yylexWithAction(action);
     EXPECT_EQ(yy::Parser::token::ARRAY, val);
     EXPECT_EQ(lexer.lexem(), "array");
 
-    val = lexer.yylex();
+    val = lexer.yylexWithAction(action);
     EXPECT_EQ(yy::Parser::token::MAP, val);
     EXPECT_EQ(lexer.lexem(), "map");
 
-    val = lexer.yylex();
+    val = lexer.yylexWithAction(action);
     EXPECT_EQ(yy::Parser::token::FUNC, val);
     EXPECT_EQ(lexer.lexem(), "func");
 
-    val = lexer.yylex();
+    val = lexer.yylexWithAction(action);
     EXPECT_EQ(yy::Parser::token::IDENTIFIER, val);
     EXPECT_EQ(lexer.lexem(), "Bob");
 
-    val = lexer.yylex();
+    val = lexer.yylexWithAction(action);
     EXPECT_EQ(yy::Parser::token::SCOPE, val);
     EXPECT_EQ(lexer.lexem(), "::");
 
-    val = lexer.yylex();
+    val = lexer.yylexWithAction(action);
     EXPECT_EQ(yy::Parser::token::ARROW, val);
     EXPECT_EQ(lexer.lexem(), "->");
 
-    val = lexer.yylex();
+    val = lexer.yylexWithAction(action);
     EXPECT_EQ(yy::Parser::token::STRING, val);
     EXPECT_EQ(lexer.lexem(), "\"This is a String\"");
 
-    val = lexer.yylex();
+    val = lexer.yylexWithAction(action);
     EXPECT_EQ('{', val);
 
-    val = lexer.yylex();
+    val = lexer.yylexWithAction(action);
     EXPECT_EQ('}', val);
 
-    val = lexer.yylex();
+    val = lexer.yylexWithAction(action);
     EXPECT_EQ('(', val);
 
-    val = lexer.yylex();
+    val = lexer.yylexWithAction(action);
     EXPECT_EQ(')', val);
 
-    val = lexer.yylex();
+    val = lexer.yylexWithAction(action);
     EXPECT_EQ(':', val);
 
-    val = lexer.yylex();
+    val = lexer.yylexWithAction(action);
     EXPECT_EQ(';', val);
 
-    val = lexer.yylex();
+    val = lexer.yylexWithAction(action);
     EXPECT_EQ('.', val);
 
-    val = lexer.yylex();
+    val = lexer.yylexWithAction(action);
     EXPECT_EQ(',', val);
 
-    EXPECT_THROW_OR_DEBUG(val = lexer.yylex(), "Invalid Character", output);
+    EXPECT_THROW_OR_DEBUG(val = lexer.yylexWithAction(action), "Invalid Character", output);
 
 }
 

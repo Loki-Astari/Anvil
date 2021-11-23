@@ -3,10 +3,27 @@
 #include "Semantic.h"
 #include "test/Utility.h"
 
+struct SemanticCompiler
+{
+    ThorsAnvil::Anvil::Ice::StandardScope   globalScope;
+    ThorsAnvil::Anvil::Ice::Lexer           lexer;
+    ThorsAnvil::Anvil::Ice::Semantic        semanticAnalyser;
+    ThorsAnvil::Anvil::Ice::Parser          parser;
+
+    SemanticCompiler(std::istream& input, std::ostream& output)
+        : lexer(input, output)
+        , semanticAnalyser(lexer, globalScope, output)
+        , parser(lexer, semanticAnalyser)
+    {}
+
+    bool compile()
+    {
+        return parser.parse();
+    }
+};
+
 TEST(SemanticTest, NameSpaceShortIsValid)
 {
-    using ThorsAnvil::Anvil::Ice::Semantic;
-    using ThorsAnvil::Anvil::Ice::StandardScope;
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
 namespace Std
@@ -14,15 +31,13 @@ namespace Std
 }
 )");
 
-    StandardScope     globalScope;
-    Semantic          semanticAnalyser(globalScope, file, result);
-    EXPECT_TRUE_OR_DEBUG(semanticAnalyser.go(), result);
+    SemanticCompiler  compiler(file, result);
+
+    EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 }
 
 TEST(SemanticTest, NameSpaceLongNameIsValid)
 {
-    using ThorsAnvil::Anvil::Ice::Semantic;
-    using ThorsAnvil::Anvil::Ice::StandardScope;
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
 namespace Complex_Space
@@ -30,15 +45,13 @@ namespace Complex_Space
 }
 )");
 
-    StandardScope     globalScope;
-    Semantic          semanticAnalyser(globalScope, file, result);
-    EXPECT_TRUE_OR_DEBUG(semanticAnalyser.go(), result);
+    SemanticCompiler  compiler(file, result);
+
+    EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 }
 
 TEST(SemanticTest, NameSpaceShortNameIsInValid_NoCap)
 {
-    using ThorsAnvil::Anvil::Ice::Semantic;
-    using ThorsAnvil::Anvil::Ice::StandardScope;
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
 namespace std
@@ -46,15 +59,13 @@ namespace std
 }
 )");
 
-    StandardScope     globalScope;
-    Semantic          semanticAnalyser(globalScope, file, result);
-    EXPECT_THROW_OR_DEBUG(semanticAnalyser.go(), "Invalid Identifier for Namespace", result);
+    SemanticCompiler  compiler(file, result);
+
+    EXPECT_THROW_OR_DEBUG(compiler.compile(), "Invalid Identifier for Namespace", result);
 }
 
 TEST(SemanticTest, NameSpaceLongNameIsInValid_NoUnderScore)
 {
-    using ThorsAnvil::Anvil::Ice::Semantic;
-    using ThorsAnvil::Anvil::Ice::StandardScope;
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
 namespace ComplexSpace
@@ -62,15 +73,13 @@ namespace ComplexSpace
 }
 )");
 
-    StandardScope     globalScope;
-    Semantic          semanticAnalyser(globalScope, file, result);
-    EXPECT_THROW_OR_DEBUG(semanticAnalyser.go(), "Invalid Identifier for Namespace", result);
+    SemanticCompiler  compiler(file, result);
+
+    EXPECT_THROW_OR_DEBUG(compiler.compile(), "Invalid Identifier for Namespace", result);
 }
 
 TEST(SemanticTest, NameSpaceLongNameIsInValid_NoSecondCap)
 {
-    using ThorsAnvil::Anvil::Ice::Semantic;
-    using ThorsAnvil::Anvil::Ice::StandardScope;
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
 namespace Complex_space
@@ -78,15 +87,13 @@ namespace Complex_space
 }
 )");
 
-    StandardScope     globalScope;
-    Semantic          semanticAnalyser(globalScope, file, result);
-    EXPECT_THROW_OR_DEBUG(semanticAnalyser.go(), "Invalid Identifier for Namespace", result);
+    SemanticCompiler  compiler(file, result);
+
+    EXPECT_THROW_OR_DEBUG(compiler.compile(), "Invalid Identifier for Namespace", result);
 }
 
 TEST(SemanticTest, NameSpaceLongNameIsInValid_NoFirstCap)
 {
-    using ThorsAnvil::Anvil::Ice::Semantic;
-    using ThorsAnvil::Anvil::Ice::StandardScope;
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
 namespace complex_Space
@@ -94,15 +101,13 @@ namespace complex_Space
 }
 )");
 
-    StandardScope     globalScope;
-    Semantic          semanticAnalyser(globalScope, file, result);
-    EXPECT_THROW_OR_DEBUG(semanticAnalyser.go(), "Invalid Identifier for Namespace", result);
+    SemanticCompiler  compiler(file, result);
+
+    EXPECT_THROW_OR_DEBUG(compiler.compile(), "Invalid Identifier for Namespace", result);
 }
 
 TEST(SemanticTest, NameSpaceLongNameIsInValid_CapNoUnderScore)
 {
-    using ThorsAnvil::Anvil::Ice::Semantic;
-    using ThorsAnvil::Anvil::Ice::StandardScope;
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
 namespace Complex_SpaceX
@@ -110,15 +115,13 @@ namespace Complex_SpaceX
 }
 )");
 
-    StandardScope     globalScope;
-    Semantic          semanticAnalyser(globalScope, file, result);
-    EXPECT_THROW_OR_DEBUG(semanticAnalyser.go(), "Invalid Identifier for Namespace", result);
+    SemanticCompiler  compiler(file, result);
+
+    EXPECT_THROW_OR_DEBUG(compiler.compile(), "Invalid Identifier for Namespace", result);
 }
 
 TEST(SemanticTest, TypeNameObjectValid)
 {
-    using ThorsAnvil::Anvil::Ice::Semantic;
-    using ThorsAnvil::Anvil::Ice::StandardScope;
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
@@ -131,15 +134,13 @@ namespace Good_Name_Space
 }
 )");
 
-    StandardScope     globalScope;
-    Semantic          semanticAnalyser(globalScope, file, result);
-    EXPECT_TRUE_OR_DEBUG(semanticAnalyser.go(), result);
+    SemanticCompiler  compiler(file, result);
+
+    EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 }
 
 TEST(SemanticTest, TypeNameArrayValid)
 {
-    using ThorsAnvil::Anvil::Ice::Semantic;
-    using ThorsAnvil::Anvil::Ice::StandardScope;
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
@@ -148,15 +149,13 @@ namespace Good_Name_Space
 }
 )");
 
-    StandardScope     globalScope;
-    Semantic          semanticAnalyser(globalScope, file, result);
-    EXPECT_TRUE_OR_DEBUG(semanticAnalyser.go(), result);
+    SemanticCompiler  compiler(file, result);
+
+    EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 }
 
 TEST(SemanticTest, TypeNameMapValid)
 {
-    using ThorsAnvil::Anvil::Ice::Semantic;
-    using ThorsAnvil::Anvil::Ice::StandardScope;
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
@@ -165,15 +164,13 @@ namespace Good_Name_Space
 }
 )");
 
-    StandardScope     globalScope;
-    Semantic          semanticAnalyser(globalScope, file, result);
-    EXPECT_TRUE_OR_DEBUG(semanticAnalyser.go(), result);
+    SemanticCompiler  compiler(file, result);
+
+    EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 }
 
 TEST(SemanticTest, TypeNameFuncValid)
 {
-    using ThorsAnvil::Anvil::Ice::Semantic;
-    using ThorsAnvil::Anvil::Ice::StandardScope;
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
@@ -182,15 +179,13 @@ namespace Good_Name_Space
 }
 )");
 
-    StandardScope     globalScope;
-    Semantic          semanticAnalyser(globalScope, file, result);
-    EXPECT_TRUE_OR_DEBUG(semanticAnalyser.go(), result);
+    SemanticCompiler  compiler(file, result);
+
+    EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 }
 
 TEST(SemanticTest, TypeNameObjectInValid_FirstLower)
 {
-    using ThorsAnvil::Anvil::Ice::Semantic;
-    using ThorsAnvil::Anvil::Ice::StandardScope;
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
@@ -203,15 +198,13 @@ namespace Good_Name_Space
 }
 )");
 
-    StandardScope     globalScope;
-    Semantic          semanticAnalyser(globalScope, file, result);
-    EXPECT_THROW_OR_DEBUG(semanticAnalyser.go(), "Invalid Identifier for Type", result);
+    SemanticCompiler  compiler(file, result);
+
+    EXPECT_THROW_OR_DEBUG(compiler.compile(), "Invalid Identifier for Type", result);
 }
 
 TEST(SemanticTest, TypeNameArrayInValid_FirstLower)
 {
-    using ThorsAnvil::Anvil::Ice::Semantic;
-    using ThorsAnvil::Anvil::Ice::StandardScope;
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
@@ -220,15 +213,13 @@ namespace Good_Name_Space
 }
 )");
 
-    StandardScope     globalScope;
-    Semantic          semanticAnalyser(globalScope, file, result);
-    EXPECT_THROW_OR_DEBUG(semanticAnalyser.go(), "Invalid Identifier for Type", result);
+    SemanticCompiler  compiler(file, result);
+
+    EXPECT_THROW_OR_DEBUG(compiler.compile(), "Invalid Identifier for Type", result);
 }
 
 TEST(SemanticTest, TypeNameMapInValid_FirstLower)
 {
-    using ThorsAnvil::Anvil::Ice::Semantic;
-    using ThorsAnvil::Anvil::Ice::StandardScope;
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
@@ -237,15 +228,13 @@ namespace Good_Name_Space
 }
 )");
 
-    StandardScope     globalScope;
-    Semantic          semanticAnalyser(globalScope, file, result);
-    EXPECT_THROW_OR_DEBUG(semanticAnalyser.go(), "Invalid Identifier for Type", result);
+    SemanticCompiler  compiler(file, result);
+
+    EXPECT_THROW_OR_DEBUG(compiler.compile(), "Invalid Identifier for Type", result);
 }
 
 TEST(SemanticTest, TypeNameFuncInValid_FirstLower)
 {
-    using ThorsAnvil::Anvil::Ice::Semantic;
-    using ThorsAnvil::Anvil::Ice::StandardScope;
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
@@ -254,15 +243,13 @@ namespace Good_Name_Space
 }
 )");
 
-    StandardScope     globalScope;
-    Semantic          semanticAnalyser(globalScope, file, result);
-    EXPECT_THROW_OR_DEBUG(semanticAnalyser.go(), "Invalid Identifier for Type", result);
+    SemanticCompiler  compiler(file, result);
+
+    EXPECT_THROW_OR_DEBUG(compiler.compile(), "Invalid Identifier for Type", result);
 }
 
 TEST(SemanticTest, TypeNameObjectInValid_UnderScore)
 {
-    using ThorsAnvil::Anvil::Ice::Semantic;
-    using ThorsAnvil::Anvil::Ice::StandardScope;
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
@@ -275,15 +262,13 @@ namespace Good_Name_Space
 }
 )");
 
-    StandardScope     globalScope;
-    Semantic          semanticAnalyser(globalScope, file, result);
-    EXPECT_THROW_OR_DEBUG(semanticAnalyser.go(), "Invalid Identifier for Type", result);
+    SemanticCompiler  compiler(file, result);
+
+    EXPECT_THROW_OR_DEBUG(compiler.compile(), "Invalid Identifier for Type", result);
 }
 
 TEST(SemanticTest, TypeNameArrayInValid_UnderScore)
 {
-    using ThorsAnvil::Anvil::Ice::Semantic;
-    using ThorsAnvil::Anvil::Ice::StandardScope;
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
@@ -292,15 +277,13 @@ namespace Good_Name_Space
 }
 )");
 
-    StandardScope     globalScope;
-    Semantic          semanticAnalyser(globalScope, file, result);
-    EXPECT_THROW_OR_DEBUG(semanticAnalyser.go(), "Invalid Identifier for Type", result);
+    SemanticCompiler  compiler(file, result);
+
+    EXPECT_THROW_OR_DEBUG(compiler.compile(), "Invalid Identifier for Type", result);
 }
 
 TEST(SemanticTest, TypeNameMapInValid_UnderScore)
 {
-    using ThorsAnvil::Anvil::Ice::Semantic;
-    using ThorsAnvil::Anvil::Ice::StandardScope;
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
@@ -309,15 +292,13 @@ namespace Good_Name_Space
 }
 )");
 
-    StandardScope     globalScope;
-    Semantic          semanticAnalyser(globalScope, file, result);
-    EXPECT_THROW_OR_DEBUG(semanticAnalyser.go(), "Invalid Identifier for Type", result);
+    SemanticCompiler  compiler(file, result);
+
+    EXPECT_THROW_OR_DEBUG(compiler.compile(), "Invalid Identifier for Type", result);
 }
 
 TEST(SemanticTest, TypeNameFuncInValid_UnderScore)
 {
-    using ThorsAnvil::Anvil::Ice::Semantic;
-    using ThorsAnvil::Anvil::Ice::StandardScope;
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
@@ -326,16 +307,14 @@ namespace Good_Name_Space
 }
 )");
 
-    StandardScope     globalScope;
-    Semantic          semanticAnalyser(globalScope, file, result);
-    EXPECT_THROW_OR_DEBUG(semanticAnalyser.go(), "Invalid Identifier for Type", result);
+    SemanticCompiler  compiler(file, result);
+
+    EXPECT_THROW_OR_DEBUG(compiler.compile(), "Invalid Identifier for Type", result);
 }
 
 
 TEST(SemanticTest, TypeNameObjectInValid_Short)
 {
-    using ThorsAnvil::Anvil::Ice::Semantic;
-    using ThorsAnvil::Anvil::Ice::StandardScope;
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
@@ -348,15 +327,13 @@ namespace Good_Name_Space
 }
 )");
 
-    StandardScope     globalScope;
-    Semantic          semanticAnalyser(globalScope, file, result);
-    EXPECT_THROW_OR_DEBUG(semanticAnalyser.go(), "Invalid Identifier for Type", result);
+    SemanticCompiler  compiler(file, result);
+
+    EXPECT_THROW_OR_DEBUG(compiler.compile(), "Invalid Identifier for Type", result);
 }
 
 TEST(SemanticTest, TypeNameArrayInValid_Short)
 {
-    using ThorsAnvil::Anvil::Ice::Semantic;
-    using ThorsAnvil::Anvil::Ice::StandardScope;
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
@@ -365,15 +342,13 @@ namespace Good_Name_Space
 }
 )");
 
-    StandardScope     globalScope;
-    Semantic          semanticAnalyser(globalScope, file, result);
-    EXPECT_THROW_OR_DEBUG(semanticAnalyser.go(), "Invalid Identifier for Type", result);
+    SemanticCompiler  compiler(file, result);
+
+    EXPECT_THROW_OR_DEBUG(compiler.compile(), "Invalid Identifier for Type", result);
 }
 
 TEST(SemanticTest, TypeNameMapInValid_Short)
 {
-    using ThorsAnvil::Anvil::Ice::Semantic;
-    using ThorsAnvil::Anvil::Ice::StandardScope;
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
@@ -382,15 +357,13 @@ namespace Good_Name_Space
 }
 )");
 
-    StandardScope     globalScope;
-    Semantic          semanticAnalyser(globalScope, file, result);
-    EXPECT_THROW_OR_DEBUG(semanticAnalyser.go(), "Invalid Identifier for Type", result);
+    SemanticCompiler  compiler(file, result);
+
+    EXPECT_THROW_OR_DEBUG(compiler.compile(), "Invalid Identifier for Type", result);
 }
 
 TEST(SemanticTest, TypeNameFuncInValid_Short)
 {
-    using ThorsAnvil::Anvil::Ice::Semantic;
-    using ThorsAnvil::Anvil::Ice::StandardScope;
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
@@ -399,15 +372,13 @@ namespace Good_Name_Space
 }
 )");
 
-    StandardScope     globalScope;
-    Semantic          semanticAnalyser(globalScope, file, result);
-    EXPECT_THROW_OR_DEBUG(semanticAnalyser.go(), "Invalid Identifier for Type", result);
+    SemanticCompiler  compiler(file, result);
+
+    EXPECT_THROW_OR_DEBUG(compiler.compile(), "Invalid Identifier for Type", result);
 }
 
 TEST(SemanticTest, ObjectNameVariableValid)
 {
-    using ThorsAnvil::Anvil::Ice::Semantic;
-    using ThorsAnvil::Anvil::Ice::StandardScope;
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
@@ -416,15 +387,13 @@ namespace Good_Name_Space
 }
 )");
 
-    StandardScope     globalScope;
-    Semantic          semanticAnalyser(globalScope, file, result);
-    EXPECT_TRUE_OR_DEBUG(semanticAnalyser.go(), result);
+    SemanticCompiler  compiler(file, result);
+
+    EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 }
 
 TEST(SemanticTest, ObjectNameParameterValid)
 {
-    using ThorsAnvil::Anvil::Ice::Semantic;
-    using ThorsAnvil::Anvil::Ice::StandardScope;
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
@@ -433,15 +402,13 @@ namespace Good_Name_Space
 }
 )");
 
-    StandardScope     globalScope;
-    Semantic          semanticAnalyser(globalScope, file, result);
-    EXPECT_TRUE_OR_DEBUG(semanticAnalyser.go(), result);
+    SemanticCompiler  compiler(file, result);
+
+    EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 }
 
 TEST(SemanticTest, ObjectNameVariableInValid_UpperFirst)
 {
-    using ThorsAnvil::Anvil::Ice::Semantic;
-    using ThorsAnvil::Anvil::Ice::StandardScope;
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
@@ -450,15 +417,13 @@ namespace Good_Name_Space
 }
 )");
 
-    StandardScope     globalScope;
-    Semantic          semanticAnalyser(globalScope, file, result);
-    EXPECT_THROW_OR_DEBUG(semanticAnalyser.go(), "Invalid Identifier for Object", result);
+    SemanticCompiler  compiler(file, result);
+
+    EXPECT_THROW_OR_DEBUG(compiler.compile(), "Invalid Identifier for Object", result);
 }
 
 TEST(SemanticTest, ObjectNameParameterInValid_UpperFirst)
 {
-    using ThorsAnvil::Anvil::Ice::Semantic;
-    using ThorsAnvil::Anvil::Ice::StandardScope;
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
@@ -467,15 +432,13 @@ namespace Good_Name_Space
 }
 )");
 
-    StandardScope     globalScope;
-    Semantic          semanticAnalyser(globalScope, file, result);
-    EXPECT_THROW_OR_DEBUG(semanticAnalyser.go(), "Invalid Identifier for Object", result);
+    SemanticCompiler  compiler(file, result);
+
+    EXPECT_THROW_OR_DEBUG(compiler.compile(), "Invalid Identifier for Object", result);
 }
 
 TEST(SemanticTest, FindDeclInScopeValid)
 {
-    using ThorsAnvil::Anvil::Ice::Semantic;
-    using ThorsAnvil::Anvil::Ice::StandardScope;
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
@@ -484,15 +447,13 @@ namespace Good_Name_Space
 }
 )");
 
-    StandardScope     globalScope;
-    Semantic          semanticAnalyser(globalScope, file, result);
-    EXPECT_TRUE_OR_DEBUG(semanticAnalyser.go(), result);
+    SemanticCompiler  compiler(file, result);
+
+    EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 }
 
 TEST(SemanticTest, FindDeclInScopeInValid_BadNameSpace)
 {
-    using ThorsAnvil::Anvil::Ice::Semantic;
-    using ThorsAnvil::Anvil::Ice::StandardScope;
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
@@ -501,15 +462,13 @@ namespace Good_Name_Space
 }
 )");
 
-    StandardScope     globalScope;
-    Semantic          semanticAnalyser(globalScope, file, result);
-    EXPECT_THROW_OR_DEBUG(semanticAnalyser.go(), "Could Not Find Type", result);
+    SemanticCompiler  compiler(file, result);
+
+    EXPECT_THROW_OR_DEBUG(compiler.compile(), "Could Not Find Type", result);
 }
 
 TEST(SemanticTest, FindDeclInScopeInValid_BadType)
 {
-    using ThorsAnvil::Anvil::Ice::Semantic;
-    using ThorsAnvil::Anvil::Ice::StandardScope;
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
@@ -518,16 +477,13 @@ namespace Good_Name_Space
 }
 )");
 
-    StandardScope     globalScope;
-    Semantic          semanticAnalyser(globalScope, file, result);
-    EXPECT_THROW_OR_DEBUG(semanticAnalyser.go(), "Could Not Find Type", result);
+    SemanticCompiler  compiler(file, result);
+
+    EXPECT_THROW_OR_DEBUG(compiler.compile(), "Could Not Find Type", result);
 }
 
 TEST(SemanticTest, AddClassNormalNameSpace)
 {
-    using ThorsAnvil::Anvil::Ice::Semantic;
-    using ThorsAnvil::Anvil::Ice::StandardScope;
-    using ThorsAnvil::Anvil::Ice::Class;
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
@@ -536,20 +492,18 @@ namespace Good_Name_Space
 }
 )");
 
-    StandardScope     globalScope;
-    Semantic          semanticAnalyser(globalScope, file, result);
-    EXPECT_TRUE_OR_DEBUG(semanticAnalyser.go(), result);
+    using ThorsAnvil::Anvil::Ice::Class;
+    SemanticCompiler  compiler(file, result);
+
+    EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 
     EXPECT_NO_THROW(
-        Class& classInfo = getType<Class>(globalScope, "Good_Name_Space", "MyClass")
+        Class& classInfo = getType<Class>(compiler.globalScope, "Good_Name_Space", "MyClass")
     );
 }
 
 TEST(SemanticTest, AddArrayNormalNameSpace)
 {
-    using ThorsAnvil::Anvil::Ice::Semantic;
-    using ThorsAnvil::Anvil::Ice::StandardScope;
-    using ThorsAnvil::Anvil::Ice::Array;
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
@@ -558,20 +512,18 @@ namespace Good_Name_Space
 }
 )");
 
-    StandardScope     globalScope;
-    Semantic          semanticAnalyser(globalScope, file, result);
-    EXPECT_TRUE_OR_DEBUG(semanticAnalyser.go(), result);
+    using ThorsAnvil::Anvil::Ice::Array;
+    SemanticCompiler  compiler(file, result);
+
+    EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 
     EXPECT_NO_THROW(
-        Array& classInfo = getType<Array>(globalScope, "Good_Name_Space", "MyArray")
+        Array& classInfo = getType<Array>(compiler.globalScope, "Good_Name_Space", "MyArray")
     );
 }
 
 TEST(SemanticTest, AddMapNormalNameSpace)
 {
-    using ThorsAnvil::Anvil::Ice::Semantic;
-    using ThorsAnvil::Anvil::Ice::StandardScope;
-    using ThorsAnvil::Anvil::Ice::Map;
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
@@ -580,20 +532,18 @@ namespace Good_Name_Space
 }
 )");
 
-    StandardScope     globalScope;
-    Semantic          semanticAnalyser(globalScope, file, result);
-    EXPECT_TRUE_OR_DEBUG(semanticAnalyser.go(), result);
+    using ThorsAnvil::Anvil::Ice::Map;
+    SemanticCompiler  compiler(file, result);
+
+    EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 
     EXPECT_NO_THROW(
-        Map& classInfo = getType<Map>(globalScope, "Good_Name_Space", "MyMap")
+        Map& classInfo = getType<Map>(compiler.globalScope, "Good_Name_Space", "MyMap")
     );
 }
 
 TEST(SemanticTest, AddFuncNormalNameSpace)
 {
-    using ThorsAnvil::Anvil::Ice::Semantic;
-    using ThorsAnvil::Anvil::Ice::StandardScope;
-    using ThorsAnvil::Anvil::Ice::Func;
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
@@ -602,21 +552,19 @@ namespace Good_Name_Space
 }
 )");
 
-    StandardScope     globalScope;
-    Semantic          semanticAnalyser(globalScope, file, result);
-    EXPECT_TRUE_OR_DEBUG(semanticAnalyser.go(), result);
+    using ThorsAnvil::Anvil::Ice::Func;
+    SemanticCompiler  compiler(file, result);
+
+    EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 
     EXPECT_NO_THROW(
-        Func& classInfo = getType<Func>(globalScope, "Good_Name_Space", "MyFunc")
+        Func& classInfo = getType<Func>(compiler.globalScope, "Good_Name_Space", "MyFunc")
     );
 }
 
 
 TEST(SemanticTest, AddClassNestedNameSpace)
 {
-    using ThorsAnvil::Anvil::Ice::Semantic;
-    using ThorsAnvil::Anvil::Ice::StandardScope;
-    using ThorsAnvil::Anvil::Ice::Class;
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
@@ -628,20 +576,18 @@ namespace Good_Name_Space
 }
 )");
 
-    StandardScope     globalScope;
-    Semantic          semanticAnalyser(globalScope, file, result);
-    EXPECT_TRUE_OR_DEBUG(semanticAnalyser.go(), result);
+    using ThorsAnvil::Anvil::Ice::Class;
+    SemanticCompiler  compiler(file, result);
+
+    EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 
     EXPECT_NO_THROW(
-        Class& classInfo = getType<Class>(globalScope, "Good_Name_Space", "Nest_Name", "MyClass")
+        Class& classInfo = getType<Class>(compiler.globalScope, "Good_Name_Space", "Nest_Name", "MyClass")
     );
 }
 
 TEST(SemanticTest, AddArrayNestedNameSpace)
 {
-    using ThorsAnvil::Anvil::Ice::Semantic;
-    using ThorsAnvil::Anvil::Ice::StandardScope;
-    using ThorsAnvil::Anvil::Ice::Array;
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
@@ -653,20 +599,18 @@ namespace Good_Name_Space
 }
 )");
 
-    StandardScope     globalScope;
-    Semantic          semanticAnalyser(globalScope, file, result);
-    EXPECT_TRUE_OR_DEBUG(semanticAnalyser.go(), result);
+    using ThorsAnvil::Anvil::Ice::Array;
+    SemanticCompiler  compiler(file, result);
+
+    EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 
     EXPECT_NO_THROW(
-        Array& classInfo = getType<Array>(globalScope, "Good_Name_Space", "Nest_Name", "MyArray")
+        Array& classInfo = getType<Array>(compiler.globalScope, "Good_Name_Space", "Nest_Name", "MyArray")
     );
 }
 
 TEST(SemanticTest, AddMapNestedNameSpace)
 {
-    using ThorsAnvil::Anvil::Ice::Semantic;
-    using ThorsAnvil::Anvil::Ice::StandardScope;
-    using ThorsAnvil::Anvil::Ice::Map;
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
@@ -678,20 +622,18 @@ namespace Good_Name_Space
 }
 )");
 
-    StandardScope     globalScope;
-    Semantic          semanticAnalyser(globalScope, file, result);
-    EXPECT_TRUE_OR_DEBUG(semanticAnalyser.go(), result);
+    using ThorsAnvil::Anvil::Ice::Map;
+    SemanticCompiler  compiler(file, result);
+
+    EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 
     EXPECT_NO_THROW(
-        Map& classInfo = getType<Map>(globalScope, "Good_Name_Space", "Nest_Name", "MyMap")
+        Map& classInfo = getType<Map>(compiler.globalScope, "Good_Name_Space", "Nest_Name", "MyMap")
     );
 }
 
 TEST(SemanticTest, AddFuncNestedNameSpace)
 {
-    using ThorsAnvil::Anvil::Ice::Semantic;
-    using ThorsAnvil::Anvil::Ice::StandardScope;
-    using ThorsAnvil::Anvil::Ice::Func;
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
@@ -703,26 +645,22 @@ namespace Good_Name_Space
 }
 )");
 
-    StandardScope     globalScope;
-    Semantic          semanticAnalyser(globalScope, file, result);
-    EXPECT_TRUE_OR_DEBUG(semanticAnalyser.go(), result);
+    using ThorsAnvil::Anvil::Ice::Func;
+    SemanticCompiler  compiler(file, result);
 
-    auto findGNS = globalScope.find("Good_Name_Space");
+    EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
+
+    auto findGNS = compiler.globalScope.find("Good_Name_Space");
     ASSERT_TRUE(findGNS.first);
 
     EXPECT_NO_THROW(
-        Func& classInfo = getType<Func>(globalScope, "Good_Name_Space", "Nest_Name", "MyFunc")
+        Func& classInfo = getType<Func>(compiler.globalScope, "Good_Name_Space", "Nest_Name", "MyFunc")
     );
 }
 
 
 TEST(SemanticTest, AddIdentifierLocalClass)
 {
-    using ThorsAnvil::Anvil::Ice::Semantic;
-    using ThorsAnvil::Anvil::Ice::StandardScope;
-    using ThorsAnvil::Anvil::Ice::Type;
-    using ThorsAnvil::Anvil::Ice::Class;
-    using ThorsAnvil::Anvil::Ice::Object;
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
@@ -735,27 +673,25 @@ namespace Good_Name_Space
 }
 )");
 
-    StandardScope     globalScope;
-    Semantic          semanticAnalyser(globalScope, file, result);
-    EXPECT_TRUE_OR_DEBUG(semanticAnalyser.go(), result);
+    using ThorsAnvil::Anvil::Ice::Type;
+    using ThorsAnvil::Anvil::Ice::Class;
+    using ThorsAnvil::Anvil::Ice::Object;
+    SemanticCompiler  compiler(file, result);
 
-    auto findGNS = globalScope.find("Good_Name_Space");
+    EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
+
+    auto findGNS = compiler.globalScope.find("Good_Name_Space");
     ASSERT_TRUE(findGNS.first);
 
     EXPECT_NO_THROW(
-        Type&   typeInfo = getType<Class>(globalScope, "Good_Name_Space", "Nest_Name", "MyClass");
-        Object& obectInfo = getType<Object>(globalScope, "Good_Name_Space", "Nest_Name", "value");
+        Type&   typeInfo = getType<Class>(compiler.globalScope, "Good_Name_Space", "Nest_Name", "MyClass");
+        Object& obectInfo = getType<Object>(compiler.globalScope, "Good_Name_Space", "Nest_Name", "value");
         ASSERT_TRUE(&typeInfo == &obectInfo.getType());
     );
 }
 
 TEST(SemanticTest, AddIdentifierParentNameClass)
 {
-    using ThorsAnvil::Anvil::Ice::Semantic;
-    using ThorsAnvil::Anvil::Ice::StandardScope;
-    using ThorsAnvil::Anvil::Ice::Type;
-    using ThorsAnvil::Anvil::Ice::Class;
-    using ThorsAnvil::Anvil::Ice::Object;
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
@@ -769,27 +705,25 @@ namespace Good_Name_Space
 }
 )");
 
-    StandardScope     globalScope;
-    Semantic          semanticAnalyser(globalScope, file, result);
-    EXPECT_TRUE_OR_DEBUG(semanticAnalyser.go(), result);
+    using ThorsAnvil::Anvil::Ice::Type;
+    using ThorsAnvil::Anvil::Ice::Class;
+    using ThorsAnvil::Anvil::Ice::Object;
+    SemanticCompiler  compiler(file, result);
 
-    auto findGNS = globalScope.find("Good_Name_Space");
+    EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
+
+    auto findGNS = compiler.globalScope.find("Good_Name_Space");
     ASSERT_TRUE(findGNS.first);
 
     EXPECT_NO_THROW(
-        Type&   typeInfo = getType<Class>(globalScope, "Good_Name_Space", "MyClass");
-        Object& obectInfo = getType<Object>(globalScope, "Good_Name_Space", "Nest_Name", "value");
+        Type&   typeInfo = getType<Class>(compiler.globalScope, "Good_Name_Space", "MyClass");
+        Object& obectInfo = getType<Object>(compiler.globalScope, "Good_Name_Space", "Nest_Name", "value");
         ASSERT_TRUE(&typeInfo == &obectInfo.getType());
     );
 }
 
 TEST(SemanticTest, AddIdentifierAnotherNameClass)
 {
-    using ThorsAnvil::Anvil::Ice::Semantic;
-    using ThorsAnvil::Anvil::Ice::StandardScope;
-    using ThorsAnvil::Anvil::Ice::Type;
-    using ThorsAnvil::Anvil::Ice::Class;
-    using ThorsAnvil::Anvil::Ice::Object;
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
@@ -806,27 +740,25 @@ namespace Good_Name_Space
 }
 )");
 
-    StandardScope     globalScope;
-    Semantic          semanticAnalyser(globalScope, file, result);
-    EXPECT_TRUE_OR_DEBUG(semanticAnalyser.go(), result);
+    using ThorsAnvil::Anvil::Ice::Type;
+    using ThorsAnvil::Anvil::Ice::Class;
+    using ThorsAnvil::Anvil::Ice::Object;
+    SemanticCompiler  compiler(file, result);
 
-    auto findGNS = globalScope.find("Good_Name_Space");
+    EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
+
+    auto findGNS = compiler.globalScope.find("Good_Name_Space");
     ASSERT_TRUE(findGNS.first);
 
     EXPECT_NO_THROW(
-        Type&   typeInfo = getType<Class>(globalScope, "Good_Name_Space", "Alt", "MyClass");
-        Object& obectInfo = getType<Object>(globalScope, "Good_Name_Space", "Nest_Name", "value");
+        Type&   typeInfo = getType<Class>(compiler.globalScope, "Good_Name_Space", "Alt", "MyClass");
+        Object& obectInfo = getType<Object>(compiler.globalScope, "Good_Name_Space", "Nest_Name", "value");
         ASSERT_TRUE(&typeInfo == &obectInfo.getType());
     );
 }
 
 TEST(SemanticTest, AddIdentifierAnonClass)
 {
-    using ThorsAnvil::Anvil::Ice::Semantic;
-    using ThorsAnvil::Anvil::Ice::StandardScope;
-    using ThorsAnvil::Anvil::Ice::Type;
-    using ThorsAnvil::Anvil::Ice::Class;
-    using ThorsAnvil::Anvil::Ice::Object;
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
@@ -838,27 +770,25 @@ namespace Good_Name_Space
 }
 )");
 
-    StandardScope     globalScope;
-    Semantic          semanticAnalyser(globalScope, file, result);
-    EXPECT_TRUE_OR_DEBUG(semanticAnalyser.go(), result);
+    using ThorsAnvil::Anvil::Ice::Type;
+    using ThorsAnvil::Anvil::Ice::Class;
+    using ThorsAnvil::Anvil::Ice::Object;
+    SemanticCompiler  compiler(file, result);
 
-    auto findGNS = globalScope.find("Good_Name_Space");
+    EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
+
+    auto findGNS = compiler.globalScope.find("Good_Name_Space");
     ASSERT_TRUE(findGNS.first);
 
     EXPECT_NO_THROW(
-        Type&   typeInfo = getType<Class>(globalScope, "Good_Name_Space", "Nest_Name", "$0000000000000000");
-        Object& obectInfo = getType<Object>(globalScope, "Good_Name_Space", "Nest_Name", "value");
+        Type&   typeInfo = getType<Class>(compiler.globalScope, "Good_Name_Space", "Nest_Name", "$0000000000000000");
+        Object& obectInfo = getType<Object>(compiler.globalScope, "Good_Name_Space", "Nest_Name", "value");
         ASSERT_TRUE(&typeInfo == &obectInfo.getType());
     );
 }
 
 TEST(SemanticTest, AddIdentifierLocalArray)
 {
-    using ThorsAnvil::Anvil::Ice::Semantic;
-    using ThorsAnvil::Anvil::Ice::StandardScope;
-    using ThorsAnvil::Anvil::Ice::Type;
-    using ThorsAnvil::Anvil::Ice::Array;
-    using ThorsAnvil::Anvil::Ice::Object;
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
@@ -871,27 +801,25 @@ namespace Good_Name_Space
 }
 )");
 
-    StandardScope     globalScope;
-    Semantic          semanticAnalyser(globalScope, file, result);
-    EXPECT_TRUE_OR_DEBUG(semanticAnalyser.go(), result);
+    using ThorsAnvil::Anvil::Ice::Type;
+    using ThorsAnvil::Anvil::Ice::Array;
+    using ThorsAnvil::Anvil::Ice::Object;
+    SemanticCompiler  compiler(file, result);
 
-    auto findGNS = globalScope.find("Good_Name_Space");
+    EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
+
+    auto findGNS = compiler.globalScope.find("Good_Name_Space");
     ASSERT_TRUE(findGNS.first);
 
     EXPECT_NO_THROW(
-        Type&   typeInfo = getType<Array>(globalScope, "Good_Name_Space", "Nest_Name", "MyArray");
-        Object& obectInfo = getType<Object>(globalScope, "Good_Name_Space", "Nest_Name", "value");
+        Type&   typeInfo = getType<Array>(compiler.globalScope, "Good_Name_Space", "Nest_Name", "MyArray");
+        Object& obectInfo = getType<Object>(compiler.globalScope, "Good_Name_Space", "Nest_Name", "value");
         ASSERT_TRUE(&typeInfo == &obectInfo.getType());
     );
 }
 
 TEST(SemanticTest, AddIdentifierParentNameArray)
 {
-    using ThorsAnvil::Anvil::Ice::Semantic;
-    using ThorsAnvil::Anvil::Ice::StandardScope;
-    using ThorsAnvil::Anvil::Ice::Type;
-    using ThorsAnvil::Anvil::Ice::Array;
-    using ThorsAnvil::Anvil::Ice::Object;
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
@@ -905,27 +833,25 @@ namespace Good_Name_Space
 }
 )");
 
-    StandardScope     globalScope;
-    Semantic          semanticAnalyser(globalScope, file, result);
-    EXPECT_TRUE_OR_DEBUG(semanticAnalyser.go(), result);
+    using ThorsAnvil::Anvil::Ice::Type;
+    using ThorsAnvil::Anvil::Ice::Array;
+    using ThorsAnvil::Anvil::Ice::Object;
+    SemanticCompiler  compiler(file, result);
 
-    auto findGNS = globalScope.find("Good_Name_Space");
+    EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
+
+    auto findGNS = compiler.globalScope.find("Good_Name_Space");
     ASSERT_TRUE(findGNS.first);
 
     EXPECT_NO_THROW(
-        Type&   typeInfo = getType<Array>(globalScope, "Good_Name_Space", "MyArray");
-        Object& obectInfo = getType<Object>(globalScope, "Good_Name_Space", "Nest_Name", "value");
+        Type&   typeInfo = getType<Array>(compiler.globalScope, "Good_Name_Space", "MyArray");
+        Object& obectInfo = getType<Object>(compiler.globalScope, "Good_Name_Space", "Nest_Name", "value");
         ASSERT_TRUE(&typeInfo == &obectInfo.getType());
     );
 }
 
 TEST(SemanticTest, AddIdentifierAnotherNameArray)
 {
-    using ThorsAnvil::Anvil::Ice::Semantic;
-    using ThorsAnvil::Anvil::Ice::StandardScope;
-    using ThorsAnvil::Anvil::Ice::Type;
-    using ThorsAnvil::Anvil::Ice::Array;
-    using ThorsAnvil::Anvil::Ice::Object;
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
@@ -942,27 +868,25 @@ namespace Good_Name_Space
 }
 )");
 
-    StandardScope     globalScope;
-    Semantic          semanticAnalyser(globalScope, file, result);
-    EXPECT_TRUE_OR_DEBUG(semanticAnalyser.go(), result);
+    using ThorsAnvil::Anvil::Ice::Type;
+    using ThorsAnvil::Anvil::Ice::Array;
+    using ThorsAnvil::Anvil::Ice::Object;
+    SemanticCompiler  compiler(file, result);
 
-    auto findGNS = globalScope.find("Good_Name_Space");
+    EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
+
+    auto findGNS = compiler.globalScope.find("Good_Name_Space");
     ASSERT_TRUE(findGNS.first);
 
     EXPECT_NO_THROW(
-        Type&   typeInfo = getType<Array>(globalScope, "Good_Name_Space", "Alt", "MyArray");
-        Object& obectInfo = getType<Object>(globalScope, "Good_Name_Space", "Nest_Name", "value");
+        Type&   typeInfo = getType<Array>(compiler.globalScope, "Good_Name_Space", "Alt", "MyArray");
+        Object& obectInfo = getType<Object>(compiler.globalScope, "Good_Name_Space", "Nest_Name", "value");
         ASSERT_TRUE(&typeInfo == &obectInfo.getType());
     );
 }
 
 TEST(SemanticTest, AddIdentifierAnonArray)
 {
-    using ThorsAnvil::Anvil::Ice::Semantic;
-    using ThorsAnvil::Anvil::Ice::StandardScope;
-    using ThorsAnvil::Anvil::Ice::Type;
-    using ThorsAnvil::Anvil::Ice::Array;
-    using ThorsAnvil::Anvil::Ice::Object;
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
@@ -974,27 +898,25 @@ namespace Good_Name_Space
 }
 )");
 
-    StandardScope     globalScope;
-    Semantic          semanticAnalyser(globalScope, file, result);
-    EXPECT_TRUE_OR_DEBUG(semanticAnalyser.go(), result);
+    using ThorsAnvil::Anvil::Ice::Type;
+    using ThorsAnvil::Anvil::Ice::Array;
+    using ThorsAnvil::Anvil::Ice::Object;
+    SemanticCompiler  compiler(file, result);
 
-    auto findGNS = globalScope.find("Good_Name_Space");
+    EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
+
+    auto findGNS = compiler.globalScope.find("Good_Name_Space");
     ASSERT_TRUE(findGNS.first);
 
     EXPECT_NO_THROW(
-        Type&   typeInfo = getType<Array>(globalScope, "Good_Name_Space", "Nest_Name", "$0000000000000000");
-        Object& obectInfo = getType<Object>(globalScope, "Good_Name_Space", "Nest_Name", "value");
+        Type&   typeInfo = getType<Array>(compiler.globalScope, "Good_Name_Space", "Nest_Name", "$0000000000000000");
+        Object& obectInfo = getType<Object>(compiler.globalScope, "Good_Name_Space", "Nest_Name", "value");
         ASSERT_TRUE(&typeInfo == &obectInfo.getType());
     );
 }
 
 TEST(SemanticTest, AddIdentifierLocalMap)
 {
-    using ThorsAnvil::Anvil::Ice::Semantic;
-    using ThorsAnvil::Anvil::Ice::StandardScope;
-    using ThorsAnvil::Anvil::Ice::Type;
-    using ThorsAnvil::Anvil::Ice::Map;
-    using ThorsAnvil::Anvil::Ice::Object;
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
@@ -1007,27 +929,25 @@ namespace Good_Name_Space
 }
 )");
 
-    StandardScope     globalScope;
-    Semantic          semanticAnalyser(globalScope, file, result);
-    EXPECT_TRUE_OR_DEBUG(semanticAnalyser.go(), result);
+    using ThorsAnvil::Anvil::Ice::Type;
+    using ThorsAnvil::Anvil::Ice::Map;
+    using ThorsAnvil::Anvil::Ice::Object;
+    SemanticCompiler  compiler(file, result);
 
-    auto findGNS = globalScope.find("Good_Name_Space");
+    EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
+
+    auto findGNS = compiler.globalScope.find("Good_Name_Space");
     ASSERT_TRUE(findGNS.first);
 
     EXPECT_NO_THROW(
-        Type&   typeInfo = getType<Map>(globalScope, "Good_Name_Space", "Nest_Name", "MyMap");
-        Object& obectInfo = getType<Object>(globalScope, "Good_Name_Space", "Nest_Name", "value");
+        Type&   typeInfo = getType<Map>(compiler.globalScope, "Good_Name_Space", "Nest_Name", "MyMap");
+        Object& obectInfo = getType<Object>(compiler.globalScope, "Good_Name_Space", "Nest_Name", "value");
         ASSERT_TRUE(&typeInfo == &obectInfo.getType());
     );
 }
 
 TEST(SemanticTest, AddIdentifierParentNameMap)
 {
-    using ThorsAnvil::Anvil::Ice::Semantic;
-    using ThorsAnvil::Anvil::Ice::StandardScope;
-    using ThorsAnvil::Anvil::Ice::Type;
-    using ThorsAnvil::Anvil::Ice::Map;
-    using ThorsAnvil::Anvil::Ice::Object;
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
@@ -1041,27 +961,25 @@ namespace Good_Name_Space
 }
 )");
 
-    StandardScope     globalScope;
-    Semantic          semanticAnalyser(globalScope, file, result);
-    EXPECT_TRUE_OR_DEBUG(semanticAnalyser.go(), result);
+    using ThorsAnvil::Anvil::Ice::Type;
+    using ThorsAnvil::Anvil::Ice::Map;
+    using ThorsAnvil::Anvil::Ice::Object;
+    SemanticCompiler  compiler(file, result);
 
-    auto findGNS = globalScope.find("Good_Name_Space");
+    EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
+
+    auto findGNS = compiler.globalScope.find("Good_Name_Space");
     ASSERT_TRUE(findGNS.first);
 
     EXPECT_NO_THROW(
-        Type&   typeInfo = getType<Map>(globalScope, "Good_Name_Space", "MyMap");
-        Object& obectInfo = getType<Object>(globalScope, "Good_Name_Space", "Nest_Name", "value");
+        Type&   typeInfo = getType<Map>(compiler.globalScope, "Good_Name_Space", "MyMap");
+        Object& obectInfo = getType<Object>(compiler.globalScope, "Good_Name_Space", "Nest_Name", "value");
         ASSERT_TRUE(&typeInfo == &obectInfo.getType());
     );
 }
 
 TEST(SemanticTest, AddIdentifierAnotherNameMap)
 {
-    using ThorsAnvil::Anvil::Ice::Semantic;
-    using ThorsAnvil::Anvil::Ice::StandardScope;
-    using ThorsAnvil::Anvil::Ice::Type;
-    using ThorsAnvil::Anvil::Ice::Map;
-    using ThorsAnvil::Anvil::Ice::Object;
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
@@ -1078,27 +996,25 @@ namespace Good_Name_Space
 }
 )");
 
-    StandardScope     globalScope;
-    Semantic          semanticAnalyser(globalScope, file, result);
-    EXPECT_TRUE_OR_DEBUG(semanticAnalyser.go(), result);
+    using ThorsAnvil::Anvil::Ice::Type;
+    using ThorsAnvil::Anvil::Ice::Map;
+    using ThorsAnvil::Anvil::Ice::Object;
+    SemanticCompiler  compiler(file, result);
 
-    auto findGNS = globalScope.find("Good_Name_Space");
+    EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
+
+    auto findGNS = compiler.globalScope.find("Good_Name_Space");
     ASSERT_TRUE(findGNS.first);
 
     EXPECT_NO_THROW(
-        Type&   typeInfo = getType<Map>(globalScope, "Good_Name_Space", "Alt", "MyMap");
-        Object& obectInfo = getType<Object>(globalScope, "Good_Name_Space", "Nest_Name", "value");
+        Type&   typeInfo = getType<Map>(compiler.globalScope, "Good_Name_Space", "Alt", "MyMap");
+        Object& obectInfo = getType<Object>(compiler.globalScope, "Good_Name_Space", "Nest_Name", "value");
         ASSERT_TRUE(&typeInfo == &obectInfo.getType());
     );
 }
 
 TEST(SemanticTest, AddIdentifierAnonMap)
 {
-    using ThorsAnvil::Anvil::Ice::Semantic;
-    using ThorsAnvil::Anvil::Ice::StandardScope;
-    using ThorsAnvil::Anvil::Ice::Type;
-    using ThorsAnvil::Anvil::Ice::Map;
-    using ThorsAnvil::Anvil::Ice::Object;
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
@@ -1110,27 +1026,25 @@ namespace Good_Name_Space
 }
 )");
 
-    StandardScope     globalScope;
-    Semantic          semanticAnalyser(globalScope, file, result);
-    EXPECT_TRUE_OR_DEBUG(semanticAnalyser.go(), result);
+    using ThorsAnvil::Anvil::Ice::Type;
+    using ThorsAnvil::Anvil::Ice::Map;
+    using ThorsAnvil::Anvil::Ice::Object;
+    SemanticCompiler  compiler(file, result);
 
-    auto findGNS = globalScope.find("Good_Name_Space");
+    EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
+
+    auto findGNS = compiler.globalScope.find("Good_Name_Space");
     ASSERT_TRUE(findGNS.first);
 
     EXPECT_NO_THROW(
-        Type&   typeInfo = getType<Map>(globalScope, "Good_Name_Space", "Nest_Name", "$0000000000000000");
-        Object& obectInfo = getType<Object>(globalScope, "Good_Name_Space", "Nest_Name", "value");
+        Type&   typeInfo = getType<Map>(compiler.globalScope, "Good_Name_Space", "Nest_Name", "$0000000000000000");
+        Object& obectInfo = getType<Object>(compiler.globalScope, "Good_Name_Space", "Nest_Name", "value");
         ASSERT_TRUE(&typeInfo == &obectInfo.getType());
     );
 }
 
 TEST(SemanticTest, AddIdentifierLocalFunc)
 {
-    using ThorsAnvil::Anvil::Ice::Semantic;
-    using ThorsAnvil::Anvil::Ice::StandardScope;
-    using ThorsAnvil::Anvil::Ice::Type;
-    using ThorsAnvil::Anvil::Ice::Func;
-    using ThorsAnvil::Anvil::Ice::Object;
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
@@ -1143,27 +1057,25 @@ namespace Good_Name_Space
 }
 )");
 
-    StandardScope     globalScope;
-    Semantic          semanticAnalyser(globalScope, file, result);
-    EXPECT_TRUE_OR_DEBUG(semanticAnalyser.go(), result);
+    using ThorsAnvil::Anvil::Ice::Type;
+    using ThorsAnvil::Anvil::Ice::Func;
+    using ThorsAnvil::Anvil::Ice::Object;
+    SemanticCompiler  compiler(file, result);
 
-    auto findGNS = globalScope.find("Good_Name_Space");
+    EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
+
+    auto findGNS = compiler.globalScope.find("Good_Name_Space");
     ASSERT_TRUE(findGNS.first);
 
     EXPECT_NO_THROW(
-        Type&   typeInfo = getType<Func>(globalScope, "Good_Name_Space", "Nest_Name", "MyFunc");
-        Object& obectInfo = getType<Object>(globalScope, "Good_Name_Space", "Nest_Name", "value");
+        Type&   typeInfo = getType<Func>(compiler.globalScope, "Good_Name_Space", "Nest_Name", "MyFunc");
+        Object& obectInfo = getType<Object>(compiler.globalScope, "Good_Name_Space", "Nest_Name", "value");
         ASSERT_TRUE(&typeInfo == &obectInfo.getType());
     );
 }
 
 TEST(SemanticTest, AddIdentifierParentNameFunc)
 {
-    using ThorsAnvil::Anvil::Ice::Semantic;
-    using ThorsAnvil::Anvil::Ice::StandardScope;
-    using ThorsAnvil::Anvil::Ice::Type;
-    using ThorsAnvil::Anvil::Ice::Func;
-    using ThorsAnvil::Anvil::Ice::Object;
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
@@ -1177,27 +1089,25 @@ namespace Good_Name_Space
 }
 )");
 
-    StandardScope     globalScope;
-    Semantic          semanticAnalyser(globalScope, file, result);
-    EXPECT_TRUE_OR_DEBUG(semanticAnalyser.go(), result);
+    using ThorsAnvil::Anvil::Ice::Type;
+    using ThorsAnvil::Anvil::Ice::Func;
+    using ThorsAnvil::Anvil::Ice::Object;
+    SemanticCompiler  compiler(file, result);
 
-    auto findGNS = globalScope.find("Good_Name_Space");
+    EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
+
+    auto findGNS = compiler.globalScope.find("Good_Name_Space");
     ASSERT_TRUE(findGNS.first);
 
     EXPECT_NO_THROW(
-        Type&   typeInfo = getType<Func>(globalScope, "Good_Name_Space", "MyFunc");
-        Object& obectInfo = getType<Object>(globalScope, "Good_Name_Space", "Nest_Name", "value");
+        Type&   typeInfo = getType<Func>(compiler.globalScope, "Good_Name_Space", "MyFunc");
+        Object& obectInfo = getType<Object>(compiler.globalScope, "Good_Name_Space", "Nest_Name", "value");
         ASSERT_TRUE(&typeInfo == &obectInfo.getType());
     );
 }
 
 TEST(SemanticTest, AddIdentifierAnotherNameFunc)
 {
-    using ThorsAnvil::Anvil::Ice::Semantic;
-    using ThorsAnvil::Anvil::Ice::StandardScope;
-    using ThorsAnvil::Anvil::Ice::Type;
-    using ThorsAnvil::Anvil::Ice::Func;
-    using ThorsAnvil::Anvil::Ice::Object;
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
@@ -1214,27 +1124,25 @@ namespace Good_Name_Space
 }
 )");
 
-    StandardScope     globalScope;
-    Semantic          semanticAnalyser(globalScope, file, result);
-    EXPECT_TRUE_OR_DEBUG(semanticAnalyser.go(), result);
+    using ThorsAnvil::Anvil::Ice::Type;
+    using ThorsAnvil::Anvil::Ice::Func;
+    using ThorsAnvil::Anvil::Ice::Object;
+    SemanticCompiler  compiler(file, result);
 
-    auto findGNS = globalScope.find("Good_Name_Space");
+    EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
+
+    auto findGNS = compiler.globalScope.find("Good_Name_Space");
     ASSERT_TRUE(findGNS.first);
 
     EXPECT_NO_THROW(
-        Type&   typeInfo = getType<Func>(globalScope, "Good_Name_Space", "Alt", "MyFunc");
-        Object& obectInfo = getType<Object>(globalScope, "Good_Name_Space", "Nest_Name", "value");
+        Type&   typeInfo = getType<Func>(compiler.globalScope, "Good_Name_Space", "Alt", "MyFunc");
+        Object& obectInfo = getType<Object>(compiler.globalScope, "Good_Name_Space", "Nest_Name", "value");
         ASSERT_TRUE(&typeInfo == &obectInfo.getType());
     );
 }
 
 TEST(SemanticTest, AddIdentifierAnonFunc)
 {
-    using ThorsAnvil::Anvil::Ice::Semantic;
-    using ThorsAnvil::Anvil::Ice::StandardScope;
-    using ThorsAnvil::Anvil::Ice::Type;
-    using ThorsAnvil::Anvil::Ice::Func;
-    using ThorsAnvil::Anvil::Ice::Object;
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
@@ -1246,27 +1154,25 @@ namespace Good_Name_Space
 }
 )");
 
-    StandardScope     globalScope;
-    Semantic          semanticAnalyser(globalScope, file, result);
-    EXPECT_TRUE_OR_DEBUG(semanticAnalyser.go(), result);
+    using ThorsAnvil::Anvil::Ice::Type;
+    using ThorsAnvil::Anvil::Ice::Func;
+    using ThorsAnvil::Anvil::Ice::Object;
+    SemanticCompiler  compiler(file, result);
 
-    auto findGNS = globalScope.find("Good_Name_Space");
+    EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
+
+    auto findGNS = compiler.globalScope.find("Good_Name_Space");
     ASSERT_TRUE(findGNS.first);
 
     EXPECT_NO_THROW(
-        Type&   typeInfo = getType<Func>(globalScope, "Good_Name_Space", "Nest_Name", "$0000000000000000");
-        Object& obectInfo = getType<Object>(globalScope, "Good_Name_Space", "Nest_Name", "value");
+        Type&   typeInfo = getType<Func>(compiler.globalScope, "Good_Name_Space", "Nest_Name", "$0000000000000000");
+        Object& obectInfo = getType<Object>(compiler.globalScope, "Good_Name_Space", "Nest_Name", "value");
         ASSERT_TRUE(&typeInfo == &obectInfo.getType());
     );
 }
 
 TEST(SemanticTest, AddIdentifierInvalidType)
 {
-    using ThorsAnvil::Anvil::Ice::Semantic;
-    using ThorsAnvil::Anvil::Ice::StandardScope;
-    using ThorsAnvil::Anvil::Ice::Type;
-    using ThorsAnvil::Anvil::Ice::Func;
-    using ThorsAnvil::Anvil::Ice::Object;
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
 namespace Good_Name_Space
@@ -1278,8 +1184,11 @@ namespace Good_Name_Space
 }
 )");
 
-    StandardScope     globalScope;
-    Semantic          semanticAnalyser(globalScope, file, result);
-    EXPECT_THROW_OR_DEBUG(semanticAnalyser.go(), "Could Not Find Type", result);
+    using ThorsAnvil::Anvil::Ice::Type;
+    using ThorsAnvil::Anvil::Ice::Func;
+    using ThorsAnvil::Anvil::Ice::Object;
+    SemanticCompiler  compiler(file, result);
+
+    EXPECT_THROW_OR_DEBUG(compiler.compile(), "Could Not Find Type", result);
 }
 

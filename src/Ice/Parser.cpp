@@ -2,8 +2,8 @@
 
 using namespace ThorsAnvil::Anvil::Ice;
 
-Parser::Parser(Action& action, std::istream& input, std::ostream& output)
-    : lexer(action, input, output)
+Parser::Parser(Lexer& lexer, Action& action)
+    : lexer(lexer)
     , parser(lexer, action)
 {}
 

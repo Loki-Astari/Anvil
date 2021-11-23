@@ -5,8 +5,8 @@
 
 %{
 
-// #undef YY_DECL
-// #define YY_DECL int Lexer::doLex(Action&)
+#undef YY_DECL
+#define YY_DECL int Lexer::yylexWithAction(Action& action)
 #define IN_LEXER
 #include "ice.tab.hpp"
 
@@ -18,29 +18,29 @@ NewLine             \n
 String              \"[^"]*\"
 
 %%
-{String}            {action.token(*this);return yy::Parser::token::STRING;}
+{String}            {action.token();return yy::Parser::token::STRING;}
 
-namespace           {action.token(*this);return yy::Parser::token::NAMESPACE;}
-class               {action.token(*this);return yy::Parser::token::CLASS;}
-array               {action.token(*this);return yy::Parser::token::ARRAY;}
-map                 {action.token(*this);return yy::Parser::token::MAP;}
-func                {action.token(*this);return yy::Parser::token::FUNC;}
-::                  {action.token(*this);return yy::Parser::token::SCOPE;}
-->                  {action.token(*this);return yy::Parser::token::ARROW;}
-\{                  {action.token(*this);return '{';}
-\}                  {action.token(*this);return '}';}
-\(                  {action.token(*this);return '(';}
-\)                  {action.token(*this);return ')';}
-:                   {action.token(*this);return ':';}
-;                   {action.token(*this);return ';';}
-\.                  {action.token(*this);return '.';}
-,                   {action.token(*this);return ',';}
+namespace           {action.token();return yy::Parser::token::NAMESPACE;}
+class               {action.token();return yy::Parser::token::CLASS;}
+array               {action.token();return yy::Parser::token::ARRAY;}
+map                 {action.token();return yy::Parser::token::MAP;}
+func                {action.token();return yy::Parser::token::FUNC;}
+::                  {action.token();return yy::Parser::token::SCOPE;}
+->                  {action.token();return yy::Parser::token::ARROW;}
+\{                  {action.token();return '{';}
+\}                  {action.token();return '}';}
+\(                  {action.token();return '(';}
+\)                  {action.token();return ')';}
+:                   {action.token();return ':';}
+;                   {action.token();return ';';}
+\.                  {action.token();return '.';}
+,                   {action.token();return ',';}
 
-{Identifier}        {action.token(*this);return yy::Parser::token::IDENTIFIER;}
+{Identifier}        {action.token();return yy::Parser::token::IDENTIFIER;}
 
-{WhiteSpace}        {action.ignoreSpace(*this);/* Ignore */}
-{NewLine}           {action.newLine(*this);    /* Ignore */}
-.                   {action.invalidCharacter(*this);}
+{WhiteSpace}        {action.ignoreSpace();/* Ignore */}
+{NewLine}           {action.newLine();    /* Ignore */}
+.                   {action.invalidCharacter();}
 
 %%
 

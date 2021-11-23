@@ -14,62 +14,65 @@ class Lexer;
 
 class Action
 {
+    protected:
+    Lexer&          lexer;
+    private:
     std::ostream&   output;
     std::string     currentLine;
     std::size_t     lineNo;
     std::size_t     offset;
     public:
-        Action(std::ostream& output = std::cerr);
+        Action(Lexer& lexer, std::ostream& output = std::cerr);
         virtual ~Action();
 
         // Messaging
         void log(char const* msg);
-        [[ noreturn ]] void error(Lexer& lexer, std::string const& msg);
+        [[ noreturn ]] void error(std::string const& msg);
 
         // Lexing
-        virtual void invalidCharacter(Lexer& lexer)                                     {addToLine(lexer);error(lexer, "Invalid Character");}
-        virtual void ignoreSpace(Lexer& lexer)                                          {addToLine(lexer);}
-        virtual void newLine(Lexer& lexer)                                              {resetLine(lexer);}
-        virtual void token(Lexer& lexer);
+        virtual void invalidCharacter()                               {addToLine();error("Invalid Character");}
+        virtual void ignoreSpace()                                    {addToLine();}
+        virtual void newLine()                                        {resetLine();}
+        virtual void token();
 
 
         // Parsing
-        virtual void assertNoStorage(Lexer&, Int)                                       {}
-        virtual void releaseStorage(Lexer&, Int)                                        {}
-        virtual Int  generateAnonName(Lexer&)                                           {return 0;}
+        virtual void assertNoStorage(Int)                             {}
+        virtual void releaseStorage(Int)                              {}
+        virtual Int  generateAnonName()                               {return 0;}
 
-        virtual Int identifierCreate(Lexer& /*lexer*/)                                  {return 0;}
-        virtual Int identifierCheckObject(Lexer& /*lexer*/, Int /*id*/)                 {return 0;}
-        virtual Int identifierCheckType(Lexer& /*lexer*/, Int /*id*/)                   {return 0;}
-        virtual Int identifierCheckNS(Lexer& /*lexer*/, Int /*id*/)                     {return 0;}
+        virtual Int identifierCreate()                                {return 0;}
+        virtual Int identifierCheckObject(Int /*id*/)                 {return 0;}
+        virtual Int identifierCheckType(Int /*id*/)                   {return 0;}
+        virtual Int identifierCheckNS(Int /*id*/)                     {return 0;}
 
-        virtual Int fullIdentiferCreate(Lexer& /*lexer*/)                               {return 0;}
-        virtual Int fullIdentiferAddPath(Lexer& /*lexer*/, Int /*fp*/, Int /*id*/)      {return 0;}
+        virtual Int fullIdentiferCreate()                             {return 0;}
+        virtual Int fullIdentiferAddPath(Int /*fp*/, Int /*id*/)      {return 0;}
 
-        virtual Int paramListCreate(Lexer& /*lexer*/)                                   {return 0;}
-        virtual Int paramListAdd(Lexer& /*lexer*/, Int /*pl*/, Int /*type*/)            {return 0;}
+        virtual Int paramListCreate()                                 {return 0;}
+        virtual Int paramListAdd(Int /*pl*/, Int /*type*/)            {return 0;}
 
-        virtual Int objectListCreate(Lexer& /*lexer*/)                                  {return 0;}
-        virtual Int objectListAdd(Lexer& /*lexer*/, Int /*ol*/, Int /*object*/)         {return 0;}
+        virtual Int objectListCreate()                                {return 0;}
+        virtual Int objectListAdd(Int /*ol*/, Int /*object*/)         {return 0;}
 
-        virtual Int findTypeInScope(Lexer& /*lexer*/, Int /*fp*/)                       {return 0;}
-        virtual Int findObjectInScope(Lexer& /*lexer*/, Int /*fp*/)                     {return 0;}
+        virtual Int findTypeInScope(Int /*fp*/)                       {return 0;}
+        virtual Int findObjectInScope(Int /*fp*/)                     {return 0;}
 
-        virtual Int scopeAddNamespace(Lexer& /*lexer*/, Int /*name*/)                   {return 0;}
-        virtual Int scopeAddClass(Lexer& /*lexer*/, Int /*name*/)                       {return 0;}
-        virtual Int scopeAddArray(Lexer& /*lexer*/, Int /*name*/, Int /*type*/)         {return 0;}
-        virtual Int scopeAddMap(Lexer& /*lexer*/, Int /*name*/, Int /*k*/, Int /*v*/)   {return 0;}
-        virtual Int scopeAddFunc(Lexer& /*lexer*/, Int /*name*/, Int /*p*/, Int /*r*/)  {return 0;}
-        virtual Int scopeAddObject(Lexer& /*lexer*/, Int /*name*/, Int)                 {return 0;}
-        virtual Int scopeAddStatement(Lexer& /*lexer*/, Int /*s*/)                      {return 0;}
-        virtual Int scopeClose(Lexer& /*lexer*/, Int /*oldSCope*/)                      {return 0;}
+        virtual Int scopeAddNamespace(Int /*name*/)                   {return 0;}
+        virtual Int scopeAddClass(Int /*name*/)                       {return 0;}
+        virtual Int scopeAddArray(Int /*name*/, Int /*type*/)         {return 0;}
+        virtual Int scopeAddMap(Int /*name*/, Int /*k*/, Int /*v*/)   {return 0;}
+        virtual Int scopeAddFunc(Int /*name*/, Int /*p*/, Int /*r*/)  {return 0;}
+        virtual Int scopeAddObject(Int /*name*/, Int)                 {return 0;}
+        virtual Int scopeAddStatement(Int /*s*/)                      {return 0;}
+        virtual Int scopeClose(Int /*oldSCope*/)                      {return 0;}
 
-        virtual Int addLiteralString(Lexer& /*lexer*/)                                  {return 0;}
+        virtual Int addLiteralString()                                {return 0;}
 
-        virtual Int createFuncCall(Lexer& /*lexer*/, Int /*obj*/, Int /*param*/)        {return 0;}
+        virtual Int createFuncCall(Int /*obj*/, Int /*param*/)        {return 0;}
     private:
-        void addToLine(Lexer& lexer);
-        void resetLine(Lexer& lexer);
+        void addToLine();
+        void resetLine();
 
 };
 

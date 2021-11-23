@@ -8,6 +8,24 @@
 #include <fstream>
 #include <sstream>
 
+struct ParserCompiler
+{
+    ThorsAnvil::Anvil::Ice::Lexer           lexer;
+    ThorsAnvil::Anvil::Ice::Action          action;
+    ThorsAnvil::Anvil::Ice::Parser          parser;
+
+    ParserCompiler(std::istream& input, std::ostream& output)
+        : lexer(input, output)
+        , action(lexer, output)
+        , parser(lexer, action)
+    {}
+
+    bool compile()
+    {
+        return parser.parse();
+    }
+};
+
 TEST(ParserTest, NameSpaceOnly)
 {
     std::stringstream    result;
@@ -17,13 +35,9 @@ namespace Name
 }
     )");
 
-    using ThorsAnvil::Anvil::Ice::Action;
-    using ThorsAnvil::Anvil::Ice::Parser;
+    ParserCompiler  compiler(file, result);
 
-    Action          action(result);
-    Parser          parser(action, file);
-
-    EXPECT_TRUE_OR_DEBUG(parser.parse(), result);
+    EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 }
 
 TEST(ParserTest,NameSpaceNested)
@@ -38,13 +52,9 @@ namespace Name
 }
     )");
 
-    using ThorsAnvil::Anvil::Ice::Action;
-    using ThorsAnvil::Anvil::Ice::Parser;
+    ParserCompiler  compiler(file, result);
 
-    Action          action(result);
-    Parser          parser(action, file);
-
-    EXPECT_TRUE_OR_DEBUG(parser.parse(), result);
+    EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 }
 
 TEST(ParserTest,NameSpaceTwice)
@@ -60,13 +70,9 @@ namespace Twice
 }
     )");
 
-    using ThorsAnvil::Anvil::Ice::Action;
-    using ThorsAnvil::Anvil::Ice::Parser;
+    ParserCompiler  compiler(file, result);
 
-    Action          action(result);
-    Parser          parser(action, file);
-
-    EXPECT_TRUE_OR_DEBUG(parser.parse(), result);
+    EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 }
 
 TEST(ParserTest,NameStatExprFuncCall)
@@ -79,13 +85,9 @@ namespace Name
 }
     )");
 
-    using ThorsAnvil::Anvil::Ice::Action;
-    using ThorsAnvil::Anvil::Ice::Parser;
+    ParserCompiler  compiler(file, result);
 
-    Action          action(result);
-    Parser          parser(action, file);
-
-    EXPECT_TRUE_OR_DEBUG(parser.parse(), result);
+    EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 }
 
 TEST(ParserTest,NameTypeArray)
@@ -98,13 +100,9 @@ namespace Name
 }
     )");
 
-    using ThorsAnvil::Anvil::Ice::Action;
-    using ThorsAnvil::Anvil::Ice::Parser;
+    ParserCompiler  compiler(file, result);
 
-    Action          action(result);
-    Parser          parser(action, file);
-
-    EXPECT_TRUE_OR_DEBUG(parser.parse(), result);
+    EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 }
 
 TEST(ParserTest,NameTypeFunc)
@@ -117,13 +115,9 @@ namespace Name
 }
     )");
 
-    using ThorsAnvil::Anvil::Ice::Action;
-    using ThorsAnvil::Anvil::Ice::Parser;
+    ParserCompiler  compiler(file, result);
 
-    Action          action(result);
-    Parser          parser(action, file);
-
-    EXPECT_TRUE_OR_DEBUG(parser.parse(), result);
+    EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 }
 
 TEST(ParserTest,NameTypeMap)
@@ -136,13 +130,9 @@ namespace Name
 }
     )");
 
-    using ThorsAnvil::Anvil::Ice::Action;
-    using ThorsAnvil::Anvil::Ice::Parser;
+    ParserCompiler  compiler(file, result);
 
-    Action          action(result);
-    Parser          parser(action, file);
-
-    EXPECT_TRUE_OR_DEBUG(parser.parse(), result);
+    EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 }
 
 TEST(ParserTest,NameTypeObject)
@@ -159,13 +149,9 @@ namespace Name
 }
     )");
 
-    using ThorsAnvil::Anvil::Ice::Action;
-    using ThorsAnvil::Anvil::Ice::Parser;
+    ParserCompiler  compiler(file, result);
 
-    Action          action(result);
-    Parser          parser(action, file);
-
-    EXPECT_TRUE_OR_DEBUG(parser.parse(), result);
+    EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 }
 
 TEST(ParserTest,NameVariableAnonTypeArray)
@@ -178,13 +164,9 @@ namespace Name
 }
     )");
 
-    using ThorsAnvil::Anvil::Ice::Action;
-    using ThorsAnvil::Anvil::Ice::Parser;
+    ParserCompiler  compiler(file, result);
 
-    Action          action(result);
-    Parser          parser(action, file);
-
-    EXPECT_TRUE_OR_DEBUG(parser.parse(), result);
+    EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 }
 
 TEST(ParserTest,NameVariableAnonTypeFunc)
@@ -197,13 +179,9 @@ namespace Name
 }
     )");
 
-    using ThorsAnvil::Anvil::Ice::Action;
-    using ThorsAnvil::Anvil::Ice::Parser;
+    ParserCompiler  compiler(file, result);
 
-    Action          action(result);
-    Parser          parser(action, file);
-
-    EXPECT_TRUE_OR_DEBUG(parser.parse(), result);
+    EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 }
 
 TEST(ParserTest,NameVariableAnonTypeMap)
@@ -216,13 +194,9 @@ namespace Name
 }
     )");
 
-    using ThorsAnvil::Anvil::Ice::Action;
-    using ThorsAnvil::Anvil::Ice::Parser;
+    ParserCompiler  compiler(file, result);
 
-    Action          action(result);
-    Parser          parser(action, file);
-
-    EXPECT_TRUE_OR_DEBUG(parser.parse(), result);
+    EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 }
 
 TEST(ParserTest,NameVariableAnonTypeObject)
@@ -239,13 +213,9 @@ namespace Name
 }
     )");
 
-    using ThorsAnvil::Anvil::Ice::Action;
-    using ThorsAnvil::Anvil::Ice::Parser;
+    ParserCompiler  compiler(file, result);
 
-    Action          action(result);
-    Parser          parser(action, file);
-
-    EXPECT_TRUE_OR_DEBUG(parser.parse(), result);
+    EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 }
 
 TEST(ParserTest,NameVariableDecl)
@@ -258,13 +228,9 @@ namespace Name
 }
     )");
 
-    using ThorsAnvil::Anvil::Ice::Action;
-    using ThorsAnvil::Anvil::Ice::Parser;
+    ParserCompiler  compiler(file, result);
 
-    Action          action(result);
-    Parser          parser(action, file);
-
-    EXPECT_TRUE_OR_DEBUG(parser.parse(), result);
+    EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 }
 
 

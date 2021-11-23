@@ -232,54 +232,52 @@ class StandardScope: public Namespace
 
 class Semantic: public Action
 {
-    Parser      parser;
     Scope&      globalScope;
     std::vector<std::reference_wrapper<Scope>>  currentScope;
     Storage     storage;
 
     public:
-        Semantic(Scope& globalScope, std::istream& input = std::cin, std::ostream& output = std::cout);
+        Semantic(Lexer& lexer, Scope& globalScope, std::ostream& output = std::cout);
         virtual ~Semantic() override;
 
-        bool go();
         void display(std::ostream& stream);
 
     // Action Virtual Functions override
-        virtual void assertNoStorage(Lexer&, Int)                           override;
-        virtual void releaseStorage(Lexer&, Int)                            override;
-        virtual Int  generateAnonName(Lexer&)                               override;
+        virtual void assertNoStorage(Int)                     override;
+        virtual void releaseStorage(Int)                      override;
+        virtual Int  generateAnonName()                       override;
 
-        virtual Int identifierCreate(Lexer& lexer)                          override;
-        virtual Int identifierCheckObject(Lexer& lexer, Int id)             override;
-        virtual Int identifierCheckType(Lexer& lexer, Int id)               override;
-        virtual Int identifierCheckNS(Lexer& lexer, Int id)                 override;
+        virtual Int identifierCreate()                        override;
+        virtual Int identifierCheckObject(Int id)             override;
+        virtual Int identifierCheckType(Int id)               override;
+        virtual Int identifierCheckNS(Int id)                 override;
 
-        virtual Int fullIdentiferCreate(Lexer& lexer)                       override;
-        virtual Int fullIdentiferAddPath(Lexer& lexer, Int fp, Int id)      override;
+        virtual Int fullIdentiferCreate()                     override;
+        virtual Int fullIdentiferAddPath(Int fp, Int id)      override;
 
-        virtual Int paramListCreate(Lexer& lexer)                           override;
-        virtual Int paramListAdd(Lexer& lexer, Int pl, Int type)            override;
+        virtual Int paramListCreate()                         override;
+        virtual Int paramListAdd(Int pl, Int type)            override;
 
-        virtual Int objectListCreate(Lexer& lexer)                          override;
-        virtual Int objectListAdd(Lexer& lexer, Int ol, Int object)         override;
+        virtual Int objectListCreate()                        override;
+        virtual Int objectListAdd(Int ol, Int object)         override;
 
-        virtual Int findTypeInScope(Lexer& lexer, Int fp)                   override;
-        virtual Int findObjectInScope(Lexer& lexer, Int fp)                 override;
+        virtual Int findTypeInScope(Int fp)                   override;
+        virtual Int findObjectInScope(Int fp)                 override;
 
-        virtual Int scopeAddNamespace(Lexer& lexer, Int name)               override;
-        virtual Int scopeAddClass(Lexer& lexer, Int name)                   override;
-        virtual Int scopeAddArray(Lexer& lexer, Int name, Int type)         override;
-        virtual Int scopeAddMap(Lexer& lexer, Int name, Int key, Int value) override;
-        virtual Int scopeAddFunc(Lexer& lexer, Int name, Int param, Int ret)override;
-        virtual Int scopeAddObject(Lexer& lexer, Int name, Int)             override;
-        //virtual Int scopeAddStatement(Lexer& lexer, Int s)                      override;
-        virtual Int scopeClose(Lexer& lexer, Int oldSCope)                  override;
+        virtual Int scopeAddNamespace(Int name)               override;
+        virtual Int scopeAddClass(Int name)                   override;
+        virtual Int scopeAddArray(Int name, Int type)         override;
+        virtual Int scopeAddMap(Int name, Int key, Int value) override;
+        virtual Int scopeAddFunc(Int name, Int param, Int ret)override;
+        virtual Int scopeAddObject(Int name, Int)             override;
+        //virtual Int scopeAddStatement(Int s)                      override;
+        virtual Int scopeClose(Int oldSCope)                  override;
 
-        virtual Int addLiteralString(Lexer& lexer)                          override;
+        virtual Int addLiteralString()                        override;
 
-        virtual Int createFuncCall(Lexer& lexer, Int obj, Int param)        override;
+        virtual Int createFuncCall(Int obj, Int param)        override;
     private:
-        Decl& searchScopeForPath(Lexer& lexer, Int fp);
+        Decl& searchScopeForPath(Int fp);
         Decl* searchScopeForIdentifier(std::string const& path, std::string& partialMatch);
         std::string  generateAnonNameString();
 

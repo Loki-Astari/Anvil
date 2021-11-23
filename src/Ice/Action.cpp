@@ -7,8 +7,9 @@
 
 using namespace ThorsAnvil::Anvil::Ice;
 
-Action::Action(std::ostream& output)
-    : output(output)
+Action::Action(Lexer& lexer, std::ostream& output)
+    : lexer(lexer)
+    , output(output)
     , lineNo(0)
     , offset(0)
 {}
@@ -21,16 +22,16 @@ void Action::log(char const* msg)
     output << msg << "\n";
 }
 
-void Action::token(Lexer& lexer)
+void Action::token()
 {
 #pragma vera-pushoff
     using namespace std::string_literals;
 #pragma vera-pop
     log("Token: "s .append(lexer.lexem()).c_str());
-    addToLine(lexer);
+    addToLine();
 }
 
-void Action::error(Lexer& lexer, std::string const& msg)
+void Action::error(std::string const& msg)
 {
     std::stringstream extended;
     extended << "Error: " << msg << " -> Last Token: >" << lexer.lexem() << "<\n"
@@ -41,7 +42,7 @@ void Action::error(Lexer& lexer, std::string const& msg)
     throw std::runtime_error(extended.str());
 }
 
-void Action::addToLine(Lexer& lexer)
+void Action::addToLine()
 {
     std::string_view    token = lexer.lexem();
 
@@ -49,7 +50,7 @@ void Action::addToLine(Lexer& lexer)
     offset += std::size(token);
 }
 
-void Action::resetLine(Lexer& /*lexer*/)
+void Action::resetLine()
 {
     currentLine.clear();
     ++lineNo;

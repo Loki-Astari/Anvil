@@ -2,9 +2,8 @@
 
 using namespace ThorsAnvil::Anvil::Ice;
 
-Lexer::Lexer(Action& action, std::istream& input, std::ostream& output)
+Lexer::Lexer(std::istream& input, std::ostream& output)
     : yyFlexLexer(&input, &output)
-    , action(action)
 {}
 
 std::string_view Lexer::lexem() const

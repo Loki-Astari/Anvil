@@ -11,9 +11,8 @@ Decl::~Decl()
 Type::~Type()
 {}
 
-Semantic::Semantic(Scope& globalScope, std::istream& input, std::ostream& output)
-    : Action(output)
-    , parser(*this, input, output)
+Semantic::Semantic(Lexer& lexer, Scope& globalScope, std::ostream& output)
+    : Action(lexer, output)
     , globalScope(globalScope)
 {
     currentScope.emplace_back(globalScope);
@@ -23,21 +22,16 @@ Semantic::~Semantic()
 {
 }
 
-bool Semantic::go()
-{
-    return parser.parse();
-}
-
 // Action Override
-void Semantic::assertNoStorage(Lexer& lexer, Int value)
+void Semantic::assertNoStorage(Int value)
 {
     if (value != 0)
     {
-        error(lexer, "Internal Compiler Error: Expecting Storage to have been released");
+        error("Internal Compiler Error: Expecting Storage to have been released");
     }
 }
 
-void Semantic::releaseStorage(Lexer&, Int value)
+void Semantic::releaseStorage(Int value)
 {
     storage.release(value);
 }
@@ -68,13 +62,13 @@ std::string Semantic::generateAnonNameString()
     return name;
 }
 
-Int Semantic::generateAnonName(Lexer&)
+Int Semantic::generateAnonName()
 {
     std::string name = generateAnonNameString();
     return storage.add(std::move(name));
 }
 
-Int Semantic::identifierCreate(Lexer& lexer)
+Int Semantic::identifierCreate()
 {
     return storage.add(std::string(lexer.lexem()));
 }
@@ -86,35 +80,35 @@ Int Semantic::identifierCreate(Lexer& lexer)
  *      Functions
  *      Closures.
  */
-Int Semantic::identifierCheckObject(Lexer& lexer, Int id)
+Int Semantic::identifierCheckObject(Int id)
 {
     std::string&    identifier(storage.get<std::string>(id));
     if (std::islower(identifier[0]))
     {
         return id;
     }
-    error(lexer, "Invalid Identifier for Object");
+    error("Invalid Identifier for Object");
 }
 
 /*
  * Type names are greater than three characters long,
  * start with an uppercase letter and don't contain underscore.
  */
-Int Semantic::identifierCheckType(Lexer& lexer, Int id)
+Int Semantic::identifierCheckType(Int id)
 {
     std::string&    identifier(storage.get<std::string>(id));
     if ((std::isupper(identifier[0])) && (identifier.size() > 3) && (identifier.find('_') == std::string::npos))
     {
         return id;
     }
-    error(lexer, "Invalid Identifier for Type");
+    error("Invalid Identifier for Type");
 }
 
 /*
  * Namespace names start with an upper case letter, and each upper case letter is prefixed by underscore.
  * Either the name is shorter than 4 characters or if 4 or more contains at least two capitols.
  */
-Int Semantic::identifierCheckNS(Lexer& lexer, Int id)
+Int Semantic::identifierCheckNS(Int id)
 {
     std::string&    identifier(storage.get<std::string>(id));
 
@@ -137,15 +131,15 @@ Int Semantic::identifierCheckNS(Lexer& lexer, Int id)
             return id;
         }
     }
-    error(lexer, "Invalid Identifier for Namespace");
+    error("Invalid Identifier for Namespace");
 }
 
-Int Semantic::fullIdentiferCreate(Lexer& /*lexer*/)
+Int Semantic::fullIdentiferCreate()
 {
     return storage.add(FullIdent{});
 }
 
-Int Semantic::fullIdentiferAddPath(Lexer& /*lexer*/, Int fp, Int id)
+Int Semantic::fullIdentiferAddPath(Int fp, Int id)
 {
     FullIdent&      fullIdent(storage.get<FullIdent>(fp));
     std::string&    identifier(storage.get<std::string>(id));
@@ -156,12 +150,12 @@ Int Semantic::fullIdentiferAddPath(Lexer& /*lexer*/, Int fp, Int id)
     return fp;
 }
 
-Int Semantic::paramListCreate(Lexer& /*lexer*/)
+Int Semantic::paramListCreate()
 {
     return storage.add(ParamList{});
 }
 
-Int Semantic::paramListAdd(Lexer& /*lexer*/, Int pl, Int type)
+Int Semantic::paramListAdd(Int pl, Int type)
 {
     ParamList&      paramList(storage.get<ParamList>(pl));
     TypeRef&        typeRef(storage.get<TypeRef>(type));
@@ -172,12 +166,12 @@ Int Semantic::paramListAdd(Lexer& /*lexer*/, Int pl, Int type)
     return pl;
 }
 
-Int Semantic::objectListCreate(Lexer& /*lexer*/)
+Int Semantic::objectListCreate()
 {
     return storage.add(ObjectList{});
 }
 
-Int Semantic::objectListAdd(Lexer& /*lexer*/, Int ol, Int object)
+Int Semantic::objectListAdd(Int ol, Int object)
 {
     ObjectList&     objectList(storage.get<ObjectList>(ol));
     ObjectRef&      objectRef(storage.get<ObjectRef>(object));
@@ -240,7 +234,7 @@ Decl* Semantic::searchScopeForIdentifier(std::string const& path, std::string& p
     return result;
 }
 
-Decl&  Semantic::searchScopeForPath(Lexer& lexer, Int fp)
+Decl&  Semantic::searchScopeForPath(Int fp)
 {
     FullIdent&  fullIdent(storage.get<FullIdent>(fp));
 
@@ -294,28 +288,28 @@ Decl&  Semantic::searchScopeForPath(Lexer& lexer, Int fp)
 #pragma vera-pushoff
         using namespace std::string_literals;
 #pragma vera-pop
-        error(lexer, "Could Not Find Type: "s + fullPathString + "   Found partial Match: " + partialMatch);
+        error("Could Not Find Type: "s + fullPathString + "   Found partial Match: " + partialMatch);
     }
     // All is good we found a decl.
     // This is owned by a scope so return it but we don't need to destroy it.
     return *decl;
 }
 
-Int Semantic::findTypeInScope(Lexer& lexer, Int fp)
+Int Semantic::findTypeInScope(Int fp)
 {
-    Decl&  decl = searchScopeForPath(lexer, fp);
+    Decl&  decl = searchScopeForPath(fp);
     storage.release(fp);
     return storage.add(TypeRef{dynamic_cast<Type&>(decl)});
 }
 
-Int Semantic::findObjectInScope(Lexer& lexer, Int fp)
+Int Semantic::findObjectInScope(Int fp)
 {
-    Decl&  decl = searchScopeForPath(lexer, fp);
+    Decl&  decl = searchScopeForPath(fp);
     storage.release(fp);
     return storage.add(ObjectRef{dynamic_cast<Object&>(decl)});
 }
 
-Int Semantic::scopeAddNamespace(Lexer& /*lexer*/, Int name)
+Int Semantic::scopeAddNamespace(Int name)
 {
     std::string&    namespaceName(storage.get<std::string>(name));
     Scope&          topScope = currentScope.back().get();
@@ -327,7 +321,7 @@ Int Semantic::scopeAddNamespace(Lexer& /*lexer*/, Int name)
     return storage.add(ScopeRef{dynamic_cast<Scope&>(newNameSpace)});
 }
 
-Int Semantic::scopeAddClass(Lexer& /*lexer*/, Int name)
+Int Semantic::scopeAddClass(Int name)
 {
     std::string&    className(storage.get<std::string>(name));
     Scope&          topScope = currentScope.back().get();
@@ -339,7 +333,7 @@ Int Semantic::scopeAddClass(Lexer& /*lexer*/, Int name)
     return storage.add(ScopeRef{dynamic_cast<Scope&>(newClass)});
 }
 
-Int Semantic::scopeAddArray(Lexer& /*lexer*/, Int name, Int type)
+Int Semantic::scopeAddArray(Int name, Int type)
 {
     std::string&    arrayName(storage.get<std::string>(name));
     Type&           typeInfo(storage.get<TypeRef>(type).get());
@@ -352,7 +346,7 @@ Int Semantic::scopeAddArray(Lexer& /*lexer*/, Int name, Int type)
     return storage.add(TypeRef{dynamic_cast<Type&>(newArray)});
 }
 
-Int Semantic::scopeAddMap(Lexer& /*lexer*/, Int name, Int key, Int value)
+Int Semantic::scopeAddMap(Int name, Int key, Int value)
 {
     std::string&    mapName(storage.get<std::string>(name));
     Type&           keyInfo(storage.get<TypeRef>(key).get());
@@ -367,7 +361,7 @@ Int Semantic::scopeAddMap(Lexer& /*lexer*/, Int name, Int key, Int value)
     return storage.add(TypeRef{dynamic_cast<Type&>(newMap)});
 }
 
-Int Semantic::scopeAddFunc(Lexer& /*lexer*/, Int name, Int pl, Int ret)
+Int Semantic::scopeAddFunc(Int name, Int pl, Int ret)
 {
     std::string&    funcName(storage.get<std::string>(name));
     ParamList&      paramList(storage.get<ParamList>(pl));
@@ -382,7 +376,7 @@ Int Semantic::scopeAddFunc(Lexer& /*lexer*/, Int name, Int pl, Int ret)
     return storage.add(TypeRef{dynamic_cast<Type&>(newFunc)});
 }
 
-Int Semantic::scopeAddObject(Lexer& /*lexer*/, Int name, Int type)
+Int Semantic::scopeAddObject(Int name, Int type)
 {
     std::string&    objectName(storage.get<std::string>(name));
     Type&           typeInfo(storage.get<TypeRef>(type).get());
@@ -395,7 +389,7 @@ Int Semantic::scopeAddObject(Lexer& /*lexer*/, Int name, Int type)
     return 0;
 }
 
-Int Semantic::scopeClose(Lexer& lexer, Int oldScopeId)
+Int Semantic::scopeClose(Int oldScopeId)
 {
     Scope&          topScope = currentScope.back().get();
     Scope&          oldScope(storage.get<ScopeRef>(oldScopeId).get());
@@ -407,7 +401,7 @@ Int Semantic::scopeClose(Lexer& lexer, Int oldScopeId)
         using namespace std::string_literals;
 #pragma vera-pop
 
-        error(lexer, "Bad Scope Closure: Expecting: >"s + oldScope.contName() + "<  Current: >" + topScope.contName() + "< ");
+        error("Bad Scope Closure: Expecting: >"s + oldScope.contName() + "<  Current: >" + topScope.contName() + "< ");
     }
 
     storage.release(oldScopeId);
@@ -420,7 +414,7 @@ Int Semantic::scopeClose(Lexer& lexer, Int oldScopeId)
     return storage.add(TypeRef{classToType});
 }
 
-Int Semantic::addLiteralString(Lexer& lexer)
+Int Semantic::addLiteralString()
 {
     std::string objectName = generateAnonNameString();
     Type& stringType = getScopeSymbol<Type>(globalScope, "Std", "String");
@@ -432,7 +426,7 @@ Int Semantic::addLiteralString(Lexer& lexer)
     return storage.add(ObjectRef{literalObject});
 }
 
-Int Semantic::createFuncCall(Lexer& /*lexer*/, Int /*obj*/, Int /*param*/)
+Int Semantic::createFuncCall(Int /*obj*/, Int /*param*/)
 {
 /*
     std::string objectName = generateAnonNameString();
