@@ -309,12 +309,23 @@ Int Semantic::findObjectInScope(Int fp)
     return storage.add(ObjectRef{dynamic_cast<Object&>(decl)});
 }
 
+template<typename T>
+T& getOrAddScope(Scope& topScope, std::string const& scopeName)
+{
+    auto find = topScope.get(scopeName);
+    if (find.first)
+    {
+        Decl*       foundDeclWithSameName = find.second->second.get();
+        return dynamic_cast<T&>(*foundDeclWithSameName);
+    }
+    return topScope.add(std::make_unique<T>(std::move(scopeName)));
+}
+
 Int Semantic::scopeAddNamespace(Int name)
 {
     std::string&    namespaceName(storage.get<std::string>(name));
     Scope&          topScope = currentScope.back().get();
-    Namespace&      newNameSpace = topScope.add(std::make_unique<Namespace>(std::move(namespaceName)));
-
+    Namespace&      newNameSpace = getOrAddScope<Namespace>(topScope, namespaceName);
     currentScope.emplace_back(newNameSpace);
 
     storage.release(name);
@@ -325,7 +336,7 @@ Int Semantic::scopeAddClass(Int name)
 {
     std::string&    className(storage.get<std::string>(name));
     Scope&          topScope = currentScope.back().get();
-    Class&          newClass = topScope.add(std::make_unique<Class>(std::move(className)));
+    Class&          newClass = getOrAddScope<Class>(topScope, className);
 
     currentScope.emplace_back(newClass);
 
