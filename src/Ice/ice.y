@@ -126,7 +126,7 @@ Decl:               NAMESPACE NameSpaceIdentifer '{'                    {
                                                                             action.releaseStorage(action.scopeAddFunc($2, $4, $6));
                                                                             $$ = 0;
                                                                         }
-                |   ObjectIdentifer ':' ObjectDecl InitObject ';'       {
+                |   ObjectIdentifer ':' ObjectDecl InitObject           {
                                                                             action.log("Decl:               ObjectIdentifer : ObjectDecl InitObject ;");
                                                                             // TODO Use InitObject
                                                                             action.assertNoStorage(action.scopeAddObject($1, $3));
@@ -231,10 +231,10 @@ Value:              ObjectName                                          {
                                                                             $$ = $1;
                                                                         }
 
-InitObject:                                                             {action.log("InitObject:         >EMPTY<");}
-                |   '=' '(' ValueListOpt ')'                            {action.log("InitObject:         = ( ValueListOpt )");}
-                |   '=' '[' ValueListOpt ']'                            {action.log("InitObject:         = [ ValueListOpt ]");}
-                |   '=' '{' MapListOpt   '}'                            {action.log("InitObject:         = { MapListOpt   }");}
+InitObject:         ';'                                                 {action.log("InitObject:         >EMPTY<");}
+                |   '=' '(' ValueListOpt ')' ';'                        {action.log("InitObject:         = ( ValueListOpt )");}
+                |   '=' '[' ValueListOpt ']' ';'                        {action.log("InitObject:         = [ ValueListOpt ]");}
+                |   '=' '{' MapListOpt   '}' ';'                        {action.log("InitObject:         = { MapListOpt   }");}
                 |   '{'                                                 {
                                                                             action.log("InitObject:         { DeclListOpt } P1");
                                                                             $$ = action.scopeAddCodeBlock();
@@ -251,24 +251,20 @@ ObjectName:         ObjectNameFull                                      {
                                                                         }
 
 
-ObjectNameFull:     ObjectNamePart                                      {
+ObjectNameFull:     ObjectIdentifer                                      {
                                                                             action.log("ObjectNameFull:     ObjectNamePart");
-                                                                            $$ = $1;
+                                                                            $$ = action.fullIdentiferAddPath(action.fullIdentiferCreate(), $1);
+                                                                        }
+                |   ObjectIdentifer '.' ObjectNameFull                  {
+                                                                            action.log("ObjectNameFull:     ObjectIdentifer . ObjectNameFull");
+                                                                            $$ = action.fullIdentiferAddPath($3, $1);
                                                                         }
                 |   NameSpaceIdentifer SCOPE ObjectNameFull             {
-                                                                            action.log("ObjectNameFull:     NameSpaceIdentifer :: ObjectName");
+                                                                            action.log("ObjectNameFull:     NameSpaceIdentifer :: ObjectNameFull");
                                                                             $$ = action.fullIdentiferAddPath($3, $1);
                                                                         }
                 |   TypeIdentifer SCOPE ObjectNameFull                  {
-                                                                            action.log("ObjectNameFull:     TypeIdentifer :: ObjectName");
-                                                                            $$ = action.fullIdentiferAddPath($3, $1);
-                                                                        }
-ObjectNamePart:     ObjectIdentifer                                     {
-                                                                            action.log("ObjectNamePart:     ObjectIdentifer");
-                                                                            $$ = action.fullIdentiferAddPath(action.fullIdentiferCreate(), $1);
-                                                                        }
-                |   ObjectNamePart '.' ObjectIdentifer                  {
-                                                                            action.log("ObjectNamePart:     ObjectNamePart . ObjectIdentifer");
+                                                                            action.log("ObjectNameFull:     TypeIdentifer :: ObjectNameFull");
                                                                             $$ = action.fullIdentiferAddPath($3, $1);
                                                                         }
 

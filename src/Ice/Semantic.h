@@ -34,11 +34,12 @@ class Container
 
         friend std::ostream& operator<<(std::ostream& stream, Container const& cont)
         {
-            stream << "Container: " << cont.contName() << "\n";
+            stream << "Container: " << cont.contName() << "{\n";
             for (auto const& value: cont.names)
             {
                 stream << "\t" << value.first << ":\n";
             }
+            stream << "}\n";
             return stream;
         }
 };
@@ -198,7 +199,6 @@ class FunctionCall: public Statement
 };
 
 
-
 using UPVoid        = std::unique_ptr<Void>;
 using UPNamespace   = std::unique_ptr<Namespace>;
 using UPClass       = std::unique_ptr<Class>;
@@ -340,7 +340,11 @@ T& Semantic::getScopeSymbol(Scope& scope, std::string const& name)
     //ASSERT_TRUE(find.first);
     if (!find.first)
     {
-        throw std::runtime_error("Not Found");
+#pragma vera-pushoff
+        using namespace std::string_literals;
+#pragma vera-pop
+
+        error("Symbol '"s + name + "' not found");
     }
 
     Decl*  decl         = find.second->second.get();
@@ -350,11 +354,15 @@ T& Semantic::getScopeSymbol(Scope& scope, std::string const& name)
 template<typename T, typename... Args>
 T& Semantic::getScopeSymbol(Scope& scope, std::string const& name, Args&... path)
 {
+#pragma vera-pushoff
+    using namespace std::string_literals;
+#pragma vera-pop
+
     auto find = scope.get(name);
     //ASSERT_TRUE(find.first);
     if (!find.first)
     {
-        throw std::runtime_error("Not Found");
+        error("Symbol '"s + name + "' not found");
     }
 
     Decl*  decl         = find.second->second.get();
@@ -369,7 +377,12 @@ T& Semantic::getScopeSymbol(Scope& scope, std::string const& name, Args&... path
     {
         return getScopeSymbol<T>(dynamic_cast<Scope&>(*namespaceDecl), path...);
     }
-    throw std::runtime_error("Not a valid Scope Path");
+    CodeBlock* codeBlockDecl    = dynamic_cast<CodeBlock*>(decl);
+    if (codeBlockDecl)
+    {
+        return getScopeSymbol<T>(dynamic_cast<Scope&>(*codeBlockDecl), path...);
+    }
+    error("Not a valid Scope Path '"s + name + "'");
 }
 
 }

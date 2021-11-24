@@ -32,6 +32,7 @@
                                             check;                      \
                                             std::cerr << "THROW FAIL (Throw expected but did not happen)\n";\
                                             std::cerr << output.rdbuf();\
+                                            EXPECT_TRUE(false);         \
                                         } catch(std::exception const& e)\
                                         {                               \
                                             std::string error(e.what());\
