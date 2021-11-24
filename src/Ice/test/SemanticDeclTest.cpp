@@ -22,7 +22,7 @@ struct SemanticCompiler
     }
 };
 
-TEST(SemanticTest, NameSpaceShortIsValid)
+TEST(SemanticDeclTest, NameSpaceShortIsValid)
 {
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
@@ -36,7 +36,7 @@ namespace Std
     EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 }
 
-TEST(SemanticTest, NameSpaceLongNameIsValid)
+TEST(SemanticDeclTest, NameSpaceLongNameIsValid)
 {
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
@@ -50,7 +50,7 @@ namespace Complex_Space
     EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 }
 
-TEST(SemanticTest, NameSpaceShortNameIsInValid_NoCap)
+TEST(SemanticDeclTest, NameSpaceShortNameIsInValid_NoCap)
 {
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
@@ -64,7 +64,7 @@ namespace std
     EXPECT_THROW_OR_DEBUG(compiler.compile(), "Invalid Identifier for Namespace", result);
 }
 
-TEST(SemanticTest, NameSpaceLongNameIsInValid_NoUnderScore)
+TEST(SemanticDeclTest, NameSpaceLongNameIsInValid_NoUnderScore)
 {
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
@@ -78,7 +78,7 @@ namespace ComplexSpace
     EXPECT_THROW_OR_DEBUG(compiler.compile(), "Invalid Identifier for Namespace", result);
 }
 
-TEST(SemanticTest, NameSpaceLongNameIsInValid_NoSecondCap)
+TEST(SemanticDeclTest, NameSpaceLongNameIsInValid_NoSecondCap)
 {
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
@@ -92,7 +92,7 @@ namespace Complex_space
     EXPECT_THROW_OR_DEBUG(compiler.compile(), "Invalid Identifier for Namespace", result);
 }
 
-TEST(SemanticTest, NameSpaceLongNameIsInValid_NoFirstCap)
+TEST(SemanticDeclTest, NameSpaceLongNameIsInValid_NoFirstCap)
 {
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
@@ -106,7 +106,7 @@ namespace complex_Space
     EXPECT_THROW_OR_DEBUG(compiler.compile(), "Invalid Identifier for Namespace", result);
 }
 
-TEST(SemanticTest, NameSpaceLongNameIsInValid_CapNoUnderScore)
+TEST(SemanticDeclTest, NameSpaceLongNameIsInValid_CapNoUnderScore)
 {
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
@@ -120,7 +120,7 @@ namespace Complex_SpaceX
     EXPECT_THROW_OR_DEBUG(compiler.compile(), "Invalid Identifier for Namespace", result);
 }
 
-TEST(SemanticTest, TypeNameObjectValid)
+TEST(SemanticDeclTest, TypeNameObjectValid)
 {
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
@@ -139,7 +139,7 @@ namespace Good_Name_Space
     EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 }
 
-TEST(SemanticTest, TypeNameArrayValid)
+TEST(SemanticDeclTest, TypeNameArrayValid)
 {
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
@@ -154,7 +154,7 @@ namespace Good_Name_Space
     EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 }
 
-TEST(SemanticTest, TypeNameMapValid)
+TEST(SemanticDeclTest, TypeNameMapValid)
 {
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
@@ -169,7 +169,7 @@ namespace Good_Name_Space
     EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 }
 
-TEST(SemanticTest, TypeNameFuncValid)
+TEST(SemanticDeclTest, TypeNameFuncValid)
 {
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
@@ -184,7 +184,7 @@ namespace Good_Name_Space
     EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 }
 
-TEST(SemanticTest, TypeNameObjectInValid_FirstLower)
+TEST(SemanticDeclTest, TypeNameObjectInValid_FirstLower)
 {
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
@@ -203,7 +203,7 @@ namespace Good_Name_Space
     EXPECT_THROW_OR_DEBUG(compiler.compile(), "Invalid Identifier for Type", result);
 }
 
-TEST(SemanticTest, TypeNameArrayInValid_FirstLower)
+TEST(SemanticDeclTest, TypeNameArrayInValid_FirstLower)
 {
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
@@ -218,7 +218,7 @@ namespace Good_Name_Space
     EXPECT_THROW_OR_DEBUG(compiler.compile(), "Invalid Identifier for Type", result);
 }
 
-TEST(SemanticTest, TypeNameMapInValid_FirstLower)
+TEST(SemanticDeclTest, TypeNameMapInValid_FirstLower)
 {
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
@@ -233,7 +233,7 @@ namespace Good_Name_Space
     EXPECT_THROW_OR_DEBUG(compiler.compile(), "Invalid Identifier for Type", result);
 }
 
-TEST(SemanticTest, TypeNameFuncInValid_FirstLower)
+TEST(SemanticDeclTest, TypeNameFuncInValid_FirstLower)
 {
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
@@ -248,7 +248,7 @@ namespace Good_Name_Space
     EXPECT_THROW_OR_DEBUG(compiler.compile(), "Invalid Identifier for Type", result);
 }
 
-TEST(SemanticTest, TypeNameObjectInValid_UnderScore)
+TEST(SemanticDeclTest, TypeNameObjectInValid_UnderScore)
 {
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
@@ -267,7 +267,7 @@ namespace Good_Name_Space
     EXPECT_THROW_OR_DEBUG(compiler.compile(), "Invalid Identifier for Type", result);
 }
 
-TEST(SemanticTest, TypeNameArrayInValid_UnderScore)
+TEST(SemanticDeclTest, TypeNameArrayInValid_UnderScore)
 {
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
@@ -282,7 +282,7 @@ namespace Good_Name_Space
     EXPECT_THROW_OR_DEBUG(compiler.compile(), "Invalid Identifier for Type", result);
 }
 
-TEST(SemanticTest, TypeNameMapInValid_UnderScore)
+TEST(SemanticDeclTest, TypeNameMapInValid_UnderScore)
 {
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
@@ -297,7 +297,7 @@ namespace Good_Name_Space
     EXPECT_THROW_OR_DEBUG(compiler.compile(), "Invalid Identifier for Type", result);
 }
 
-TEST(SemanticTest, TypeNameFuncInValid_UnderScore)
+TEST(SemanticDeclTest, TypeNameFuncInValid_UnderScore)
 {
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
@@ -313,7 +313,7 @@ namespace Good_Name_Space
 }
 
 
-TEST(SemanticTest, TypeNameObjectInValid_Short)
+TEST(SemanticDeclTest, TypeNameObjectInValid_Short)
 {
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
@@ -332,7 +332,7 @@ namespace Good_Name_Space
     EXPECT_THROW_OR_DEBUG(compiler.compile(), "Invalid Identifier for Type", result);
 }
 
-TEST(SemanticTest, TypeNameArrayInValid_Short)
+TEST(SemanticDeclTest, TypeNameArrayInValid_Short)
 {
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
@@ -347,7 +347,7 @@ namespace Good_Name_Space
     EXPECT_THROW_OR_DEBUG(compiler.compile(), "Invalid Identifier for Type", result);
 }
 
-TEST(SemanticTest, TypeNameMapInValid_Short)
+TEST(SemanticDeclTest, TypeNameMapInValid_Short)
 {
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
@@ -362,7 +362,7 @@ namespace Good_Name_Space
     EXPECT_THROW_OR_DEBUG(compiler.compile(), "Invalid Identifier for Type", result);
 }
 
-TEST(SemanticTest, TypeNameFuncInValid_Short)
+TEST(SemanticDeclTest, TypeNameFuncInValid_Short)
 {
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
@@ -377,7 +377,7 @@ namespace Good_Name_Space
     EXPECT_THROW_OR_DEBUG(compiler.compile(), "Invalid Identifier for Type", result);
 }
 
-TEST(SemanticTest, ObjectNameVariableValid)
+TEST(SemanticDeclTest, ObjectNameVariableValid)
 {
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
@@ -392,7 +392,7 @@ namespace Good_Name_Space
     EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 }
 
-TEST(SemanticTest, ObjectNameParameterValid)
+TEST(SemanticDeclTest, ObjectNameParameterValid)
 {
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
@@ -407,7 +407,7 @@ namespace Good_Name_Space
     EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 }
 
-TEST(SemanticTest, ObjectNameVariableInValid_UpperFirst)
+TEST(SemanticDeclTest, ObjectNameVariableInValid_UpperFirst)
 {
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
@@ -422,7 +422,7 @@ namespace Good_Name_Space
     EXPECT_THROW_OR_DEBUG(compiler.compile(), "Invalid Identifier for Object", result);
 }
 
-TEST(SemanticTest, ObjectNameParameterInValid_UpperFirst)
+TEST(SemanticDeclTest, ObjectNameParameterInValid_UpperFirst)
 {
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
@@ -437,7 +437,7 @@ namespace Good_Name_Space
     EXPECT_THROW_OR_DEBUG(compiler.compile(), "Invalid Identifier for Object", result);
 }
 
-TEST(SemanticTest, FindDeclInScopeValid)
+TEST(SemanticDeclTest, FindDeclInScopeValid)
 {
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
@@ -452,7 +452,7 @@ namespace Good_Name_Space
     EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 }
 
-TEST(SemanticTest, FindDeclInScopeInValid_BadNameSpace)
+TEST(SemanticDeclTest, FindDeclInScopeInValid_BadNameSpace)
 {
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
@@ -467,7 +467,7 @@ namespace Good_Name_Space
     EXPECT_THROW_OR_DEBUG(compiler.compile(), "Could Not Find Type", result);
 }
 
-TEST(SemanticTest, FindDeclInScopeInValid_BadType)
+TEST(SemanticDeclTest, FindDeclInScopeInValid_BadType)
 {
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
@@ -482,7 +482,7 @@ namespace Good_Name_Space
     EXPECT_THROW_OR_DEBUG(compiler.compile(), "Could Not Find Type", result);
 }
 
-TEST(SemanticTest, AddClassNormalNameSpace)
+TEST(SemanticDeclTest, AddClassNormalNameSpace)
 {
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
@@ -502,7 +502,7 @@ namespace Good_Name_Space
     );
 }
 
-TEST(SemanticTest, AddArrayNormalNameSpace)
+TEST(SemanticDeclTest, AddArrayNormalNameSpace)
 {
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
@@ -522,7 +522,7 @@ namespace Good_Name_Space
     );
 }
 
-TEST(SemanticTest, AddMapNormalNameSpace)
+TEST(SemanticDeclTest, AddMapNormalNameSpace)
 {
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
@@ -542,7 +542,7 @@ namespace Good_Name_Space
     );
 }
 
-TEST(SemanticTest, AddFuncNormalNameSpace)
+TEST(SemanticDeclTest, AddFuncNormalNameSpace)
 {
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
@@ -563,7 +563,7 @@ namespace Good_Name_Space
 }
 
 
-TEST(SemanticTest, AddClassNestedNameSpace)
+TEST(SemanticDeclTest, AddClassNestedNameSpace)
 {
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
@@ -586,7 +586,7 @@ namespace Good_Name_Space
     );
 }
 
-TEST(SemanticTest, AddArrayNestedNameSpace)
+TEST(SemanticDeclTest, AddArrayNestedNameSpace)
 {
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
@@ -609,7 +609,7 @@ namespace Good_Name_Space
     );
 }
 
-TEST(SemanticTest, AddMapNestedNameSpace)
+TEST(SemanticDeclTest, AddMapNestedNameSpace)
 {
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
@@ -632,7 +632,7 @@ namespace Good_Name_Space
     );
 }
 
-TEST(SemanticTest, AddFuncNestedNameSpace)
+TEST(SemanticDeclTest, AddFuncNestedNameSpace)
 {
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
@@ -659,7 +659,7 @@ namespace Good_Name_Space
 }
 
 
-TEST(SemanticTest, AddIdentifierLocalClass)
+TEST(SemanticDeclTest, AddIdentifierLocalClass)
 {
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
@@ -690,7 +690,7 @@ namespace Good_Name_Space
     );
 }
 
-TEST(SemanticTest, AddIdentifierParentNameClass)
+TEST(SemanticDeclTest, AddIdentifierParentNameClass)
 {
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
@@ -722,7 +722,7 @@ namespace Good_Name_Space
     );
 }
 
-TEST(SemanticTest, AddIdentifierAnotherNameClass)
+TEST(SemanticDeclTest, AddIdentifierAnotherNameClass)
 {
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
@@ -757,7 +757,7 @@ namespace Good_Name_Space
     );
 }
 
-TEST(SemanticTest, AddIdentifierAnonClass)
+TEST(SemanticDeclTest, AddIdentifierAnonClass)
 {
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
@@ -787,7 +787,7 @@ namespace Good_Name_Space
     );
 }
 
-TEST(SemanticTest, AddIdentifierLocalArray)
+TEST(SemanticDeclTest, AddIdentifierLocalArray)
 {
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
@@ -818,7 +818,7 @@ namespace Good_Name_Space
     );
 }
 
-TEST(SemanticTest, AddIdentifierParentNameArray)
+TEST(SemanticDeclTest, AddIdentifierParentNameArray)
 {
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
@@ -850,7 +850,7 @@ namespace Good_Name_Space
     );
 }
 
-TEST(SemanticTest, AddIdentifierAnotherNameArray)
+TEST(SemanticDeclTest, AddIdentifierAnotherNameArray)
 {
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
@@ -885,7 +885,7 @@ namespace Good_Name_Space
     );
 }
 
-TEST(SemanticTest, AddIdentifierAnonArray)
+TEST(SemanticDeclTest, AddIdentifierAnonArray)
 {
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
@@ -915,7 +915,7 @@ namespace Good_Name_Space
     );
 }
 
-TEST(SemanticTest, AddIdentifierLocalMap)
+TEST(SemanticDeclTest, AddIdentifierLocalMap)
 {
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
@@ -946,7 +946,7 @@ namespace Good_Name_Space
     );
 }
 
-TEST(SemanticTest, AddIdentifierParentNameMap)
+TEST(SemanticDeclTest, AddIdentifierParentNameMap)
 {
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
@@ -978,7 +978,7 @@ namespace Good_Name_Space
     );
 }
 
-TEST(SemanticTest, AddIdentifierAnotherNameMap)
+TEST(SemanticDeclTest, AddIdentifierAnotherNameMap)
 {
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
@@ -1013,7 +1013,7 @@ namespace Good_Name_Space
     );
 }
 
-TEST(SemanticTest, AddIdentifierAnonMap)
+TEST(SemanticDeclTest, AddIdentifierAnonMap)
 {
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
@@ -1043,7 +1043,7 @@ namespace Good_Name_Space
     );
 }
 
-TEST(SemanticTest, AddIdentifierLocalFunc)
+TEST(SemanticDeclTest, AddIdentifierLocalFunc)
 {
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
@@ -1074,7 +1074,7 @@ namespace Good_Name_Space
     );
 }
 
-TEST(SemanticTest, AddIdentifierParentNameFunc)
+TEST(SemanticDeclTest, AddIdentifierParentNameFunc)
 {
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
@@ -1106,7 +1106,7 @@ namespace Good_Name_Space
     );
 }
 
-TEST(SemanticTest, AddIdentifierAnotherNameFunc)
+TEST(SemanticDeclTest, AddIdentifierAnotherNameFunc)
 {
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
@@ -1141,7 +1141,7 @@ namespace Good_Name_Space
     );
 }
 
-TEST(SemanticTest, AddIdentifierAnonFunc)
+TEST(SemanticDeclTest, AddIdentifierAnonFunc)
 {
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
@@ -1171,7 +1171,7 @@ namespace Good_Name_Space
     );
 }
 
-TEST(SemanticTest, AddIdentifierInvalidType)
+TEST(SemanticDeclTest, AddIdentifierInvalidType)
 {
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
