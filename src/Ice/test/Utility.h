@@ -33,7 +33,8 @@
                                             std::cerr << "THROW FAIL (Throw expected but did not happen)\n";\
                                             std::cerr << output.rdbuf();\
                                             EXPECT_TRUE(false);         \
-                                        } catch(std::exception const& e)\
+                                        }                               \
+                                        catch(std::exception const& e)  \
                                         {                               \
                                             std::string error(e.what());\
                                             if (error.find(msg) == std::string::npos) {\
@@ -42,6 +43,64 @@
                                                           << output.rdbuf();\
                                                 throw;                  \
                                             }                           \
+                                        }                               \
+                                        catch(std::string const& m)     \
+                                        {                               \
+                                            std::cerr << "THROW FAIL (Got a string expecting a standard exception)\n" \
+                                                      << "String Thrown: " << m << "\n" \
+                                                      << output.rdbuf();\
+                                            throw;                      \
+                                        }                               \
+                                        catch(int e)                    \
+                                        {                               \
+                                            std::cerr << "THROW FAIL (Got an int expecting a standard exception)\n" \
+                                                      << "Int Thrown: " << e << "\n" \
+                                                      << output.rdbuf();\
+                                            throw;                      \
+                                        }                               \
+                                        catch(...)                      \
+                                        {                               \
+                                            std::cerr << "THROW FAIL\n" \
+                                                      << "This was a non standard exception of unknown type\n" \
+                                                      << output.rdbuf();\
+                                            throw;                      \
+                                        }                               \
+                                      }
+#define EXPECT_NO_THROW_OR_DEBUG(check, output) \
+                                     {                                  \
+                                        try                             \
+                                        {                               \
+                                            check;                      \
+                                            EXPECT_TRUE(true);          \
+                                        }                               \
+                                        catch(std::exception const& e)\
+                                        {                               \
+                                            std::string error(e.what());\
+                                            std::cerr << "THROW FAIL\n" \
+                                                      << "Exception Message: " << error << "\n"  \
+                                                      << output.rdbuf();\
+                                            throw;                      \
+                                        }                               \
+                                        catch(std::string const& m)     \
+                                        {                               \
+                                            std::cerr << "THROW FAIL\n" \
+                                                      << "String Thrown: " << m << "\n" \
+                                                      << output.rdbuf();\
+                                            throw;                      \
+                                        }                               \
+                                        catch(int e)                    \
+                                        {                               \
+                                            std::cerr << "THROW FAIL\n" \
+                                                      << "Int Thrown: " << e << "\n" \
+                                                      << output.rdbuf();\
+                                            throw;                      \
+                                        }                               \
+                                        catch(...)                      \
+                                        {                               \
+                                            std::cerr << "THROW FAIL\n" \
+                                                      << "This was a non standard exception of unknown type\n" \
+                                                      << output.rdbuf();\
+                                            throw;                      \
                                         }                               \
                                       }
 

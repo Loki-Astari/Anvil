@@ -129,7 +129,7 @@ Decl:               NAMESPACE NameSpaceIdentifer '{'                    {
                 |   ObjectIdentifer ':' ObjectDecl InitObject           {
                                                                             action.log("Decl:               ObjectIdentifer : ObjectDecl InitObject ;");
                                                                             // TODO Use InitObject
-                                                                            action.assertNoStorage(action.scopeAddObject($1, $3));
+                                                                            action.assertNoStorage(action.scopeAddObject($1, $3, $4));
                                                                             $$ = 0;
                                                                         }
                 |   Statement                                           {
@@ -196,7 +196,7 @@ Expression:         ExprFuncCall                                        {
                                                                         }
 ExprFuncCall:       ObjectName '(' ValueListOpt ')'                     {
                                                                             action.log("ExprFuncCall:       ObjectName ( ValueListOpt )");
-                                                                            $$ = action.createFuncCall($1, $3);
+                                                                            $$ = action.codeAddFunctionCall($1, $3);
                                                                         }
 
 
@@ -231,10 +231,10 @@ Value:              ObjectName                                          {
                                                                             $$ = $1;
                                                                         }
 
-InitObject:         ';'                                                 {action.log("InitObject:         >EMPTY<");}
-                |   '=' '(' ValueListOpt ')' ';'                        {action.log("InitObject:         = ( ValueListOpt )");}
-                |   '=' '[' ValueListOpt ']' ';'                        {action.log("InitObject:         = [ ValueListOpt ]");}
-                |   '=' '{' MapListOpt   '}' ';'                        {action.log("InitObject:         = { MapListOpt   }");}
+InitObject:         ';'                                                 {action.log("InitObject:         >EMPTY<");             $$ = 0;}
+                |   '=' '(' ValueListOpt ')' ';'                        {action.log("InitObject:         = ( ValueListOpt )");  $$ = $3;}
+                |   '=' '[' ValueListOpt ']' ';'                        {action.log("InitObject:         = [ ValueListOpt ]");  $$ = $3;}
+                |   '=' '{' MapListOpt   '}' ';'                        {action.log("InitObject:         = { MapListOpt   }");  $$ = $3;}
                 |   '{'                                                 {
                                                                             action.log("InitObject:         { DeclListOpt } P1");
                                                                             $$ = action.scopeAddCodeBlock();
@@ -243,6 +243,7 @@ InitObject:         ';'                                                 {action.
                                                                             action.log("InitObject:         { DeclListOpt } P2");
                                                                             action.assertNoStorage(action.scopeClose($2));
                                                                             action.assertNoStorage($3);
+                                                                            $$ = 0;
                                                                         }
 
 ObjectName:         ObjectNameFull                                      {

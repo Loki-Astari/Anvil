@@ -497,9 +497,8 @@ namespace Good_Name_Space
 
     EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 
-    EXPECT_NO_THROW(
-        Class& classInfo = getType<Class>(compiler.globalScope, "Good_Name_Space", "MyClass")
-    );
+    auto action = [&](){Class& classInfo = getType<Class>(compiler.globalScope, "Good_Name_Space", "MyClass");};
+    EXPECT_NO_THROW_OR_DEBUG(action(), result);
 }
 
 TEST(SemanticDeclTest, AddArrayNormalNameSpace)
@@ -517,9 +516,8 @@ namespace Good_Name_Space
 
     EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 
-    EXPECT_NO_THROW(
-        Array& classInfo = getType<Array>(compiler.globalScope, "Good_Name_Space", "MyArray")
-    );
+    auto action = [&](){Array& classInfo = getType<Array>(compiler.globalScope, "Good_Name_Space", "MyArray");};
+    EXPECT_NO_THROW_OR_DEBUG(action(), result);
 }
 
 TEST(SemanticDeclTest, AddMapNormalNameSpace)
@@ -537,9 +535,8 @@ namespace Good_Name_Space
 
     EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 
-    EXPECT_NO_THROW(
-        Map& classInfo = getType<Map>(compiler.globalScope, "Good_Name_Space", "MyMap")
-    );
+    auto action = [&](){Map& classInfo = getType<Map>(compiler.globalScope, "Good_Name_Space", "MyMap");};
+    EXPECT_NO_THROW_OR_DEBUG(action(), result);
 }
 
 TEST(SemanticDeclTest, AddFuncNormalNameSpace)
@@ -557,9 +554,8 @@ namespace Good_Name_Space
 
     EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 
-    EXPECT_NO_THROW(
-        Func& classInfo = getType<Func>(compiler.globalScope, "Good_Name_Space", "MyFunc")
-    );
+    auto action = [&](){Func& classInfo = getType<Func>(compiler.globalScope, "Good_Name_Space", "MyFunc");};
+    EXPECT_NO_THROW_OR_DEBUG(action(), result);
 }
 
 
@@ -581,9 +577,8 @@ namespace Good_Name_Space
 
     EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 
-    EXPECT_NO_THROW(
-        Class& classInfo = getType<Class>(compiler.globalScope, "Good_Name_Space", "Nest_Name", "MyClass")
-    );
+    auto action = [&](){Class& classInfo = getType<Class>(compiler.globalScope, "Good_Name_Space", "Nest_Name", "MyClass");};
+    EXPECT_NO_THROW_OR_DEBUG(action(), result);
 }
 
 TEST(SemanticDeclTest, AddArrayNestedNameSpace)
@@ -604,9 +599,8 @@ namespace Good_Name_Space
 
     EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 
-    EXPECT_NO_THROW(
-        Array& classInfo = getType<Array>(compiler.globalScope, "Good_Name_Space", "Nest_Name", "MyArray")
-    );
+    auto action = [&](){Array& classInfo = getType<Array>(compiler.globalScope, "Good_Name_Space", "Nest_Name", "MyArray");};
+    EXPECT_NO_THROW_OR_DEBUG(action(), result);
 }
 
 TEST(SemanticDeclTest, AddMapNestedNameSpace)
@@ -627,9 +621,8 @@ namespace Good_Name_Space
 
     EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 
-    EXPECT_NO_THROW(
-        Map& classInfo = getType<Map>(compiler.globalScope, "Good_Name_Space", "Nest_Name", "MyMap")
-    );
+    auto action = [&](){Map& classInfo = getType<Map>(compiler.globalScope, "Good_Name_Space", "Nest_Name", "MyMap");};
+    EXPECT_NO_THROW_OR_DEBUG(action(), result);
 }
 
 TEST(SemanticDeclTest, AddFuncNestedNameSpace)
@@ -653,9 +646,8 @@ namespace Good_Name_Space
     auto findGNS = compiler.globalScope.find("Good_Name_Space");
     ASSERT_TRUE(findGNS.first);
 
-    EXPECT_NO_THROW(
-        Func& classInfo = getType<Func>(compiler.globalScope, "Good_Name_Space", "Nest_Name", "MyFunc")
-    );
+    auto action = [&](){Func& classInfo = getType<Func>(compiler.globalScope, "Good_Name_Space", "Nest_Name", "MyFunc");};
+    EXPECT_NO_THROW_OR_DEBUG(action(), result);
 }
 
 
@@ -683,11 +675,12 @@ namespace Good_Name_Space
     auto findGNS = compiler.globalScope.find("Good_Name_Space");
     ASSERT_TRUE(findGNS.first);
 
-    EXPECT_NO_THROW(
+    auto action = [&](){
         Type&   typeInfo = getType<Class>(compiler.globalScope, "Good_Name_Space", "Nest_Name", "MyClass");
         Object& obectInfo = getType<Object>(compiler.globalScope, "Good_Name_Space", "Nest_Name", "value");
         ASSERT_TRUE(&typeInfo == &obectInfo.getType());
-    );
+    };
+    EXPECT_NO_THROW_OR_DEBUG(action(), result);
 }
 
 TEST(SemanticDeclTest, AddIdentifierParentNameClass)
@@ -715,11 +708,12 @@ namespace Good_Name_Space
     auto findGNS = compiler.globalScope.find("Good_Name_Space");
     ASSERT_TRUE(findGNS.first);
 
-    EXPECT_NO_THROW(
+    auto action = [&](){
         Type&   typeInfo = getType<Class>(compiler.globalScope, "Good_Name_Space", "MyClass");
         Object& obectInfo = getType<Object>(compiler.globalScope, "Good_Name_Space", "Nest_Name", "value");
         ASSERT_TRUE(&typeInfo == &obectInfo.getType());
-    );
+    };
+    EXPECT_NO_THROW_OR_DEBUG(action(), result);
 }
 
 TEST(SemanticDeclTest, AddIdentifierAnotherNameClass)
@@ -750,11 +744,12 @@ namespace Good_Name_Space
     auto findGNS = compiler.globalScope.find("Good_Name_Space");
     ASSERT_TRUE(findGNS.first);
 
-    EXPECT_NO_THROW(
+    auto action = [&](){
         Type&   typeInfo = getType<Class>(compiler.globalScope, "Good_Name_Space", "Alt", "MyClass");
         Object& obectInfo = getType<Object>(compiler.globalScope, "Good_Name_Space", "Nest_Name", "value");
         ASSERT_TRUE(&typeInfo == &obectInfo.getType());
-    );
+    };
+    EXPECT_NO_THROW_OR_DEBUG(action(), result);
 }
 
 TEST(SemanticDeclTest, AddIdentifierAnonClass)
@@ -780,11 +775,12 @@ namespace Good_Name_Space
     auto findGNS = compiler.globalScope.find("Good_Name_Space");
     ASSERT_TRUE(findGNS.first);
 
-    EXPECT_NO_THROW(
+    auto action = [&]() {
         Type&   typeInfo = getType<Class>(compiler.globalScope, "Good_Name_Space", "Nest_Name", "$0000000000000000");
         Object& obectInfo = getType<Object>(compiler.globalScope, "Good_Name_Space", "Nest_Name", "value");
         ASSERT_TRUE(&typeInfo == &obectInfo.getType());
-    );
+    };
+    EXPECT_NO_THROW_OR_DEBUG(action(), result);
 }
 
 TEST(SemanticDeclTest, AddIdentifierLocalArray)
@@ -811,11 +807,12 @@ namespace Good_Name_Space
     auto findGNS = compiler.globalScope.find("Good_Name_Space");
     ASSERT_TRUE(findGNS.first);
 
-    EXPECT_NO_THROW(
+    auto action = [&](){
         Type&   typeInfo = getType<Array>(compiler.globalScope, "Good_Name_Space", "Nest_Name", "MyArray");
         Object& obectInfo = getType<Object>(compiler.globalScope, "Good_Name_Space", "Nest_Name", "value");
         ASSERT_TRUE(&typeInfo == &obectInfo.getType());
-    );
+    };
+    EXPECT_NO_THROW_OR_DEBUG(action(), result);
 }
 
 TEST(SemanticDeclTest, AddIdentifierParentNameArray)
@@ -843,11 +840,12 @@ namespace Good_Name_Space
     auto findGNS = compiler.globalScope.find("Good_Name_Space");
     ASSERT_TRUE(findGNS.first);
 
-    EXPECT_NO_THROW(
+    auto action = [&](){
         Type&   typeInfo = getType<Array>(compiler.globalScope, "Good_Name_Space", "MyArray");
         Object& obectInfo = getType<Object>(compiler.globalScope, "Good_Name_Space", "Nest_Name", "value");
         ASSERT_TRUE(&typeInfo == &obectInfo.getType());
-    );
+    };
+    EXPECT_NO_THROW_OR_DEBUG(action(), result);
 }
 
 TEST(SemanticDeclTest, AddIdentifierAnotherNameArray)
@@ -878,11 +876,12 @@ namespace Good_Name_Space
     auto findGNS = compiler.globalScope.find("Good_Name_Space");
     ASSERT_TRUE(findGNS.first);
 
-    EXPECT_NO_THROW(
+    auto action = [&](){
         Type&   typeInfo = getType<Array>(compiler.globalScope, "Good_Name_Space", "Alt", "MyArray");
         Object& obectInfo = getType<Object>(compiler.globalScope, "Good_Name_Space", "Nest_Name", "value");
         ASSERT_TRUE(&typeInfo == &obectInfo.getType());
-    );
+    };
+    EXPECT_NO_THROW_OR_DEBUG(action(), result);
 }
 
 TEST(SemanticDeclTest, AddIdentifierAnonArray)
@@ -908,11 +907,12 @@ namespace Good_Name_Space
     auto findGNS = compiler.globalScope.find("Good_Name_Space");
     ASSERT_TRUE(findGNS.first);
 
-    EXPECT_NO_THROW(
+    auto action = [&](){
         Type&   typeInfo = getType<Array>(compiler.globalScope, "Good_Name_Space", "Nest_Name", "$0000000000000000");
         Object& obectInfo = getType<Object>(compiler.globalScope, "Good_Name_Space", "Nest_Name", "value");
         ASSERT_TRUE(&typeInfo == &obectInfo.getType());
-    );
+    };
+    EXPECT_NO_THROW_OR_DEBUG(action(), result);
 }
 
 TEST(SemanticDeclTest, AddIdentifierLocalMap)
@@ -939,11 +939,12 @@ namespace Good_Name_Space
     auto findGNS = compiler.globalScope.find("Good_Name_Space");
     ASSERT_TRUE(findGNS.first);
 
-    EXPECT_NO_THROW(
+    auto action = [&](){
         Type&   typeInfo = getType<Map>(compiler.globalScope, "Good_Name_Space", "Nest_Name", "MyMap");
         Object& obectInfo = getType<Object>(compiler.globalScope, "Good_Name_Space", "Nest_Name", "value");
         ASSERT_TRUE(&typeInfo == &obectInfo.getType());
-    );
+    };
+    EXPECT_NO_THROW_OR_DEBUG(action(), result);
 }
 
 TEST(SemanticDeclTest, AddIdentifierParentNameMap)
@@ -971,11 +972,12 @@ namespace Good_Name_Space
     auto findGNS = compiler.globalScope.find("Good_Name_Space");
     ASSERT_TRUE(findGNS.first);
 
-    EXPECT_NO_THROW(
+    auto action = [&](){
         Type&   typeInfo = getType<Map>(compiler.globalScope, "Good_Name_Space", "MyMap");
         Object& obectInfo = getType<Object>(compiler.globalScope, "Good_Name_Space", "Nest_Name", "value");
         ASSERT_TRUE(&typeInfo == &obectInfo.getType());
-    );
+    };
+    EXPECT_NO_THROW_OR_DEBUG(action(), result);
 }
 
 TEST(SemanticDeclTest, AddIdentifierAnotherNameMap)
@@ -1006,11 +1008,12 @@ namespace Good_Name_Space
     auto findGNS = compiler.globalScope.find("Good_Name_Space");
     ASSERT_TRUE(findGNS.first);
 
-    EXPECT_NO_THROW(
+    auto action = [&](){
         Type&   typeInfo = getType<Map>(compiler.globalScope, "Good_Name_Space", "Alt", "MyMap");
         Object& obectInfo = getType<Object>(compiler.globalScope, "Good_Name_Space", "Nest_Name", "value");
         ASSERT_TRUE(&typeInfo == &obectInfo.getType());
-    );
+    };
+    EXPECT_NO_THROW_OR_DEBUG(action(), result);
 }
 
 TEST(SemanticDeclTest, AddIdentifierAnonMap)
@@ -1036,11 +1039,12 @@ namespace Good_Name_Space
     auto findGNS = compiler.globalScope.find("Good_Name_Space");
     ASSERT_TRUE(findGNS.first);
 
-    EXPECT_NO_THROW(
+    auto action = [&](){
         Type&   typeInfo = getType<Map>(compiler.globalScope, "Good_Name_Space", "Nest_Name", "$0000000000000000");
         Object& obectInfo = getType<Object>(compiler.globalScope, "Good_Name_Space", "Nest_Name", "value");
         ASSERT_TRUE(&typeInfo == &obectInfo.getType());
-    );
+    };
+    EXPECT_NO_THROW_OR_DEBUG(action(), result);
 }
 
 TEST(SemanticDeclTest, AddIdentifierLocalFunc)
@@ -1067,11 +1071,12 @@ namespace Good_Name_Space
     auto findGNS = compiler.globalScope.find("Good_Name_Space");
     ASSERT_TRUE(findGNS.first);
 
-    EXPECT_NO_THROW(
+    auto action = [&](){
         Type&   typeInfo = getType<Func>(compiler.globalScope, "Good_Name_Space", "Nest_Name", "MyFunc");
         Object& obectInfo = getType<Object>(compiler.globalScope, "Good_Name_Space", "Nest_Name", "value");
         ASSERT_TRUE(&typeInfo == &obectInfo.getType());
-    );
+    };
+    EXPECT_NO_THROW_OR_DEBUG(action(), result);
 }
 
 TEST(SemanticDeclTest, AddIdentifierParentNameFunc)
@@ -1099,11 +1104,12 @@ namespace Good_Name_Space
     auto findGNS = compiler.globalScope.find("Good_Name_Space");
     ASSERT_TRUE(findGNS.first);
 
-    EXPECT_NO_THROW(
+    auto action = [&](){
         Type&   typeInfo = getType<Func>(compiler.globalScope, "Good_Name_Space", "MyFunc");
         Object& obectInfo = getType<Object>(compiler.globalScope, "Good_Name_Space", "Nest_Name", "value");
         ASSERT_TRUE(&typeInfo == &obectInfo.getType());
-    );
+    };
+    EXPECT_NO_THROW_OR_DEBUG(action(), result);
 }
 
 TEST(SemanticDeclTest, AddIdentifierAnotherNameFunc)
@@ -1134,11 +1140,12 @@ namespace Good_Name_Space
     auto findGNS = compiler.globalScope.find("Good_Name_Space");
     ASSERT_TRUE(findGNS.first);
 
-    EXPECT_NO_THROW(
+    auto action = [&](){
         Type&   typeInfo = getType<Func>(compiler.globalScope, "Good_Name_Space", "Alt", "MyFunc");
         Object& obectInfo = getType<Object>(compiler.globalScope, "Good_Name_Space", "Nest_Name", "value");
         ASSERT_TRUE(&typeInfo == &obectInfo.getType());
-    );
+    };
+    EXPECT_NO_THROW_OR_DEBUG(action(), result);
 }
 
 TEST(SemanticDeclTest, AddIdentifierAnonFunc)
@@ -1164,11 +1171,12 @@ namespace Good_Name_Space
     auto findGNS = compiler.globalScope.find("Good_Name_Space");
     ASSERT_TRUE(findGNS.first);
 
-    EXPECT_NO_THROW(
+    auto action = [&](){
         Type&   typeInfo = getType<Func>(compiler.globalScope, "Good_Name_Space", "Nest_Name", "$0000000000000000");
         Object& obectInfo = getType<Object>(compiler.globalScope, "Good_Name_Space", "Nest_Name", "value");
         ASSERT_TRUE(&typeInfo == &obectInfo.getType());
-    );
+    };
+    EXPECT_NO_THROW_OR_DEBUG(action(), result);
 }
 
 TEST(SemanticDeclTest, AddIdentifierInvalidType)

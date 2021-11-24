@@ -2,6 +2,7 @@
 #define THORSANVIL_ANVIL_ICE_STORAGE_H
 
 #include "Action.h"     // Just to get Int
+#include "Declaration.h"
 
 #include <list>
 #include <vector>
@@ -9,22 +10,6 @@
 
 namespace ThorsAnvil::Anvil::Ice
 {
-
-class Type;
-class Object;
-class Decl;
-class Container;
-
-using Scope = Container;
-
-using TypeRef   = std::reference_wrapper<Type>;
-using ObjectRef = std::reference_wrapper<Object>;
-using DeclRef   = std::reference_wrapper<Decl>;
-using ScopeRef  = std::reference_wrapper<Scope>;
-using ParamList = std::list<TypeRef>;
-using ObjectList= std::list<ObjectRef>;
-using FullIdent = std::list<std::string>;
-using Data = std::variant<Int, TypeRef, ObjectRef, DeclRef, ScopeRef, ParamList, ObjectList, FullIdent, std::string>;
 
 class Storage
 {

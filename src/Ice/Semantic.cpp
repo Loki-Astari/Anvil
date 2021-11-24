@@ -5,14 +5,23 @@
 
 using namespace ThorsAnvil::Anvil::Ice;
 
-Decl::~Decl()
-{}
-
-Type::~Type()
-{}
+struct ScopePrinter
+{
+    char const* f;
+    ScopePrinter(char const* f)
+        : f(f)
+    {
+        //std::cerr << "Entered Scope: " << f << "\n";
+    }
+    ~ScopePrinter()
+    {
+        //std::cerr << "Left Scope: " << f << "\n";
+    }
+};
 
 Semantic::Semantic(Lexer& lexer, Scope& globalScope, std::ostream& output)
     : Action(lexer, output)
+    , anonNameCount(0)
     , globalScope(globalScope)
 {
     currentScope.emplace_back(globalScope);
@@ -53,23 +62,24 @@ void generateHexName(std::string& name, std::size_t count)
 
 std::string Semantic::generateAnonNameString()
 {
-    static std::size_t count = 0;
-
     // 64 bit Size: Convert to hex => 16 bit
     // Prefix with dollar => 17bit
     std::string name(17, '$');
-    generateHexName(name, count);
+    generateHexName(name, anonNameCount);
+    ++anonNameCount;
     return name;
 }
 
 Int Semantic::generateAnonName()
 {
+    ScopePrinter    printer("generateAnonName");
     std::string name = generateAnonNameString();
     return storage.add(std::move(name));
 }
 
 Int Semantic::identifierCreate()
 {
+    ScopePrinter    printer("identifierCreate");
     return storage.add(std::string(lexer.lexem()));
 }
 
@@ -82,6 +92,7 @@ Int Semantic::identifierCreate()
  */
 Int Semantic::identifierCheckObject(Int id)
 {
+    ScopePrinter    printer("identifierCheckObject");
     std::string&    identifier(storage.get<std::string>(id));
     if (std::islower(identifier[0]))
     {
@@ -96,6 +107,7 @@ Int Semantic::identifierCheckObject(Int id)
  */
 Int Semantic::identifierCheckType(Int id)
 {
+    ScopePrinter    printer("identifierCheckType");
     std::string&    identifier(storage.get<std::string>(id));
     if ((std::isupper(identifier[0])) && (identifier.size() > 3) && (identifier.find('_') == std::string::npos))
     {
@@ -110,6 +122,7 @@ Int Semantic::identifierCheckType(Int id)
  */
 Int Semantic::identifierCheckNS(Int id)
 {
+    ScopePrinter    printer("identifierCheckNS");
     std::string&    identifier(storage.get<std::string>(id));
 
     bool lastUnderscore = true;
@@ -136,11 +149,13 @@ Int Semantic::identifierCheckNS(Int id)
 
 Int Semantic::fullIdentiferCreate()
 {
+    ScopePrinter    printer("fullIdentiferCreate");
     return storage.add(FullIdent{});
 }
 
 Int Semantic::fullIdentiferAddPath(Int fp, Int id)
 {
+    ScopePrinter    printer("fullIdentiferAddPath");
     FullIdent&      fullIdent(storage.get<FullIdent>(fp));
     std::string&    identifier(storage.get<std::string>(id));
 
@@ -152,11 +167,13 @@ Int Semantic::fullIdentiferAddPath(Int fp, Int id)
 
 Int Semantic::paramListCreate()
 {
+    ScopePrinter    printer("paramListCreate");
     return storage.add(ParamList{});
 }
 
 Int Semantic::paramListAdd(Int pl, Int type)
 {
+    ScopePrinter    printer("paramListAdd");
     ParamList&      paramList(storage.get<ParamList>(pl));
     TypeRef&        typeRef(storage.get<TypeRef>(type));
 
@@ -168,11 +185,13 @@ Int Semantic::paramListAdd(Int pl, Int type)
 
 Int Semantic::objectListCreate()
 {
+    ScopePrinter    printer("objectListCreate");
     return storage.add(ObjectList{});
 }
 
 Int Semantic::objectListAdd(Int ol, Int object)
 {
+    ScopePrinter    printer("objectListAdd");
     ObjectList&     objectList(storage.get<ObjectList>(ol));
     ObjectRef&      objectRef(storage.get<ObjectRef>(object));
 
@@ -297,6 +316,7 @@ Decl&  Semantic::searchScopeForPath(Int fp)
 
 Int Semantic::findTypeInScope(Int fp)
 {
+    ScopePrinter    printer("findTypeInScope");
     Decl&  decl = searchScopeForPath(fp);
     storage.release(fp);
     return storage.add(TypeRef{dynamic_cast<Type&>(decl)});
@@ -304,13 +324,14 @@ Int Semantic::findTypeInScope(Int fp)
 
 Int Semantic::findObjectInScope(Int fp)
 {
+    ScopePrinter    printer("findObjectInScope");
     Decl&  decl = searchScopeForPath(fp);
     storage.release(fp);
     return storage.add(ObjectRef{dynamic_cast<Object&>(decl)});
 }
 
 template<typename T>
-T& getOrAddScope(Scope& topScope, std::string const& scopeName)
+T& Semantic::getOrAddScope(Scope& topScope, std::string const& scopeName)
 {
     auto find = topScope.get(scopeName);
     if (find.first)
@@ -320,9 +341,21 @@ T& getOrAddScope(Scope& topScope, std::string const& scopeName)
     }
     return topScope.add(std::make_unique<T>(std::move(scopeName)));
 }
+void Semantic::checkUniqueDeclName(Scope& topScope, std::string const& declName)
+{
+    auto find = topScope.get(declName);
+    if (find.first)
+    {
+#pragma vera-pushoff
+        using namespace std::string_literals;
+#pragma vera-pop
+        error("There already exists a declaration of '" + declName + "' in the current scope");
+    }
+}
 
 Int Semantic::scopeAddNamespace(Int name)
 {
+    ScopePrinter    printer("scopeAddNamespace");
     std::string&    namespaceName(storage.get<std::string>(name));
     Scope&          topScope = currentScope.back().get();
     Namespace&      newNameSpace = getOrAddScope<Namespace>(topScope, namespaceName);
@@ -334,6 +367,7 @@ Int Semantic::scopeAddNamespace(Int name)
 
 Int Semantic::scopeAddClass(Int name)
 {
+    ScopePrinter    printer("scopeAddClass");
     std::string&    className(storage.get<std::string>(name));
     Scope&          topScope = currentScope.back().get();
     Class&          newClass = getOrAddScope<Class>(topScope, className);
@@ -346,10 +380,12 @@ Int Semantic::scopeAddClass(Int name)
 
 Int Semantic::scopeAddArray(Int name, Int type)
 {
+    ScopePrinter    printer("scopeAddArray");
     std::string&    arrayName(storage.get<std::string>(name));
     Type&           typeInfo(storage.get<TypeRef>(type).get());
 
     Scope&          topScope = currentScope.back().get();
+    checkUniqueDeclName(topScope, arrayName);
     Array&          newArray = topScope.add(std::make_unique<Array>(std::move(arrayName), typeInfo));
 
     storage.release(name);
@@ -359,11 +395,13 @@ Int Semantic::scopeAddArray(Int name, Int type)
 
 Int Semantic::scopeAddMap(Int name, Int key, Int value)
 {
+    ScopePrinter    printer("scopeAddMap");
     std::string&    mapName(storage.get<std::string>(name));
     Type&           keyInfo(storage.get<TypeRef>(key).get());
     Type&           valueInfo(storage.get<TypeRef>(value).get());
 
     Scope&          topScope = currentScope.back().get();
+    checkUniqueDeclName(topScope, mapName);
     Map&            newMap = topScope.add(std::make_unique<Map>(std::move(mapName), keyInfo, valueInfo));
 
     storage.release(name);
@@ -374,11 +412,14 @@ Int Semantic::scopeAddMap(Int name, Int key, Int value)
 
 Int Semantic::scopeAddFunc(Int name, Int pl, Int ret)
 {
+    ScopePrinter    printer("scopeAddFunc");
+
     std::string&    funcName(storage.get<std::string>(name));
     ParamList&      paramList(storage.get<ParamList>(pl));
     Type&           retInfo(storage.get<TypeRef>(ret).get());
 
     Scope&          topScope = currentScope.back().get();
+    checkUniqueDeclName(topScope, funcName);
     Func&           newFunc = topScope.add(std::make_unique<Func>(std::move(funcName), std::move(paramList), retInfo));
 
     storage.release(name);
@@ -387,13 +428,29 @@ Int Semantic::scopeAddFunc(Int name, Int pl, Int ret)
     return storage.add(TypeRef{dynamic_cast<Type&>(newFunc)});
 }
 
-Int Semantic::scopeAddObject(Int name, Int type)
+Int Semantic::scopeAddObject(Int name, Int type, Int init)
 {
+    ScopePrinter    printer("scopeAddObject");
     std::string&    objectName(storage.get<std::string>(name));
     Type&           typeInfo(storage.get<TypeRef>(type).get());
 
     Scope&          topScope = currentScope.back().get();
-    topScope.add(std::make_unique<Object>(std::move(objectName), typeInfo));
+    checkUniqueDeclName(topScope, objectName);
+    Object& object = topScope.add(std::make_unique<Object>(std::move(objectName), typeInfo));
+
+    if (typeInfo.declType() == DeclType::Class)
+    {
+        ObjectList empty;
+        std::reference_wrapper<ObjectList> initList(empty);
+
+        if (init != 0) // Default
+        {
+            initList = storage.get<ObjectList>(init);
+        }
+        // codeAddObjectInit(object, std::move(initList.get()));
+        ((void)object);
+    }
+    // TODO Init other types.
 
     storage.release(name);
     storage.release(type);
@@ -402,14 +459,17 @@ Int Semantic::scopeAddObject(Int name, Int type)
 
 Int Semantic::scopeAddStatement(Int s)
 {
+    ScopePrinter    printer("scopeAddStatement");
     assertNoStorage(s);
     return 0;
 }
 
 Int Semantic::scopeAddCodeBlock()
 {
+    ScopePrinter    printer("scopeAddCodeBlock");
     std::string     codeBlockName = generateAnonNameString();
     Scope&          topScope = currentScope.back().get();
+    checkUniqueDeclName(topScope, codeBlockName);
     CodeBlock&      codeBlock = topScope.add(std::make_unique<CodeBlock>(std::move(codeBlockName)));
 
     currentScope.emplace_back(codeBlock);
@@ -419,6 +479,7 @@ Int Semantic::scopeAddCodeBlock()
 
 Int Semantic::scopeClose(Int oldScopeId)
 {
+    ScopePrinter    printer("scopeClose");
     Scope&          topScope = currentScope.back().get();
     Scope&          oldScope(storage.get<ScopeRef>(oldScopeId).get());
 
@@ -444,6 +505,7 @@ Int Semantic::scopeClose(Int oldScopeId)
 
 Int Semantic::addLiteralString()
 {
+    ScopePrinter    printer("addLiteralString");
     std::string objectName = generateAnonNameString();
     Type& stringType = getScopeSymbol<Type>(globalScope, "Std", "String");
 
@@ -454,8 +516,32 @@ Int Semantic::addLiteralString()
     return storage.add(ObjectRef{literalObject});
 }
 
-Int Semantic::createFuncCall(Int obj, Int pl)
+// Code Generation
+void Semantic::codeAddObjectInit(Object& object, ObjectList&& param)
 {
+    Scope&      topScope = currentScope.back().get();
+    CodeBlock*  codeBlock = dynamic_cast<CodeBlock*>(&topScope);
+
+    if (codeBlock == nullptr)
+    {
+        auto find = topScope.get("$constructor");
+        if (find.first != true)
+        {
+            error("Could not find constructor for non code block");
+        }
+        Decl* blockDecl = find.second->second.get();
+        codeBlock       = dynamic_cast<CodeBlock*>(blockDecl);
+        if (codeBlock == nullptr)
+        {
+            error("Failed to find Code Block");
+        }
+    }
+    codeBlock->add<StatExprInitObject>(object, std::move(param));
+}
+
+Int Semantic::codeAddFunctionCall(Int obj, Int pl)
+{
+    ScopePrinter    printer("codeAddFunctionCall");
     Object&     object = storage.get<ObjectRef>(obj).get();
     ObjectList& param = storage.get<ObjectList>(pl);
     Scope&      topScope = currentScope.back().get();
@@ -466,7 +552,7 @@ Int Semantic::createFuncCall(Int obj, Int pl)
         error("Adding code but not inside a code block. Statements can only be placed in functions and methods");
     }
 
-    codeBlock->add<FunctionCall>(object, std::move(param));
+    codeBlock->add<StatExprFunctionCall>(object, std::move(param));
     storage.release(obj);
     storage.release(pl);
 

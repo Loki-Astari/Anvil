@@ -43,7 +43,7 @@ TEST(SemanticCodeTest, CodeMustBeInFunctionValid)
     std::stringstream   file = buildStream(R"(
 namespace My_Work
 {
-    main : func { -> Std::Integer} {
+    main : func { Std::String -> Void} {
         Sys::console.print("Test");
     }
 }
