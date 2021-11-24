@@ -65,6 +65,7 @@ class Action
         virtual Int scopeAddFunc(Int /*name*/, Int /*p*/, Int /*r*/)  {return 0;}
         virtual Int scopeAddObject(Int /*name*/, Int)                 {return 0;}
         virtual Int scopeAddStatement(Int /*s*/)                      {return 0;}
+        virtual Int scopeAddCodeBlock()                               {return 0;}
         virtual Int scopeClose(Int /*oldSCope*/)                      {return 0;}
 
         virtual Int addLiteralString()                                {return 0;}

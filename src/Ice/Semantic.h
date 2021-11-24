@@ -43,7 +43,7 @@ class Container
         }
 };
 
-enum class DeclType {Void, Namespace, Class, Array, Map, Func, Object, Statement};
+enum class DeclType {Void, Namespace, Class, Array, Map, Func, Object, CodeBlock, Statement};
 
 class Decl
 {
@@ -58,15 +58,38 @@ class Decl
         virtual std::pair<bool, Container::NameRef> find(std::string const& /*name*/) const {return {false, {}};}
 };
 
-class Namespace: public Decl, public Container
+template<typename D>
+class DeclContainer: public D, public Container
 {
     public:
-        Namespace(std::string const& name)
-            : Decl(name)
+        DeclContainer(std::string const& name)
+            : D(name)
         {}
-        virtual std::string const& contName() const override                                {return declName();}
-        virtual DeclType declType() const override                                          {return DeclType::Namespace;}
+        virtual std::string const& contName() const override                                {return D::declName();}
         virtual std::pair<bool, Container::NameRef> find(std::string const& name) const override {return get(name);}
+};
+
+class Namespace: public DeclContainer<Decl>
+{
+    public:
+        using DeclContainer<Decl>::DeclContainer;
+        virtual DeclType declType() const override                                          {return DeclType::Namespace;}
+};
+
+class Statement;
+class CodeBlock: public DeclContainer<Decl>
+{
+    std::vector<std::unique_ptr<Statement>>     code;
+    public:
+        using DeclContainer<Decl>::DeclContainer;
+        virtual DeclType declType() const override                                          {return DeclType::CodeBlock;}
+
+        template<typename T, typename... Args>
+        Statement& add(Args&&... args)
+        {
+            code.emplace_back(std::make_unique<T>(std::forward<Args>(args)...));
+            return *code.back();
+        }
 };
 
 class Type: public Decl
@@ -87,15 +110,11 @@ class Void: public Type
         virtual DeclType declType() const override                                          {return DeclType::Void;}
 };
 
-class Class: public Type, public Container
+class Class: public DeclContainer<Type>
 {
     public:
-        Class(std::string const& name)
-            : Type(name)
-        {}
-        virtual std::string const& contName() const override                                {return declName();}
+        using DeclContainer::DeclContainer;
         virtual DeclType declType() const override                                          {return DeclType::Class;}
-        virtual std::pair<bool, Container::NameRef> find(std::string const& name) const override {return get(name);}
 };
 
 class Array: public Type
@@ -159,14 +178,26 @@ class Literal: public Object
         {}
 };
 
-class Statement: public Decl
+class Statement
 {
     public:
-        Statement()
-            : Decl("Statement")
-        {}
-        virtual DeclType declType() const override                                          {return DeclType::Statement;}
+        virtual ~Statement() = 0;
 };
+
+inline Statement::~Statement() {}
+
+class FunctionCall: public Statement
+{
+    Object&     object;
+    ObjectList  objectList;
+    public:
+        FunctionCall(Object& object, ObjectList&& objectList)
+            : object(object)
+            , objectList(std::move(objectList))
+        {}
+};
+
+
 
 using UPVoid        = std::unique_ptr<Void>;
 using UPNamespace   = std::unique_ptr<Namespace>;
@@ -270,7 +301,8 @@ class Semantic: public Action
         virtual Int scopeAddMap(Int name, Int key, Int value) override;
         virtual Int scopeAddFunc(Int name, Int param, Int ret)override;
         virtual Int scopeAddObject(Int name, Int)             override;
-        //virtual Int scopeAddStatement(Int s)                      override;
+        virtual Int scopeAddStatement(Int s)                  override;
+        virtual Int scopeAddCodeBlock()                       override;
         virtual Int scopeClose(Int oldSCope)                  override;
 
         virtual Int addLiteralString()                        override;

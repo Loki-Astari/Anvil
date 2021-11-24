@@ -389,6 +389,23 @@ Int Semantic::scopeAddObject(Int name, Int type)
     return 0;
 }
 
+Int Semantic::scopeAddStatement(Int s)
+{
+    assertNoStorage(s);
+    return 0;
+}
+
+Int Semantic::scopeAddCodeBlock()
+{
+    std::string     codeBlockName = generateAnonNameString();
+    Scope&          topScope = currentScope.back().get();
+    CodeBlock&      codeBlock = topScope.add(std::make_unique<CodeBlock>(std::move(codeBlockName)));
+
+    currentScope.emplace_back(codeBlock);
+
+    return storage.add(ScopeRef{dynamic_cast<Scope&>(codeBlock)});
+}
+
 Int Semantic::scopeClose(Int oldScopeId)
 {
     Scope&          topScope = currentScope.back().get();
@@ -426,17 +443,21 @@ Int Semantic::addLiteralString()
     return storage.add(ObjectRef{literalObject});
 }
 
-Int Semantic::createFuncCall(Int /*obj*/, Int /*param*/)
+Int Semantic::createFuncCall(Int obj, Int pl)
 {
-/*
-    std::string objectName = generateAnonNameString();
-    Type& stringType = getScopeSymbol<Type>(globalScope, "Std", "String");
+    Object&     object = storage.get<ObjectRef>(obj).get();
+    ObjectList& param = storage.get<ObjectList>(pl);
+    Scope&      topScope = currentScope.back().get();
 
-    // TODO: Literal needs to be a const
-    Scope& literalScope = getScopeSymbol<Namespace>(globalScope, "$Literal");
-    Object& literalObject = literalScope.add(std::make_unique<Literal<std::string>>(std::move(objectName), stringType, std::string(lexer.lexem())));
+    CodeBlock*  codeBlock = dynamic_cast<CodeBlock*>(&topScope);
+    if (codeBlock == nullptr)
+    {
+        error("Adding code but not inside a code block. Statements can only be placed in functions and methods");
+    }
 
-    return storage.add(ObjectRef{literalObject});
-*/
+    codeBlock->add<FunctionCall>(object, std::move(param));
+    storage.release(obj);
+    storage.release(pl);
+
     return 0;
 }

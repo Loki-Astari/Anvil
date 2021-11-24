@@ -42,8 +42,9 @@ int yylex(void*, ThorsAnvil::Anvil::Ice::Lexer& lexer, ThorsAnvil::Anvil::Ice::A
 %%
 
 Anvil:              NamespaceList                                       {
-                                                                            action.log("Anvil:              NamespaceList");$$ = 0;YYACCEPT;
+                                                                            action.log("Anvil:              NamespaceList");
                                                                             action.assertNoStorage($1);
+                                                                            $$ = 0;
                                                                         }
 
 
@@ -125,16 +126,15 @@ Decl:               NAMESPACE NameSpaceIdentifer '{'                    {
                                                                             action.releaseStorage(action.scopeAddFunc($2, $4, $6));
                                                                             $$ = 0;
                                                                         }
-                |   ObjectIdentifer ':' ObjectDecl InitObject           {
-                                                                            action.log("Decl:               ObjectIdentifer : ObjectDecl InitObject");
+                |   ObjectIdentifer ':' ObjectDecl InitObject ';'       {
+                                                                            action.log("Decl:               ObjectIdentifer : ObjectDecl InitObject ;");
                                                                             // TODO Use InitObject
                                                                             action.assertNoStorage(action.scopeAddObject($1, $3));
                                                                             $$ = 0;
                                                                         }
                 |   Statement                                           {
                                                                             action.log("Decl:               Statement");
-                                                                            // TODO
-                                                                            // action.releaseStorage(action.scopeAddStatement($1));
+                                                                            action.assertNoStorage(action.scopeAddStatement($1));
                                                                             $$ = 0;
                                                                         }
 
@@ -186,8 +186,14 @@ AnonDecl:           CLASS  '{'                                          {
                                                                             $$ = action.scopeAddFunc(action.generateAnonName(), $3, $5);
                                                                         }
 
-Statement:          Expression ';'                                      {action.log("Statement:          Expression ;");}
-Expression:         ExprFuncCall                                        {action.log("Expression:         ExprFuncCall");}
+Statement:          Expression ';'                                      {
+                                                                            action.log("Statement:          Expression ;");
+                                                                            $$ = $1;
+                                                                        }
+Expression:         ExprFuncCall                                        {
+                                                                            action.log("Expression:         ExprFuncCall");
+                                                                            $$ = $1;
+                                                                        }
 ExprFuncCall:       ObjectName '(' ValueListOpt ')'                     {
                                                                             action.log("ExprFuncCall:       ObjectName ( ValueListOpt )");
                                                                             $$ = action.createFuncCall($1, $3);
@@ -210,6 +216,12 @@ ValueList:          Value                                               {
                                                                             action.log("ValueList:          ValueList , Value");
                                                                             $$ = action.objectListAdd($1, $2);
                                                                         }
+MapListOpt:
+                |   MapList
+MapList:            MapValue
+                |   MapList ',' MapValue
+MapValue:           Value ARROW Value
+
 Value:              ObjectName                                          {
                                                                             action.log("Value:              ObjectName");
                                                                             $$ = $1;
@@ -219,7 +231,19 @@ Value:              ObjectName                                          {
                                                                             $$ = $1;
                                                                         }
 
-InitObject:         ';'                                                 {action.log("InitObject:         ;");}
+InitObject:                                                             {action.log("InitObject:         >EMPTY<");}
+                |   '=' '(' ValueListOpt ')'                            {action.log("InitObject:         = ( ValueListOpt )");}
+                |   '=' '[' ValueListOpt ']'                            {action.log("InitObject:         = [ ValueListOpt ]");}
+                |   '=' '{' MapListOpt   '}'                            {action.log("InitObject:         = { MapListOpt   }");}
+                |   '{'                                                 {
+                                                                            action.log("InitObject:         { DeclListOpt } P1");
+                                                                            $$ = action.scopeAddCodeBlock();
+                                                                        }
+                        DeclListOpt '}'                                 {
+                                                                            action.log("InitObject:         { DeclListOpt } P2");
+                                                                            action.assertNoStorage(action.scopeClose($2));
+                                                                            action.assertNoStorage($3);
+                                                                        }
 
 ObjectName:         ObjectNameFull                                      {
                                                                             action.log("ObjectName:         ObjectNameFull");
