@@ -29,7 +29,6 @@ using ScopeRef  = std::reference_wrapper<Scope>;
 using ParamList = std::list<TypeRef>;
 using ObjectList= std::list<ObjectRef>;
 using FullIdent = std::list<std::string>;
-using Data = std::variant<Int, TypeRef, ObjectRef, DeclRef, ScopeRef, ParamList, ObjectList, FullIdent, std::string>;
 
 
 class Decl;

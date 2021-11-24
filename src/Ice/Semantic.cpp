@@ -93,10 +93,10 @@ Int Semantic::identifierCreate()
 Int Semantic::identifierCheckObject(Int id)
 {
     ScopePrinter    printer("identifierCheckObject");
-    std::string&    identifier(storage.get<std::string>(id));
-    if (std::islower(identifier[0]))
+    SAccessString   identifier(storage, id);
+    if (std::islower(identifier.get()[0]))
     {
-        return id;
+        return identifier.reUse();
     }
     error("Invalid Identifier for Object");
 }
@@ -108,10 +108,13 @@ Int Semantic::identifierCheckObject(Int id)
 Int Semantic::identifierCheckType(Int id)
 {
     ScopePrinter    printer("identifierCheckType");
-    std::string&    identifier(storage.get<std::string>(id));
-    if ((std::isupper(identifier[0])) && (identifier.size() > 3) && (identifier.find('_') == std::string::npos))
+    SAccessString   identifier(storage, id);
+    if (   (std::isupper(identifier.get()[0]))
+        && (identifier.get().size() > 3)
+        && (identifier.get().find('_') == std::string::npos)
+    )
     {
-        return id;
+        return identifier.reUse();
     }
     error("Invalid Identifier for Type");
 }
@@ -123,7 +126,7 @@ Int Semantic::identifierCheckType(Int id)
 Int Semantic::identifierCheckNS(Int id)
 {
     ScopePrinter    printer("identifierCheckNS");
-    std::string&    identifier(storage.get<std::string>(id));
+    SAccessString   identifier(storage, id);
 
     bool lastUnderscore = true;
     auto findUpperNotPrefixedByUnderScore = [&lastUnderscore](char x)
@@ -136,12 +139,17 @@ Int Semantic::identifierCheckNS(Int id)
         return false;
     };
 
-    if ((std::isupper(identifier[0])) && ((identifier.size() <= 3) || (std::find_if(std::begin(identifier) + 1, std::end(identifier), [](char x){return std::isupper(x);}) != identifier.end())))
+    if ((std::isupper(identifier.get()[0]))
+     && (
+           (identifier.get().size() <= 3)
+        || (std::find_if(std::begin(identifier.get()) + 1, std::end(identifier.get()), [](char x){return std::isupper(x);}) != identifier.get().end())
+        )
+    )
     {
-        auto find = std::find_if(std::begin(identifier), std::end(identifier), findUpperNotPrefixedByUnderScore);
-        if (find == std::end(identifier))
+        auto find = std::find_if(std::begin(identifier.get()), std::end(identifier.get()), findUpperNotPrefixedByUnderScore);
+        if (find == std::end(identifier.get()))
         {
-            return id;
+            return identifier.reUse();
         }
     }
     error("Invalid Identifier for Namespace");
@@ -155,14 +163,13 @@ Int Semantic::fullIdentiferCreate()
 
 Int Semantic::fullIdentiferAddPath(Int fp, Int id)
 {
-    ScopePrinter    printer("fullIdentiferAddPath");
-    FullIdent&      fullIdent(storage.get<FullIdent>(fp));
-    std::string&    identifier(storage.get<std::string>(id));
+    ScopePrinter        printer("fullIdentiferAddPath");
+    SAccessFullIdent    fullIdent(storage, fp);
+    SAccessString       identifier(storage, id);
 
-    fullIdent.emplace_front(std::move(identifier));
-    storage.release(id);
+    fullIdent.get().emplace_front(std::move(identifier.get()));
 
-    return fp;
+    return fullIdent.reUse();
 }
 
 Int Semantic::paramListCreate()
@@ -173,14 +180,13 @@ Int Semantic::paramListCreate()
 
 Int Semantic::paramListAdd(Int pl, Int type)
 {
-    ScopePrinter    printer("paramListAdd");
-    ParamList&      paramList(storage.get<ParamList>(pl));
-    TypeRef&        typeRef(storage.get<TypeRef>(type));
+    ScopePrinter        printer("paramListAdd");
+    SAccessParamList    paramList(storage, pl);
+    SAccessType         typeRef(storage, type);
 
-    paramList.emplace_back(std::move(typeRef));
-    storage.release(type);
+    paramList.get().emplace_back(std::move(typeRef));
 
-    return pl;
+    return paramList.reUse();
 }
 
 Int Semantic::objectListCreate()
@@ -191,14 +197,13 @@ Int Semantic::objectListCreate()
 
 Int Semantic::objectListAdd(Int ol, Int object)
 {
-    ScopePrinter    printer("objectListAdd");
-    ObjectList&     objectList(storage.get<ObjectList>(ol));
-    ObjectRef&      objectRef(storage.get<ObjectRef>(object));
+    ScopePrinter        printer("objectListAdd");
+    SAccessObjectList   objectList(storage, ol);
+    SAccessObject       objectRef(storage, object);
 
-    objectList.emplace_back(std::move(objectRef));
-    storage.release(object);
+    objectList.get().emplace_back(std::move(objectRef));
 
-    return ol;
+    return objectList.reUse();
 }
 
 template<typename T>
@@ -253,10 +258,8 @@ Decl* Semantic::searchScopeForIdentifier(std::string const& path, std::string& p
     return result;
 }
 
-Decl&  Semantic::searchScopeForPath(Int fp)
+Decl&  Semantic::searchScopeForPath(FullIdent& fullIdent)
 {
-    FullIdent&  fullIdent(storage.get<FullIdent>(fp));
-
     // Strings used to build error message if needed.
     std::string     fullPathString;
     std::string     partialMatch;
@@ -316,17 +319,17 @@ Decl&  Semantic::searchScopeForPath(Int fp)
 
 Int Semantic::findTypeInScope(Int fp)
 {
-    ScopePrinter    printer("findTypeInScope");
-    Decl&  decl = searchScopeForPath(fp);
-    storage.release(fp);
+    ScopePrinter        printer("findTypeInScope");
+    SAccessFullIdent    fullIdent(storage, fp);
+    Decl&               decl = searchScopeForPath(fullIdent);
     return storage.add(TypeRef{dynamic_cast<Type&>(decl)});
 }
 
 Int Semantic::findObjectInScope(Int fp)
 {
-    ScopePrinter    printer("findObjectInScope");
-    Decl&  decl = searchScopeForPath(fp);
-    storage.release(fp);
+    ScopePrinter        printer("findObjectInScope");
+    SAccessFullIdent    fullIdent(storage, fp);
+    Decl&               decl = searchScopeForPath(fullIdent);
     return storage.add(ObjectRef{dynamic_cast<Object&>(decl)});
 }
 
@@ -356,104 +359,92 @@ void Semantic::checkUniqueDeclName(Scope& topScope, std::string const& declName)
 Int Semantic::scopeAddNamespace(Int name)
 {
     ScopePrinter    printer("scopeAddNamespace");
-    std::string&    namespaceName(storage.get<std::string>(name));
+    SAccessString   namespaceName(storage, name);
     Scope&          topScope = currentScope.back().get();
     Namespace&      newNameSpace = getOrAddScope<Namespace>(topScope, namespaceName);
     currentScope.emplace_back(newNameSpace);
 
-    storage.release(name);
     return storage.add(ScopeRef{dynamic_cast<Scope&>(newNameSpace)});
 }
 
 Int Semantic::scopeAddClass(Int name)
 {
     ScopePrinter    printer("scopeAddClass");
-    std::string&    className(storage.get<std::string>(name));
+    SAccessString   className(storage, name);
     Scope&          topScope = currentScope.back().get();
     Class&          newClass = getOrAddScope<Class>(topScope, className);
 
     currentScope.emplace_back(newClass);
 
-    storage.release(name);
     return storage.add(ScopeRef{dynamic_cast<Scope&>(newClass)});
 }
 
 Int Semantic::scopeAddArray(Int name, Int type)
 {
     ScopePrinter    printer("scopeAddArray");
-    std::string&    arrayName(storage.get<std::string>(name));
-    Type&           typeInfo(storage.get<TypeRef>(type).get());
+    SAccessString   arrayName(storage, name);
+    SAccessType     typeInfo(storage, type);
 
     Scope&          topScope = currentScope.back().get();
     checkUniqueDeclName(topScope, arrayName);
     Array&          newArray = topScope.add(std::make_unique<Array>(std::move(arrayName), typeInfo));
 
-    storage.release(name);
-    storage.release(type);
     return storage.add(TypeRef{dynamic_cast<Type&>(newArray)});
 }
 
 Int Semantic::scopeAddMap(Int name, Int key, Int value)
 {
     ScopePrinter    printer("scopeAddMap");
-    std::string&    mapName(storage.get<std::string>(name));
-    Type&           keyInfo(storage.get<TypeRef>(key).get());
-    Type&           valueInfo(storage.get<TypeRef>(value).get());
+    SAccessString   mapName(storage, name);
+    SAccessType     keyInfo(storage, key);
+    SAccessType     valueInfo(storage, value);
 
     Scope&          topScope = currentScope.back().get();
     checkUniqueDeclName(topScope, mapName);
     Map&            newMap = topScope.add(std::make_unique<Map>(std::move(mapName), keyInfo, valueInfo));
 
-    storage.release(name);
-    storage.release(key);
-    storage.release(value);
     return storage.add(TypeRef{dynamic_cast<Type&>(newMap)});
 }
 
 Int Semantic::scopeAddFunc(Int name, Int pl, Int ret)
 {
-    ScopePrinter    printer("scopeAddFunc");
-
-    std::string&    funcName(storage.get<std::string>(name));
-    ParamList&      paramList(storage.get<ParamList>(pl));
-    Type&           retInfo(storage.get<TypeRef>(ret).get());
+    ScopePrinter        printer("scopeAddFunc");
+    SAccessString       funcName(storage, name);
+    SAccessParamList    paramList(storage, pl);
+    SAccessType         retInfo(storage, ret);
 
     Scope&          topScope = currentScope.back().get();
     checkUniqueDeclName(topScope, funcName);
     Func&           newFunc = topScope.add(std::make_unique<Func>(std::move(funcName), std::move(paramList), retInfo));
 
-    storage.release(name);
-    storage.release(pl);
-    storage.release(ret);
     return storage.add(TypeRef{dynamic_cast<Type&>(newFunc)});
 }
 
 Int Semantic::scopeAddObject(Int name, Int type, Int init)
 {
-    ScopePrinter    printer("scopeAddObject");
-    std::string&    objectName(storage.get<std::string>(name));
-    Type&           typeInfo(storage.get<TypeRef>(type).get());
+    ScopePrinter        printer("scopeAddObject");
+    SAccessString       objectName(storage, name);
+    SAccessType         typeInfo(storage, type);
 
     Scope&          topScope = currentScope.back().get();
     checkUniqueDeclName(topScope, objectName);
     Object& object = topScope.add(std::make_unique<Object>(std::move(objectName), typeInfo));
 
-    if (typeInfo.declType() == DeclType::Class)
+    if (typeInfo.get().declType() == DeclType::Class)
     {
         ObjectList empty;
         std::reference_wrapper<ObjectList> initList(empty);
 
         if (init != 0) // Default
         {
-            initList = storage.get<ObjectList>(init);
+            SAccessObjectList   initInfo(storage, init);
+            initList = initInfo.get();
         }
         // codeAddObjectInit(object, std::move(initList.get()));
         ((void)object);
     }
     // TODO Init other types.
 
-    storage.release(name);
-    storage.release(type);
     return 0;
 }
 
@@ -481,20 +472,19 @@ Int Semantic::scopeClose(Int oldScopeId)
 {
     ScopePrinter    printer("scopeClose");
     Scope&          topScope = currentScope.back().get();
-    Scope&          oldScope(storage.get<ScopeRef>(oldScopeId).get());
+    SAccessScope    oldScope(storage, oldScopeId);
 
     currentScope.pop_back();
-    if (&topScope != &oldScope)
+    if (&topScope != &oldScope.get())
     {
 #pragma vera-pushoff
         using namespace std::string_literals;
 #pragma vera-pop
 
-        error("Bad Scope Closure: Expecting: >"s + oldScope.contName() + "<  Current: >" + topScope.contName() + "< ");
+        error("Bad Scope Closure: Expecting: >"s + oldScope.get().contName() + "<  Current: >" + topScope.contName() + "< ");
     }
 
-    storage.release(oldScopeId);
-    Class*          scopeToClass = dynamic_cast<Class*>(&oldScope); // Could by nullptr as this by Namespace
+    Class*          scopeToClass = dynamic_cast<Class*>(&oldScope.get()); // Could by nullptr as this by Namespace
     if (scopeToClass == nullptr)
     {
         return 0;
@@ -541,10 +531,10 @@ void Semantic::codeAddObjectInit(Object& object, ObjectList&& param)
 
 Int Semantic::codeAddFunctionCall(Int obj, Int pl)
 {
-    ScopePrinter    printer("codeAddFunctionCall");
-    Object&     object = storage.get<ObjectRef>(obj).get();
-    ObjectList& param = storage.get<ObjectList>(pl);
-    Scope&      topScope = currentScope.back().get();
+    ScopePrinter        printer("codeAddFunctionCall");
+    SAccessObject       object(storage, obj);
+    SAccessObjectList   param(storage, pl);
+    Scope&              topScope = currentScope.back().get();
 
     CodeBlock*  codeBlock = dynamic_cast<CodeBlock*>(&topScope);
     if (codeBlock == nullptr)
@@ -552,9 +542,7 @@ Int Semantic::codeAddFunctionCall(Int obj, Int pl)
         error("Adding code but not inside a code block. Statements can only be placed in functions and methods");
     }
 
-    codeBlock->add<StatExprFunctionCall>(object, std::move(param));
-    storage.release(obj);
-    storage.release(pl);
+    codeBlock->add<StatExprFunctionCall>(object.get(), std::move(param.get()));
 
     return 0;
 }

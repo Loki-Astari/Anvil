@@ -65,7 +65,7 @@ class Semantic: public Action
 
         virtual Int codeAddFunctionCall(Int obj, Int param)         override;
     private:
-        Decl& searchScopeForPath(Int fp);
+        Decl& searchScopeForPath(FullIdent& fullIdent);
         Decl* searchScopeForIdentifier(std::string const& path, std::string& partialMatch);
         std::string  generateAnonNameString();
 

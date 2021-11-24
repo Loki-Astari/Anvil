@@ -11,6 +11,11 @@
 namespace ThorsAnvil::Anvil::Ice
 {
 
+using Data = std::variant<Int, TypeRef, ObjectRef, DeclRef, ScopeRef, ParamList, ObjectList, FullIdent, std::string>;
+
+template<typename T>
+class StorageAccess;
+
 class Storage
 {
     std::vector<Data>   data;
@@ -40,6 +45,22 @@ class Storage
             return result;
         }
 
+        void release(Int index)
+        {
+            if (index == 0)
+            {
+                throw std::runtime_error("Internal Compiler Error: Releasing Element Zero");
+            }
+            if (static_cast<std::size_t>(index) >= data.size())
+            {
+                throw std::runtime_error("Internal Compiler Error: Releasing Element beyond Range");
+            }
+            data[index] = nextFree;
+            nextFree = index;
+        }
+    private:
+        template<typename T> friend class StorageAccess;
+
         template<typename T>
         T& get(Int index)
         {
@@ -54,20 +75,80 @@ class Storage
             return std::get<T>(data[index]);
         }
 
-        void release(Int index)
+};
+
+template<typename T>
+class StorageAccess
+{
+    Storage&    store;
+    Int         index;
+    T&          value;
+    public:
+        StorageAccess(Storage& store, Int& paramIndex)
+            : store(store)
+            , index(paramIndex)
+            , value(store.get<T>(index))
         {
-            if (index == 0)
+            paramIndex = 0;
+        }
+        ~StorageAccess()
+        {
+            if (index != 0)
             {
-                throw std::runtime_error("Internal Compiler Error: Releasing Element Zero");
+                store.release(index);
             }
-            if (static_cast<std::size_t>(index) >= data.size())
-            {
-                throw std::runtime_error("Internal Compiler Error: Releasing Element beyond Range");
-            }
-            data[index] = nextFree;
-            nextFree = index;
+        }
+        Int reUse()
+        {
+            Int result = index;
+            index = 0;
+            return result;
+        }
+        T& getValue() const
+        {
+            return value;
         }
 };
+template<typename T>
+class StorageAccessDirect: public StorageAccess<T>
+{
+    public:
+        using StorageAccess<T>::StorageAccess;
+        T& get() const
+        {
+            return StorageAccess<T>::getValue();
+        }
+        operator T& () const
+        {
+            return get();
+        }
+};
+template<typename T>
+class StorageAccessRef: public StorageAccess<std::reference_wrapper<T>>
+{
+    public:
+        using StorageAccess<std::reference_wrapper<T>>::StorageAccess;
+        T& get() const
+        {
+            return StorageAccess<std::reference_wrapper<T>>::getValue().get();
+        }
+        operator T& () const
+        {
+            return get();
+        }
+};
+
+
+using Data = std::variant<Int, TypeRef, ObjectRef, DeclRef, ScopeRef, ParamList, ObjectList, FullIdent, std::string>;
+using SAccessInt        = StorageAccessDirect<Int>;
+using SAccessType       = StorageAccessRef<Type>;
+using SAccessObject     = StorageAccessRef<Object>;
+using SAccessDecl       = StorageAccessRef<Decl>;
+using SAccessScope      = StorageAccessRef<Scope>;
+using SAccessParamList  = StorageAccessDirect<ParamList>;
+using SAccessObjectList = StorageAccessDirect<ObjectList>;
+using SAccessFullIdent  = StorageAccessDirect<FullIdent>;
+using SAccessString     = StorageAccessDirect<std::string>;
 
 }
 
