@@ -7,12 +7,13 @@ struct SemanticCompiler
 {
     ThorsAnvil::Anvil::Ice::StandardScope   globalScope;
     ThorsAnvil::Anvil::Ice::Lexer           lexer;
+    ThorsAnvil::Anvil::Ice::Storage         storage;
     ThorsAnvil::Anvil::Ice::Semantic        semanticAnalyser;
     ThorsAnvil::Anvil::Ice::Parser          parser;
 
     SemanticCompiler(std::istream& input, std::ostream& output)
         : lexer(input, output)
-        , semanticAnalyser(lexer, globalScope, output)
+        , semanticAnalyser(lexer, globalScope, storage, output)
         , parser(lexer, semanticAnalyser)
     {}
 
@@ -1199,4 +1200,117 @@ namespace Good_Name_Space
 
     EXPECT_THROW_OR_DEBUG(compiler.compile(), "Could Not Find Type", result);
 }
+
+TEST(SemanticDeclTest, TwoNamespaceSameNameValid)
+{
+    std::stringstream   result;
+    std::stringstream   file = buildStream(R"(
+namespace Good_Name_Space
+{
+    namespace Nest_Name
+    {
+        value: Std::String;
+    }
+
+    namespace Nest_Name
+    {
+        test: Std::String;
+    }
+}
+)");
+
+    using ThorsAnvil::Anvil::Ice::Type;
+    using ThorsAnvil::Anvil::Ice::Func;
+    using ThorsAnvil::Anvil::Ice::Object;
+    SemanticCompiler  compiler(file, result);
+
+    EXPECT_TRUE(compiler.compile());
+}
+
+TEST(SemanticDeclTest, TwoClassSameNameValid)
+{
+    std::stringstream   result;
+    std::stringstream   file = buildStream(R"(
+namespace Good_Name_Space
+{
+    class MyClass
+    {
+        value: Std::String;
+    }
+
+    class MyClass
+    {
+        test: Std::String;
+    }
+}
+)");
+
+    using ThorsAnvil::Anvil::Ice::Type;
+    using ThorsAnvil::Anvil::Ice::Func;
+    using ThorsAnvil::Anvil::Ice::Object;
+    SemanticCompiler  compiler(file, result);
+
+    EXPECT_TRUE(compiler.compile());
+}
+
+TEST(SemanticDeclTest, TwoArraySameNameInValid)
+{
+    std::stringstream   result;
+    std::stringstream   file = buildStream(R"(
+namespace Good_Name_Space
+{
+    array MyArray { Std::String }
+    array MyArray { Std::Integer }
+}
+)");
+
+    using ThorsAnvil::Anvil::Ice::Type;
+    using ThorsAnvil::Anvil::Ice::Func;
+    using ThorsAnvil::Anvil::Ice::Object;
+    SemanticCompiler  compiler(file, result);
+
+    EXPECT_THROW_OR_DEBUG(compiler.compile(), "There already exists a declaration of", result);
+}
+
+TEST(SemanticDeclTest, TwoMapSameNameInValid)
+{
+    std::stringstream   result;
+    std::stringstream   file = buildStream(R"(
+namespace Good_Name_Space
+{
+    map MyMap { Std::String , Std::Integer }
+    map MyMap { Std::Integer , Std::String }
+}
+)");
+
+    using ThorsAnvil::Anvil::Ice::Type;
+    using ThorsAnvil::Anvil::Ice::Func;
+    using ThorsAnvil::Anvil::Ice::Object;
+    SemanticCompiler  compiler(file, result);
+
+    EXPECT_THROW_OR_DEBUG(compiler.compile(), "There already exists a declaration of", result);
+}
+
+TEST(SemanticDeclTest, TwoFuncSameNameInValid)
+{
+    std::stringstream   result;
+    std::stringstream   file = buildStream(R"(
+namespace Good_Name_Space
+{
+    func MyFunc { Std::String -> Std::Integer }
+    func MyFunc { Std::Integer -> Std::String }
+}
+)");
+
+    using ThorsAnvil::Anvil::Ice::Type;
+    using ThorsAnvil::Anvil::Ice::Func;
+    using ThorsAnvil::Anvil::Ice::Object;
+    SemanticCompiler  compiler(file, result);
+
+    EXPECT_THROW_OR_DEBUG(compiler.compile(), "There already exists a declaration of", result);
+}
+
+
+
+
 

@@ -307,7 +307,7 @@ ObjectIdentifer:    Identifer                                           {
 
 Identifer:          IDENTIFIER                                          {
                                                                             action.log("Identifer:          IDENTIFIER");
-                                                                            $$ = action.identifierCreate();
+                                                                            $$ = action.identifierCreate(lexer.lexem());
                                                                         }
 
 

@@ -41,7 +41,7 @@ class Action
         virtual void releaseStorage(Int)                              {}
         virtual Int  generateAnonName()                               {return 0;}
 
-        virtual Int identifierCreate()                                {return 0;}
+        virtual Int identifierCreate(std::string_view /*view*/)       {return 0;}
         virtual Int identifierCheckObject(Int /*id*/)                 {return 0;}
         virtual Int identifierCheckType(Int /*id*/)                   {return 0;}
         virtual Int identifierCheckNS(Int /*id*/)                     {return 0;}

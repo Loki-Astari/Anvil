@@ -103,7 +103,7 @@ class CodeBlock: public DeclContainer<Decl>
         virtual DeclType declType() const override                                          {return DeclType::CodeBlock;}
 
         template<typename T, typename... Args>
-        Statement& add(Args&&... args)
+        Statement& addCode(Args&&... args)
         {
             code.emplace_back(std::make_unique<T>(std::forward<Args>(args)...));
             //code.emplace_back(new T(std::forward<Args>(args)...));

@@ -19,10 +19,11 @@ struct ScopePrinter
     }
 };
 
-Semantic::Semantic(Lexer& lexer, Scope& globalScope, std::ostream& output)
+Semantic::Semantic(Lexer& lexer, Scope& globalScope, Storage& storage, std::ostream& output)
     : Action(lexer, output)
     , anonNameCount(0)
     , globalScope(globalScope)
+    , storage(storage)
 {
     currentScope.emplace_back(globalScope);
 }
@@ -77,10 +78,10 @@ Int Semantic::generateAnonName()
     return storage.add(std::move(name));
 }
 
-Int Semantic::identifierCreate()
+Int Semantic::identifierCreate(std::string_view view)
 {
     ScopePrinter    printer("identifierCreate");
-    return storage.add(std::string(lexer.lexem()));
+    return storage.add(std::string(view));
 }
 
 /*
@@ -109,6 +110,7 @@ Int Semantic::identifierCheckType(Int id)
 {
     ScopePrinter    printer("identifierCheckType");
     SAccessString   identifier(storage, id);
+
     if (   (std::isupper(identifier.get()[0]))
         && (identifier.get().size() > 3)
         && (identifier.get().find('_') == std::string::npos)
@@ -116,6 +118,7 @@ Int Semantic::identifierCheckType(Int id)
     {
         return identifier.reUse();
     }
+
     error("Invalid Identifier for Type");
 }
 
@@ -255,6 +258,7 @@ Decl* Semantic::searchScopeForIdentifier(std::string const& path, std::string& p
             break;
         }
     }
+
     return result;
 }
 
@@ -352,6 +356,7 @@ void Semantic::checkUniqueDeclName(Scope& topScope, std::string const& declName)
 #pragma vera-pushoff
         using namespace std::string_literals;
 #pragma vera-pop
+
         error("There already exists a declaration of '" + declName + "' in the current scope");
     }
 }
@@ -526,7 +531,7 @@ void Semantic::codeAddObjectInit(Object& object, ObjectList&& param)
             error("Failed to find Code Block");
         }
     }
-    codeBlock->add<StatExprInitObject>(object, std::move(param));
+    codeBlock->addCode<StatExprInitObject>(object, std::move(param));
 }
 
 Int Semantic::codeAddFunctionCall(Int obj, Int pl)
@@ -542,7 +547,7 @@ Int Semantic::codeAddFunctionCall(Int obj, Int pl)
         error("Adding code but not inside a code block. Statements can only be placed in functions and methods");
     }
 
-    codeBlock->add<StatExprFunctionCall>(object.get(), std::move(param.get()));
+    codeBlock->addCode<StatExprFunctionCall>(object.get(), std::move(param.get()));
 
     return 0;
 }

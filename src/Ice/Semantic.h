@@ -20,11 +20,11 @@ class Semantic: public Action
 {
     std::size_t anonNameCount;
     Scope&      globalScope;
+    Storage&    storage;
     std::vector<std::reference_wrapper<Scope>>  currentScope;
-    Storage     storage;
 
     public:
-        Semantic(Lexer& lexer, Scope& globalScope, std::ostream& output = std::cout);
+        Semantic(Lexer& lexer, Scope& globalScope, Storage& storage, std::ostream& output = std::cout);
         virtual ~Semantic() override;
 
         void display(std::ostream& stream);
@@ -34,7 +34,7 @@ class Semantic: public Action
         virtual void releaseStorage(Int)                            override;
         virtual Int  generateAnonName()                             override;
 
-        virtual Int identifierCreate()                              override;
+        virtual Int identifierCreate(std::string_view view)         override;
         virtual Int identifierCheckObject(Int id)                   override;
         virtual Int identifierCheckType(Int id)                     override;
         virtual Int identifierCheckNS(Int id)                       override;
