@@ -38,8 +38,8 @@ class Container
         using NameMap = std::map<std::string, std::unique_ptr<Decl>>;
         using NameRef = NameMap::const_iterator;
 
-        template<typename T>
-        T& add(std::unique_ptr<T>&& decl);
+        template<typename T, typename... Args>
+        T& add(Args&&... args);
         virtual std::string const& contName() const = 0;
         std::pair<bool, NameRef> get(std::string const& name) const;
 
@@ -251,17 +251,13 @@ class StandardScope: public Namespace
         {
             // Add void to the global scope
             UPVoid        typeVoidPtr(new Void);
-            Void&         typeVoid = add(std::move(typeVoidPtr));
+            Void&         typeVoid = add<Void>();
 
             // Add "Std" namespace to the global scope.
             // Here we have the standard basic types.
-            UPClass       typeIntPtr(new Class("Integer"));
-            UPClass       typeStringPtr(new Class("String"));
-
-            UPNamespace   standard(new Namespace("Std"));
-            Class&        typeInt = standard->add(std::move(typeIntPtr));
-            Class&        typeString = standard->add(std::move(typeStringPtr));
-            add(std::move(standard));
+            Namespace&    standard = add<Namespace>("Std");
+            Class&        typeInt = standard.add<Class>("Integer");
+            Class&        typeString = standard.add<Class>("String");
             ((void)typeInt);
 
             // Add "Sys" namespace to the global scope.
@@ -269,38 +265,29 @@ class StandardScope: public Namespace
             //  console
             ParamList     consoleParamList;
             consoleParamList.emplace_back(typeString);
-            UPFunc        consolePrintMethodType(new Func("Print", consoleParamList, typeVoid));
-            UPObject      consolePrintMethodFunc(new Object("print", *consolePrintMethodType));
 
-            UPClass  consoleType(new Class("Console"));
-            consoleType->add(std::move(consolePrintMethodType));
-            consoleType->add(std::move(consolePrintMethodFunc));
+            Namespace&  system                  = add<Namespace>("Sys");
 
-            UPObject      consoleObject(new Object("console", *consoleType));
+            Class&      consoleType             = system.add<Class>("Console");
+            /*Object&     consoleObject           = */ system.add<Object>("console", consoleType);
+            /*CodeBlock&  consoleConstructor      = */ system.add<CodeBlock>("$constructor");
 
-            UPCodeBlock   consoleConstructor(new CodeBlock("$constructor"));
-            // FIX consoleConstructor->add<
+            Func&       consolePrintMethodType  = consoleType.add<Func>("Print", consoleParamList, typeVoid);
+            /*Object&     consolePrintMethodFunc  = */ consoleType.add<Object>("print", consolePrintMethodType);
 
-            UPNamespace   system(new Namespace("Sys"));
-            system->add(std::move(consoleType));
-            system->add(std::move(consoleObject));
-            system->add(std::move(consoleConstructor));
-
-            add(std::move(system));
 
             // Special scope to hold all literals.
-            UPNamespace   literal(new Namespace("$Literal"));
-            add(std::move(literal));
+            /*Namespace&  literal                 = */ add<Namespace>("$Literal");
 
             // Special scope to hold all Code.
-            UPNamespace   code(new Namespace("$Code"));
-            add(std::move(code));
+            /*Namespace&  code                    = */ add<Namespace>("$Code");
         }
 };
 
-template<typename T>
-inline T& Container::add(std::unique_ptr<T>&& decl)
+template<typename T, typename... Args>
+inline T& Container::add(Args&&... args)
 {
+    std::unique_ptr<Decl> decl(new T(args...));
     auto& location = names[decl->declName()];
     location = std::move(decl);
     return dynamic_cast<T&>(*location);
@@ -314,15 +301,15 @@ inline std::pair<bool, Container::NameRef> Container::get(std::string const& nam
 inline Namespace::Namespace(std::string const& name)
     : DeclContainer<Decl>(name)
 {
-    add<CodeBlock>(std::make_unique<CodeBlock>("$container"));
-    add<CodeBlock>(std::make_unique<CodeBlock>("$destructor"));
+    add<CodeBlock>("$container");
+    add<CodeBlock>("$destructor");
 }
 
 inline Class::Class(std::string const& name)
     : DeclContainer<Type>(name)
 {
-    add<CodeBlock>(std::make_unique<CodeBlock>("$container"));
-    add<CodeBlock>(std::make_unique<CodeBlock>("$destructor"));
+    add<CodeBlock>("$container");
+    add<CodeBlock>("$destructor");
 }
 
 }

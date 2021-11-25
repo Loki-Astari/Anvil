@@ -8,9 +8,7 @@ using namespace ThorsAnvil::Anvil::Ice;
 TEST(DeclarationsTest, DeclNamespace)
 {
     Namespace   ns("Name");
-    std::unique_ptr<Class> member = std::make_unique<Class>("Member");
-    Class*                 memberPtr = member.get();
-    ns.add(std::move(member));
+    Class& member = ns.add<Class>("Member");
 
     EXPECT_EQ(ns.declName(), "Name");
     EXPECT_EQ(ns.contName(), "Name");
@@ -18,7 +16,7 @@ TEST(DeclarationsTest, DeclNamespace)
 
     auto find1 = ns.find("Member");
     ASSERT_TRUE(find1.first);
-    EXPECT_EQ(dynamic_cast<Class*>(find1.second->second.get()), memberPtr);
+    EXPECT_EQ(dynamic_cast<Class*>(find1.second->second.get()), &member);
 
     auto find2 = ns.find("NotMember");
     EXPECT_FALSE(find2.first);
@@ -27,9 +25,7 @@ TEST(DeclarationsTest, DeclNamespace)
 TEST(DeclarationsTest, DeclClass)
 {
     Class   cs("Name");
-    std::unique_ptr<Class> member = std::make_unique<Class>("Member");
-    Class*                 memberPtr = member.get();
-    cs.add(std::move(member));
+    Class& member = cs.add<Class>("Member");
 
     EXPECT_EQ(cs.declName(), "Name");
     EXPECT_EQ(cs.contName(), "Name");
@@ -37,7 +33,7 @@ TEST(DeclarationsTest, DeclClass)
 
     auto find1 = cs.find("Member");
     ASSERT_TRUE(find1.first);
-    EXPECT_EQ(dynamic_cast<Class*>(find1.second->second.get()), memberPtr);
+    EXPECT_EQ(dynamic_cast<Class*>(find1.second->second.get()), &member);
 
     auto find2 = cs.find("NotMember");
     EXPECT_FALSE(find2.first);
@@ -82,9 +78,7 @@ TEST(DeclarationsTest, DeclVoid)
 TEST(DeclarationsTest, DeclObject)
 {
     Class   type("Type");
-    std::unique_ptr<Class> member = std::make_unique<Class>("Member");
-    Class*                 memberPtr = member.get();
-    type.add(std::move(member));
+    Class& member = type.add<Class>("Member");
     Object  object("Name", type);
 
     EXPECT_EQ(object.declName(), "Name");
@@ -93,7 +87,7 @@ TEST(DeclarationsTest, DeclObject)
 
     auto find1 = object.find("Member");
     ASSERT_TRUE(find1.first);
-    EXPECT_EQ(dynamic_cast<Class*>(find1.second->second.get()), memberPtr);
+    EXPECT_EQ(dynamic_cast<Class*>(find1.second->second.get()), &member);
 
     auto find2 = object.find("NotMember");
     EXPECT_FALSE(find2.first);
@@ -102,9 +96,7 @@ TEST(DeclarationsTest, DeclObject)
 TEST(DeclarationsTest, DeclLiteral)
 {
     Class   type("Type");
-    std::unique_ptr<Class> member = std::make_unique<Class>("Member");
-    Class*                 memberPtr = member.get();
-    type.add(std::move(member));
+    Class& member = type.add<Class>("Member");
     Literal<std::string>   literal("Name", type, std::string("Hi There"));
 
     EXPECT_EQ(literal.declName(), "Name");
@@ -113,7 +105,7 @@ TEST(DeclarationsTest, DeclLiteral)
 
     auto find1 = literal.find("Member");
     ASSERT_TRUE(find1.first);
-    EXPECT_EQ(dynamic_cast<Class*>(find1.second->second.get()), memberPtr);
+    EXPECT_EQ(dynamic_cast<Class*>(find1.second->second.get()), &member);
 
     auto find2 = literal.find("NotMember");
     EXPECT_FALSE(find2.first);
@@ -122,9 +114,7 @@ TEST(DeclarationsTest, DeclLiteral)
 TEST(DeclarationsTest, DeclCodeBlock)
 {
     CodeBlock   codeblock("Name");
-    std::unique_ptr<Class> member = std::make_unique<Class>("Member");
-    Class*                 memberPtr = member.get();
-    codeblock.add(std::move(member));
+    Class& member = codeblock.add<Class>("Member");
 
     EXPECT_EQ(codeblock.declName(), "Name");
     EXPECT_EQ(codeblock.contName(), "Name");
@@ -132,7 +122,7 @@ TEST(DeclarationsTest, DeclCodeBlock)
 
     auto find1 = codeblock.find("Member");
     ASSERT_TRUE(find1.first);
-    EXPECT_EQ(dynamic_cast<Class*>(find1.second->second.get()), memberPtr);
+    EXPECT_EQ(dynamic_cast<Class*>(find1.second->second.get()), &member);
 
     auto find2 = codeblock.find("NotMember");
     EXPECT_FALSE(find2.first);

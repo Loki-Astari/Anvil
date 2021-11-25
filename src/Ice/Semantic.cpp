@@ -346,7 +346,7 @@ T& Semantic::getOrAddScope(Scope& topScope, std::string const& scopeName)
         Decl*       foundDeclWithSameName = find.second->second.get();
         return dynamic_cast<T&>(*foundDeclWithSameName);
     }
-    return topScope.add(std::make_unique<T>(std::move(scopeName)));
+    return topScope.add<T>(std::move(scopeName));
 }
 void Semantic::checkUniqueDeclName(Scope& topScope, std::string const& declName)
 {
@@ -392,7 +392,7 @@ Int Semantic::scopeAddArray(Int name, Int type)
 
     Scope&          topScope = currentScope.back().get();
     checkUniqueDeclName(topScope, arrayName);
-    Array&          newArray = topScope.add(std::make_unique<Array>(std::move(arrayName), typeInfo));
+    Array&          newArray = topScope.add<Array>(std::move(arrayName), typeInfo);
 
     return storage.add(TypeRef{dynamic_cast<Type&>(newArray)});
 }
@@ -406,7 +406,7 @@ Int Semantic::scopeAddMap(Int name, Int key, Int value)
 
     Scope&          topScope = currentScope.back().get();
     checkUniqueDeclName(topScope, mapName);
-    Map&            newMap = topScope.add(std::make_unique<Map>(std::move(mapName), keyInfo, valueInfo));
+    Map&            newMap = topScope.add<Map>(std::move(mapName), keyInfo, valueInfo);
 
     return storage.add(TypeRef{dynamic_cast<Type&>(newMap)});
 }
@@ -420,7 +420,7 @@ Int Semantic::scopeAddFunc(Int name, Int pl, Int ret)
 
     Scope&          topScope = currentScope.back().get();
     checkUniqueDeclName(topScope, funcName);
-    Func&           newFunc = topScope.add(std::make_unique<Func>(std::move(funcName), std::move(paramList), retInfo));
+    Func&           newFunc = topScope.add<Func>(std::move(funcName), std::move(paramList), retInfo);
 
     return storage.add(TypeRef{dynamic_cast<Type&>(newFunc)});
 }
@@ -433,7 +433,7 @@ Int Semantic::scopeAddObject(Int name, Int type, Int init)
 
     Scope&          topScope = currentScope.back().get();
     checkUniqueDeclName(topScope, objectName);
-    Object& object = topScope.add(std::make_unique<Object>(std::move(objectName), typeInfo));
+    Object& object = topScope.add<Object>(std::move(objectName), typeInfo);
 
     if (typeInfo.get().declType() == DeclType::Class)
     {
@@ -466,7 +466,7 @@ Int Semantic::scopeAddCodeBlock()
     std::string     codeBlockName = generateAnonNameString();
     Scope&          topScope = currentScope.back().get();
     checkUniqueDeclName(topScope, codeBlockName);
-    CodeBlock&      codeBlock = topScope.add(std::make_unique<CodeBlock>(std::move(codeBlockName)));
+    CodeBlock&      codeBlock = topScope.add<CodeBlock>(std::move(codeBlockName));
 
     currentScope.emplace_back(codeBlock);
 
@@ -506,7 +506,7 @@ Int Semantic::addLiteralString()
 
     // TODO: Literal needs to be a const
     Scope& literalScope = getScopeSymbol<Namespace>(globalScope, "$Literal");
-    Object& literalObject = literalScope.add(std::make_unique<Literal<std::string>>(std::move(objectName), stringType, std::string(lexer.lexem())));
+    Object& literalObject = literalScope.add<Literal<std::string>>(std::move(objectName), stringType, std::string(lexer.lexem()));
 
     return storage.add(ObjectRef{literalObject});
 }
