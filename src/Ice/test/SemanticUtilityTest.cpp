@@ -2,6 +2,7 @@
 
 #include "Semantic.h"
 #include "test/Utility.h"
+#include "test/SemanticTest.h"
 
 struct SemanticCompiler
 {
