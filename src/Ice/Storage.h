@@ -11,7 +11,7 @@
 namespace ThorsAnvil::Anvil::Ice
 {
 
-using Data = std::variant<Int, TypeRef, ObjectRef, DeclRef, ScopeRef, ParamList, ObjectList, FullIdent, std::string>;
+using Data = std::variant<Int, TypeRef, ObjectRef, DeclRef, ScopeRef, ParamList, ObjectIdList, IdentifierList, ObjectId, std::string>;
 
 template<typename T>
 class StorageAccess;
@@ -41,7 +41,7 @@ class Storage
             }
             Int result = nextFree;
             nextFree = std::get<Int>(data[nextFree]);
-            data[result] = std::forward<T>(value);
+            data[result] = std::move(value);
             return result;
         }
 
@@ -139,16 +139,16 @@ class StorageAccessRef: public StorageAccess<std::reference_wrapper<T>>
 };
 
 
-using Data = std::variant<Int, TypeRef, ObjectRef, DeclRef, ScopeRef, ParamList, ObjectList, FullIdent, std::string>;
-using SAccessInt        = StorageAccessDirect<Int>;
-using SAccessType       = StorageAccessRef<Type>;
-using SAccessObject     = StorageAccessRef<Object>;
-using SAccessDecl       = StorageAccessRef<Decl>;
-using SAccessScope      = StorageAccessRef<Scope>;
-using SAccessParamList  = StorageAccessDirect<ParamList>;
-using SAccessObjectList = StorageAccessDirect<ObjectList>;
-using SAccessFullIdent  = StorageAccessDirect<FullIdent>;
-using SAccessString     = StorageAccessDirect<std::string>;
+using SAccessInt            = StorageAccessDirect<Int>;
+using SAccessType           = StorageAccessRef<Type>;
+using SAccessObject         = StorageAccessRef<Object>;
+using SAccessDecl           = StorageAccessRef<Decl>;
+using SAccessScope          = StorageAccessRef<Scope>;
+using SAccessParamList      = StorageAccessDirect<ParamList>;
+using SAccessObjectIdList   = StorageAccessDirect<ObjectIdList>;
+using SAccessIdentifierList = StorageAccessDirect<IdentifierList>;
+using SAccessObjectId       = StorageAccessDirect<ObjectId>;
+using SAccessString         = StorageAccessDirect<std::string>;
 
 }
 

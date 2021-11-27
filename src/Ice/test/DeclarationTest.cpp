@@ -130,20 +130,20 @@ TEST(DeclarationsTest, DeclCodeBlock)
 
 TEST(DeclarationsTest, DeclCodeBlockAddCodeInitObject)
 {
-    CodeBlock   codeBlock("Name");
-    Class       type("Type");
-    Object      object("Object",type);
-    ObjectList  param;
-    codeBlock.addCode<StatExprInitObject>(object, std::move(param));
+    CodeBlock       codeBlock("Name");
+    Class           type("Type");
+    Object          object("Object",type);
+    ObjectIdList    param;
+    codeBlock.addCode<true, StatExprFunctionCall>(ObjectId(object, IdentifierList{}, type), std::move(param));
 }
 
 TEST(DeclarationsTest, DeclCodeBlockAddCodeFunctionCall)
 {
-    CodeBlock   codeBlock("Name");
-    Class       type("Type");
-    Object      object("Object",type);
-    ObjectList  param;
-    codeBlock.addCode<StatExprInitObject>(object, std::move(param));
+    CodeBlock       codeBlock("Name");
+    Class           type("Type");
+    Object          object("Object",type);
+    ObjectIdList    param;
+    codeBlock.addCode<true, StatExprFunctionCall>(ObjectId(object, IdentifierList{}, type), std::move(param));
 }
 
 

@@ -34,7 +34,9 @@ int yylex(void*, ThorsAnvil::Anvil::Ice::Lexer& lexer, ThorsAnvil::Anvil::Ice::A
 %token              ARRAY
 %token              MAP
 %token              FUNC
-%token              IDENTIFIER
+%token              IDENTIFIER_OBJECT
+%token              IDENTIFIER_TYPE
+%token              IDENTIFIER_NS
 %token              SCOPE
 %token              ARROW
 %token              STRING
@@ -58,12 +60,13 @@ NamespaceList:      Namespace                                           {
                                                                             action.assertNoStorage($2);
                                                                         }
 
-Namespace:          NAMESPACE NameSpaceIdentifer '{'                    {
-                                                                            action.log("Namespace:          NAMESPACE NameSpaceIdentifer { DeclListOpt } P1A");
+Namespace:          NAMESPACE NotNameSpaceIdentifier                    {error(yy::location{}, "Invalid Identifier for Namespace");}
+                |   NAMESPACE NameSpaceIdentifier '{'                   {
+                                                                            action.log("Namespace:          NAMESPACE NameSpaceIdentifier { DeclListOpt } P1A");
                                                                             $$ = action.scopeAddNamespace($2);
                                                                         }
                                                      DeclListOpt '}'    {
-                                                                            action.log("Decl:               NAMESPACE NameSpaceIdentifer { DeclListOpt } P2A");
+                                                                            action.log("Decl:               NAMESPACE NameSpaceIdentifier { DeclListOpt } P2A");
                                                                             action.assertNoStorage(action.scopeClose($4));
                                                                             action.assertNoStorage($5);
                                                                             $$ = 0;
@@ -90,44 +93,43 @@ DeclList:           Decl                                                {
                                                                             $$ = 0;
                                                                         }
 
-Decl:               NAMESPACE NameSpaceIdentifer '{'                    {
-                                                                            action.log("Decl:               NAMESPACE NameSpaceIdentifer { DeclListOpt } P1B");
-                                                                            $$ = action.scopeAddNamespace($2);
-                                                                        }
-                                                     DeclListOpt '}'    {
-                                                                            action.log("Decl:               NAMESPACE NameSpaceIdentifer { DeclListOpt } P2B");
-                                                                            action.assertNoStorage(action.scopeClose($4));
-                                                                            action.assertNoStorage($5);
+Decl:               Namespace                                           {
+                                                                            action.log("Decl:               Namespace");
+                                                                            action.assertNoStorage($1);
                                                                             $$ = 0;
                                                                         }
-
-                |   CLASS   TypeIdentifer '{'                           {
-                                                                            action.log("Decl:               CLASS TypeIdentifer { DeclListOpt } P1");
+                |   CLASS   NotTypeIdentifier                           {error(yy::location{}, "Invalid Identifier for Type");}
+                |   CLASS   TypeIdentifier '{'                          {
+                                                                            action.log("Decl:               CLASS TypeIdentifier { DeclListOpt } P1");
                                                                             $$ = action.scopeAddClass($2);
                                                                         }
                                              DeclListOpt '}'            {
-                                                                            action.log("Decl:               CLASS TypeIdentifer { DeclListOpt } P2");
+                                                                            action.log("Decl:               CLASS TypeIdentifier { DeclListOpt } P2");
                                                                             action.releaseStorage(action.scopeClose($4));
                                                                             action.assertNoStorage($5);
                                                                             $$ = 0;
                                                                         }
-                |   ARRAY  TypeIdentifer '{' ObjectDecl '}'             {
-                                                                            action.log("Decl:               ARRAY TypeIdentifer { ObjectDecl }");
+                |   ARRAY  NotTypeIdentifier                            {error(yy::location{}, "Invalid Identifier for Type");}
+                |   ARRAY  TypeIdentifier '{' ObjectDecl '}'            {
+                                                                            action.log("Decl:               ARRAY TypeIdentifier { ObjectDecl }");
                                                                             action.releaseStorage(action.scopeAddArray($2, $4));
                                                                             $$ = 0;
                                                                         }
-                |   MAP    TypeIdentifer '{' ObjectDecl ',' ObjectDecl '}' {
-                                                                            action.log("Decl:               MAP TypeIdentifer { ObjectDecl , ObjectDecl }");
+                |   MAP    NotTypeIdentifier                            {error(yy::location{}, "Invalid Identifier for Type");}
+                |   MAP    TypeIdentifier '{' ObjectDecl ',' ObjectDecl '}' {
+                                                                            action.log("Decl:               MAP TypeIdentifier { ObjectDecl , ObjectDecl }");
                                                                             action.releaseStorage(action.scopeAddMap($2, $4, $6));
                                                                             $$ = 0;
                                                                         }
-                |   FUNC   TypeIdentifer '{' ParamListOpt ARROW ObjectDecl '}' {
-                                                                            action.log("Decl:               FUNC TypeIdentifer ( ParamListOpt ) -> ObjectDecl ;");
+                |   FUNC   NotTypeIdentifier                            {error(yy::location{}, "Invalid Identifier for Type");}
+                |   FUNC   TypeIdentifier '{' ParamListOpt ARROW ObjectDecl '}' {
+                                                                            action.log("Decl:               FUNC TypeIdentifier ( ParamListOpt ) -> ObjectDecl ;");
                                                                             action.releaseStorage(action.scopeAddFunc($2, $4, $6));
                                                                             $$ = 0;
                                                                         }
-                |   ObjectIdentifer ':' ObjectDecl InitObject           {
-                                                                            action.log("Decl:               ObjectIdentifer : ObjectDecl InitObject ;");
+                |   NotObjectIdentifier                                 {error(yy::location{}, "Invalid Identifier for Object");}
+                |   ObjectIdentifier ':' ObjectDecl InitObject          {
+                                                                            action.log("Decl:               ObjectIdentifier : ObjectDecl InitObject ;");
                                                                             // TODO Use InitObject
                                                                             action.assertNoStorage(action.scopeAddObject($1, $3, $4));
                                                                             $$ = 0;
@@ -188,15 +190,18 @@ AnonDecl:           CLASS  '{'                                          {
 
 Statement:          Expression ';'                                      {
                                                                             action.log("Statement:          Expression ;");
-                                                                            $$ = $1;
+                                                                            action.assertNoStorage($1);
+                                                                            $$ = 0;
                                                                         }
 Expression:         ExprFuncCall                                        {
                                                                             action.log("Expression:         ExprFuncCall");
-                                                                            $$ = $1;
+                                                                            action.assertNoStorage($1);
+                                                                            $$ = 0;
                                                                         }
-ExprFuncCall:       ObjectName '(' ValueListOpt ')'                     {
-                                                                            action.log("ExprFuncCall:       ObjectName ( ValueListOpt )");
-                                                                            $$ = action.codeAddFunctionCall($1, $3);
+ExprFuncCall:       Value '(' ValueListOpt ')'                          {
+                                                                            action.log("ExprFuncCall:       Value ( ValueListOpt )");
+                                                                            action.assertNoStorage(action.codeAddFunctionCall($1, $3));
+                                                                            $$ = 0;
                                                                         }
 
 
@@ -231,10 +236,10 @@ Value:              ObjectName                                          {
                                                                             $$ = $1;
                                                                         }
 
-InitObject:         ';'                                                 {action.log("InitObject:         >EMPTY<");             $$ = 0;}
-                |   '=' '(' ValueListOpt ')' ';'                        {action.log("InitObject:         = ( ValueListOpt )");  $$ = $3;}
-                |   '=' '[' ValueListOpt ']' ';'                        {action.log("InitObject:         = [ ValueListOpt ]");  $$ = $3;}
-                |   '=' '{' MapListOpt   '}' ';'                        {action.log("InitObject:         = { MapListOpt   }");  $$ = $3;}
+InitObject:         ';'                                                 {action.log("InitObject:         >EMPTY<");             /* TODO */$$ = 0;}
+                |   '=' '(' ValueListOpt ')' ';'                        {action.log("InitObject:         = ( ValueListOpt )");  /* TODO */$$ = $3;}
+                |   '=' '[' ValueListOpt ']' ';'                        {action.log("InitObject:         = [ ValueListOpt ]");  /* TODO */$$ = $3;}
+                |   '=' '{' MapListOpt   '}' ';'                        {action.log("InitObject:         = { MapListOpt   }");  /* TODO */$$ = $3;}
                 |   '{'                                                 {
                                                                             action.log("InitObject:         { DeclListOpt } P1");
                                                                             $$ = action.scopeAddCodeBlock();
@@ -248,42 +253,53 @@ InitObject:         ';'                                                 {action.
 
 ObjectName:         ObjectNameFull                                      {
                                                                             action.log("ObjectName:         ObjectNameFull");
-                                                                            $$ = action.findObjectInScope($1);
+                                                                            $$ = $1;
                                                                         }
 
 
-ObjectNameFull:     ObjectIdentifer                                      {
-                                                                            action.log("ObjectNameFull:     ObjectNamePart");
-                                                                            $$ = action.fullIdentiferAddPath(action.fullIdentiferCreate(), $1);
+ObjectNameFull:     ObjectPath                                          {
+                                                                            action.log("ObjectNameFull:     ObjectPath");
+                                                                            $$ = action.objectIDCreate(action.identifierListCreate(), $1);
                                                                         }
-                |   ObjectIdentifer '.' ObjectNameFull                  {
-                                                                            action.log("ObjectNameFull:     ObjectIdentifer . ObjectNameFull");
-                                                                            $$ = action.fullIdentiferAddPath($3, $1);
+                |   ObjectScope ObjectPath                              {
+                                                                            action.log("ObjectNameFull:     ObjectScope SCOPE ObjectPath");
+                                                                            $$ = action.objectIDCreate($1, $2);
                                                                         }
-                |   NameSpaceIdentifer SCOPE ObjectNameFull             {
-                                                                            action.log("ObjectNameFull:     NameSpaceIdentifer :: ObjectNameFull");
-                                                                            $$ = action.fullIdentiferAddPath($3, $1);
+
+
+ObjectScope:        NameSpaceIdentifier SCOPE                           {
+                                                                            action.log("ObjectScope:        NameSpaceIdentifier");
+                                                                            $$ = action.identifierListAdd(action.identifierListCreate(), $1);
                                                                         }
-                |   TypeIdentifer SCOPE ObjectNameFull                  {
-                                                                            action.log("ObjectNameFull:     TypeIdentifer :: ObjectNameFull");
-                                                                            $$ = action.fullIdentiferAddPath($3, $1);
+                |   NameSpaceIdentifier SCOPE ObjectScope               {
+                                                                            action.log("ObjectScope:        ObjectScope SCOPE NameSpaceIdentifier");
+                                                                            $$ = action.identifierListAdd($3, $1);
+                                                                        }
+
+ObjectPath:         ObjectIdentifier                                    {
+                                                                            action.log("ObjectPath:         ObjectIdentifier");
+                                                                            $$ = action.identifierListAdd(action.identifierListCreate(), $1);
+                                                                        }
+                |   ObjectIdentifier '.' ObjectPath                     {
+                                                                            action.log("ObjectPath:         ObjectPath '.' ObjectIdentifier");
+                                                                            $$ = action.identifierListAdd($3, $1);
                                                                         }
 
 TypeName:           TypeNameFull                                        {
                                                                             action.log("TypeName:           TypeNameFull");
                                                                             $$ = action.findTypeInScope($1);
                                                                         }
-TypeNameFull:       TypeIdentifer                                       {
-                                                                            action.log("TypeNameFull:       TypeIdentifer");
-                                                                            $$ = action.fullIdentiferAddPath(action.fullIdentiferCreate(), $1);
+TypeNameFull:       TypeIdentifier                                      {
+                                                                            action.log("TypeNameFull:       TypeIdentifier");
+                                                                            $$ = action.identifierListAdd(action.identifierListCreate(), $1);
                                                                         }
-                |   NameSpaceIdentifer SCOPE TypeNameFull               {
-                                                                            action.log("TypeNameFull:       NameSpaceIdentifer :: TypeNameFull");
-                                                                            $$ = action.fullIdentiferAddPath($3, $1);
+                |   NameSpaceIdentifier SCOPE TypeNameFull              {
+                                                                            action.log("TypeNameFull:       NameSpaceIdentifier :: TypeNameFull");
+                                                                            $$ = action.identifierListAdd($3, $1);
                                                                         }
-                |   TypeIdentifer SCOPE TypeNameFull                    {
-                                                                            action.log("TypeNameFull:        TypeIdentifer :: TypeNameFull");
-                                                                            $$ = action.fullIdentiferAddPath($3, $1);
+                |   TypeIdentifier SCOPE TypeNameFull                   {
+                                                                            action.log("TypeNameFull:        TypeIdentifier :: TypeNameFull");
+                                                                            $$ = action.identifierListAdd($3, $1);
                                                                         }
 
 
@@ -292,23 +308,26 @@ Literal:            STRING                                              {
                                                                             $$ = action.addLiteralString();
                                                                         }
 
-NameSpaceIdentifer: Identifer                                           {
-                                                                            action.log("NameSpaceIdentifer: Identifer");
-                                                                            $$ = action.identifierCheckNS($1);
+NameSpaceIdentifier:IDENTIFIER_NS                                       {
+                                                                            action.log("NameSpaceIdentifier:IDENTIFIER_NS");
+                                                                            $$ = action.identifierCheckNS(action.identifierCreate(lexer.lexem()));
                                                                         }
-TypeIdentifer:      Identifer                                           {
-                                                                            action.log("TypeIdentifer:      Identifer");
-                                                                            $$ = action.identifierCheckType($1);
+TypeIdentifier:     IDENTIFIER_TYPE                                     {
+                                                                            action.log("TypeIdentifier:     IDENTIFIER_TYPE");
+                                                                            $$ = action.identifierCheckType(action.identifierCreate(lexer.lexem()));
                                                                         }
-ObjectIdentifer:    Identifer                                           {
-                                                                            action.log("ObjectIdentifer:    Identifer");
-                                                                            $$ = action.identifierCheckObject($1);
+ObjectIdentifier:   IDENTIFIER_OBJECT                                   {
+                                                                            action.log("ObjectIdentifier:   IDENTIFIER_OBJECT");
+                                                                            $$ = action.identifierCheckObject(action.identifierCreate(lexer.lexem()));
                                                                         }
 
-Identifer:          IDENTIFIER                                          {
-                                                                            action.log("Identifer:          IDENTIFIER");
-                                                                            $$ = action.identifierCreate(lexer.lexem());
-                                                                        }
+NotNameSpaceIdentifier:     TypeIdentifier
+                        |   ObjectIdentifier
+NotTypeIdentifier:          NameSpaceIdentifier
+                        |   ObjectIdentifier
+
+NotObjectIdentifier:        NameSpaceIdentifier
+                        |   TypeIdentifier
 
 
 

@@ -257,26 +257,44 @@ TEST(StorageTest, StoreObjectList)
 
     auto action = [&]()
     {
-        ObjectList   paramList;
+        ObjectIdList   paramList;
         Int index = storage.add(paramList);
 
-        SAccessObjectList  value(storage, index);
+        SAccessObjectIdList  value(storage, index);
     };
     EXPECT_NO_THROW(
         action();
     );
 }
 
-TEST(StorageTest, StoreFullIdent)
+TEST(StorageTest, ObjectId)
 {
     Storage     storage;
 
     auto action = [&]()
     {
-        FullIdent   paramList;
-        Int index = storage.add(paramList);
+        Class      type("T");
+        Object     object("M", type);
+        ObjectId   objectId(object, {}, type);
+        Int index = storage.add(objectId);
 
-        SAccessFullIdent  value(storage, index);
+        SAccessObjectId  value(storage, index);
+    };
+    EXPECT_NO_THROW(
+        action();
+    );
+}
+
+TEST(StorageTest, IdentifierList)
+{
+    Storage     storage;
+
+    auto action = [&]()
+    {
+        IdentifierList   list{"XX", "YY"};
+        Int index = storage.add(list);
+
+        SAccessIdentifierList  value(storage, index);
     };
     EXPECT_NO_THROW(
         action();

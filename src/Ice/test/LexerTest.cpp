@@ -14,7 +14,10 @@ class
 array
 map
 func
-Bob
+objectName
+TypeName
+Ns
+Name_Space
 ::
 ->
 "This is a String"
@@ -59,8 +62,20 @@ $
     EXPECT_EQ(lexer.lexem(), "func");
 
     val = lexer.yylexWithAction(action);
-    EXPECT_EQ(yy::Parser::token::IDENTIFIER, val);
-    EXPECT_EQ(lexer.lexem(), "Bob");
+    EXPECT_EQ(yy::Parser::token::IDENTIFIER_OBJECT, val);
+    EXPECT_EQ(lexer.lexem(), "objectName");
+
+    val = lexer.yylexWithAction(action);
+    EXPECT_EQ(yy::Parser::token::IDENTIFIER_TYPE, val);
+    EXPECT_EQ(lexer.lexem(), "TypeName");
+
+    val = lexer.yylexWithAction(action);
+    EXPECT_EQ(yy::Parser::token::IDENTIFIER_NS, val);
+    EXPECT_EQ(lexer.lexem(), "Ns");
+
+    val = lexer.yylexWithAction(action);
+    EXPECT_EQ(yy::Parser::token::IDENTIFIER_NS, val);
+    EXPECT_EQ(lexer.lexem(), "Name_Space");
 
     val = lexer.yylexWithAction(action);
     EXPECT_EQ(yy::Parser::token::SCOPE, val);

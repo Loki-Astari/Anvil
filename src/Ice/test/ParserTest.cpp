@@ -30,7 +30,7 @@ TEST(ParserTest, NameSpaceOnly)
 {
     std::stringstream    result;
     std::stringstream    file = buildStream(R"(
-namespace Name
+namespace Name_Space
 {
 }
     )");
@@ -44,9 +44,9 @@ TEST(ParserTest,NameSpaceNested)
 {
     std::stringstream    result;
     std::stringstream    file = buildStream(R"(
-namespace Name
+namespace Name_Space
 {
-    namespace Nest
+    namespace Nest_Space
     {
     }
 }
@@ -61,11 +61,11 @@ TEST(ParserTest,NameSpaceTwice)
 {
     std::stringstream    result;
     std::stringstream    file = buildStream(R"(
-namespace Name
+namespace Name_Space
 {
 }
 
-namespace Twice
+namespace Twice_Space
 {
 }
     )");
@@ -79,9 +79,9 @@ TEST(ParserTest,NameStatExprFuncCall)
 {
     std::stringstream    result;
     std::stringstream    file = buildStream(R"(
-namespace Name
+namespace Name_Space
 {
-    Console::print("Hello World");
+    Sys::console.print("Hello World");
 }
     )");
 
@@ -94,7 +94,7 @@ TEST(ParserTest,NameTypeArray)
 {
     std::stringstream    result;
     std::stringstream    file = buildStream(R"(
-namespace Name
+namespace Name_Space
 {
     array TypeArray { Std::String }
 }
@@ -109,7 +109,7 @@ TEST(ParserTest,NameTypeFunc)
 {
     std::stringstream    result;
     std::stringstream    file = buildStream(R"(
-namespace Name
+namespace Name_Space
 {
     func TypeFunc{Std::Integer -> Std::String}
 }
@@ -124,7 +124,7 @@ TEST(ParserTest,NameTypeMap)
 {
     std::stringstream    result;
     std::stringstream    file = buildStream(R"(
-namespace Name
+namespace Name_Space
 {
     map TypeMap { Std::String, Std::Integer}
 }
@@ -139,7 +139,7 @@ TEST(ParserTest,NameTypeObject)
 {
     std::stringstream    result;
     std::stringstream    file = buildStream(R"(
-namespace Name
+namespace Name_Space
 {
     class ClassName
     {
@@ -158,7 +158,7 @@ TEST(ParserTest,NameVariableAnonTypeArray)
 {
     std::stringstream    result;
     std::stringstream    file = buildStream(R"(
-namespace Name
+namespace Name_Space
 {
     data : array { Std::Integer };
 }
@@ -173,7 +173,7 @@ TEST(ParserTest,NameVariableAnonTypeFunc)
 {
     std::stringstream    result;
     std::stringstream    file = buildStream(R"(
-namespace Name
+namespace Name_Space
 {
     data : func{Std::Integer, Std::String -> Std::Number};
 }
@@ -188,7 +188,7 @@ TEST(ParserTest,NameVariableAnonTypeMap)
 {
     std::stringstream    result;
     std::stringstream    file = buildStream(R"(
-namespace Name
+namespace Name_Space
 {
     data : map { Std::Integer, Std::String };
 }
@@ -203,13 +203,13 @@ TEST(ParserTest,NameVariableAnonTypeObject)
 {
     std::stringstream    result;
     std::stringstream    file = buildStream(R"(
-namespace Name
+namespace Name_Space
 {
-    data: class
+    data: Class
     {
-        Name:   String;
-        Age:    Number;
-    };
+        name:   String;
+        age:    Number;
+    }
 }
     )");
 
@@ -222,7 +222,7 @@ TEST(ParserTest,NameVariableDecl)
 {
     std::stringstream    result;
     std::stringstream    file = buildStream(R"(
-namespace Name
+namespace Name_Space
 {
     data: Std::String;
 }

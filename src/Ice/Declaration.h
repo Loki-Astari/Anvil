@@ -6,6 +6,7 @@
 #include "Parser.h"
 
 #include <fstream>
+#include <sstream>
 #include <map>
 #include <list>
 #include <variant>
@@ -14,21 +15,38 @@
 namespace ThorsAnvil::Anvil::Ice
 {
 
+enum class DeclType {Void, Namespace, Class, Array, Map, Func, Object, CodeBlock, Statement};
+
 // Console::print("Hello World");
 class Type;
 class Object;
 class Decl;
 class Container;
+class ObjectId;
 
 using Scope = Container;
 
-using TypeRef   = std::reference_wrapper<Type>;
-using ObjectRef = std::reference_wrapper<Object>;
-using DeclRef   = std::reference_wrapper<Decl>;
-using ScopeRef  = std::reference_wrapper<Scope>;
-using ParamList = std::list<TypeRef>;
-using ObjectList= std::list<ObjectRef>;
-using FullIdent = std::list<std::string>;
+using TypeRef       = std::reference_wrapper<Type>;
+using TypeCRef      = std::reference_wrapper<Type const>;
+using ObjectRef     = std::reference_wrapper<Object>;
+using ObjectIdRef   = std::reference_wrapper<ObjectId>;
+using DeclRef       = std::reference_wrapper<Decl>;
+using ScopeRef      = std::reference_wrapper<Scope>;
+using ParamList     = std::list<TypeRef>;
+using ObjectIdList  = std::list<ObjectIdRef>;
+using IdentifierList= std::list<std::string>;
+
+template<typename T>
+struct ReversView
+{
+    T& range;
+    ReversView(T& range)
+        : range(range)
+    {}
+
+    auto begin() {return range.rbegin();}
+    auto end()   {return range.rend();}
+};
 
 
 class Decl;
@@ -57,8 +75,6 @@ class Container
             return stream;
         }
 };
-
-enum class DeclType {Void, Namespace, Class, Array, Map, Func, Object, CodeBlock, Statement};
 
 class Decl
 {
@@ -98,16 +114,24 @@ class Statement;
 class CodeBlock: public DeclContainer<Decl>
 {
     std::vector<std::unique_ptr<Statement>>     code;
+    std::vector<std::unique_ptr<Statement>>     codeBack;
     public:
         using DeclContainer<Decl>::DeclContainer;
         virtual DeclType declType() const override                                          {return DeclType::CodeBlock;}
 
-        template<typename T, typename... Args>
+        template<bool B, typename T, typename... Args>
         Statement& addCode(Args&&... args)
         {
-            code.emplace_back(std::make_unique<T>(std::forward<Args>(args)...));
-            //code.emplace_back(new T(std::forward<Args>(args)...));
-            return *code.back();
+            if constexpr (B)
+            {
+                code.emplace_back(std::make_unique<T>(std::forward<Args>(args)...));
+                return *code.back();
+            }
+            else
+            {
+                codeBack.emplace_back(std::make_unique<T>(std::forward<Args>(args)...));
+                return *codeBack.back();
+            }
         }
 };
 
@@ -118,6 +142,14 @@ class Type: public Decl
             : Decl(name)
         {}
         virtual ~Type() = 0;
+        friend bool operator==(Type const& lhs, Type const& rhs)
+        {
+            return &lhs == &rhs || (lhs.declType() == DeclType::Void && rhs .declType() == DeclType::Void);
+        }
+        friend bool operator!=(Type const& lhs, Type const& rhs)
+        {
+            return !(lhs == rhs);
+        }
 };
 
 inline Type::~Type()
@@ -174,6 +206,7 @@ class Func: public Type
             , returnType(returnType)
         {}
         virtual DeclType declType() const override                                          {return DeclType::Func;}
+        ParamList const& getParamList() const                                               {return paramList;}
 };
 
 class Object: public Decl
@@ -200,6 +233,25 @@ class Literal: public Object
         {}
 };
 
+class ObjectId
+{
+    ObjectRef           parentObject;
+    IdentifierList      runtimeResolution;
+    TypeCRef            runtimeObjectType;
+
+    public:
+        ObjectId(Object& parent, IdentifierList&& resolution, Type const& type)
+            : parentObject(parent)
+            , runtimeResolution(std::move(resolution))
+            , runtimeObjectType(type)
+        {}
+        Type const& getType() const
+        {
+            return runtimeObjectType;
+        }
+    private:
+};
+
 class Statement
 {
     public:
@@ -208,24 +260,13 @@ class Statement
 
 inline Statement::~Statement() {}
 
-class StatExprInitObject: public Statement
-{
-    Object&     object;
-    ObjectList  objectList;
-    public:
-        StatExprInitObject(Object& object, ObjectList&& objectList)
-            : object(object)
-            , objectList(std::move(objectList))
-        {}
-};
-
 class StatExprFunctionCall: public Statement
 {
-    Object&     object;
-    ObjectList  objectList;
+    ObjectId        object;
+    ObjectIdList    objectList;
     public:
-        StatExprFunctionCall(Object& object, ObjectList&& objectList)
-            : object(object)
+        StatExprFunctionCall(ObjectId const& object, ObjectIdList&& objectList)
+            : object(std::move(object))
             , objectList(std::move(objectList))
         {}
 };
@@ -270,7 +311,6 @@ class StandardScope: public Namespace
 
             Class&      consoleType             = system.add<Class>("Console");
             /*Object&     consoleObject           = */ system.add<Object>("console", consoleType);
-            /*CodeBlock&  consoleConstructor      = */ system.add<CodeBlock>("$constructor");
 
             Func&       consolePrintMethodType  = consoleType.add<Func>("Print", consoleParamList, typeVoid);
             /*Object&     consolePrintMethodFunc  = */ consoleType.add<Object>("print", consolePrintMethodType);
@@ -278,9 +318,6 @@ class StandardScope: public Namespace
 
             // Special scope to hold all literals.
             /*Namespace&  literal                 = */ add<Namespace>("$Literal");
-
-            // Special scope to hold all Code.
-            /*Namespace&  code                    = */ add<Namespace>("$Code");
         }
 };
 
@@ -301,15 +338,33 @@ inline std::pair<bool, Container::NameRef> Container::get(std::string const& nam
 inline Namespace::Namespace(std::string const& name)
     : DeclContainer<Decl>(name)
 {
-    add<CodeBlock>("$container");
-    add<CodeBlock>("$destructor");
+    // Move to the globalscope.
+    static Void  voidType;
+
+    Func& constructType = add<Func>("$Constructor", ParamList{}, voidType);
+    Func& destructType  = add<Func>("$Destructor",  ParamList{}, voidType);
+
+    add<Object>("$constructor", constructType);
+    add<Object>("$destructor",  destructType);
+
+    add<CodeBlock>("$constructor$Code");
+    add<CodeBlock>("$destructor$Code");
 }
 
 inline Class::Class(std::string const& name)
     : DeclContainer<Type>(name)
 {
-    add<CodeBlock>("$container");
-    add<CodeBlock>("$destructor");
+    // Move to the globalscope.
+    static Void  voidType;
+
+    Func& constructType = add<Func>("$Constructor", ParamList{}, voidType);
+    Func& destructType  = add<Func>("$Destructor",  ParamList{}, voidType);
+
+    add<Object>("$constructor", constructType);
+    add<Object>("$destructor",  destructType);
+
+    add<CodeBlock>("$constructor$Code");
+    add<CodeBlock>("$destructor$Code");
 }
 
 }

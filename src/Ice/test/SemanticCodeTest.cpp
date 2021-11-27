@@ -23,7 +23,32 @@ struct SemanticCompiler
     }
 };
 
-TEST(SemanticCodeTest, CodeMustBeInFunctionInvalid)
+TEST(SemanticCodeTest, NestedFuncitonWorking)
+{
+    std::stringstream   result;
+    std::stringstream   file = buildStream(R"(
+namespace My_Work
+{
+    namespace X
+    {
+        namespace Y
+        {
+            test: func { Std::String -> Void } {}
+        }
+    }
+
+    main: func { Std::String -> Void} {
+        My_Work::X::Y::test("Test");
+    }
+}
+)");
+
+    SemanticCompiler  compiler(file, result);
+
+    EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
+}
+
+TEST(SemanticCodeTest, CodeInsideNamespaceAddedTONamespaceConterutor)
 {
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
@@ -35,10 +60,10 @@ namespace My_Work
 
     SemanticCompiler  compiler(file, result);
 
-    EXPECT_THROW_OR_DEBUG(compiler.compile(), "Adding code but not inside a code block", result);
+    EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 }
 
-TEST(SemanticCodeTest, CodeMustBeInFunctionValid)
+TEST(SemanticCodeTest, ValidFunctionCallShouldCompile)
 {
     std::stringstream   result;
     std::stringstream   file = buildStream(R"(
@@ -53,5 +78,22 @@ namespace My_Work
     SemanticCompiler  compiler(file, result);
 
     EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
+}
+
+TEST(SemanticCodeTest, InvalidParamFunctionCallShouldNotCompile)
+{
+    std::stringstream   result;
+    std::stringstream   file = buildStream(R"(
+namespace My_Work
+{
+    main : func { Std::String -> Void} {
+        Sys::console.print();
+    }
+}
+)");
+
+    SemanticCompiler  compiler(file, result);
+
+    EXPECT_THROW_OR_DEBUG(compiler.compile(), "Not enough parameters were passed to the function", result);
 }
 

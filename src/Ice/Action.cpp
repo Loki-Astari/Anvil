@@ -17,7 +17,7 @@ Action::Action(Lexer& lexer, std::ostream& output)
 Action::~Action()
 {}
 
-void Action::log(char const* msg)
+void Action::log(char const* msg) const
 {
     output << msg << "\n";
 }
@@ -31,7 +31,7 @@ void Action::token()
     addToLine();
 }
 
-void Action::error(std::string const& msg)
+void Action::error(std::string const& msg) const
 {
     std::stringstream extended;
     extended << "Error: " << msg << " -> Last Token: >" << lexer.lexem() << "<\n"

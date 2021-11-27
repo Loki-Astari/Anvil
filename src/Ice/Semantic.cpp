@@ -158,21 +158,51 @@ Int Semantic::identifierCheckNS(Int id)
     error("Invalid Identifier for Namespace");
 }
 
-Int Semantic::fullIdentiferCreate()
+Int Semantic::objectIDCreate(Int il_ns, Int il_ob)
 {
-    ScopePrinter    printer("fullIdentiferCreate");
-    return storage.add(FullIdent{});
+    SAccessIdentifierList   namespaceList(storage, il_ns);
+    SAccessIdentifierList   objectList(storage, il_ob);
+
+    // Take the first member of the objectList and add to the namespace.
+    // This will give you an identifiable object.
+    // Note: if the namespace is empty then it is just the variable name in the current context.
+    //          eg.         "My_NS1::My_NS2::My_NS3::variable.member.member"
+    //              =>   namespaceList:  My_NS1::My_NS2::My_NS3
+    //              =>   objectList:     variable.member.member
+    //          After the next statement we get:
+    //                  namespaceList:  My_NS1::My_NS2::My_NS3::variable
+    //                  objectList:     member.member
+    //          Now we search for "My_NS1::My_NS2::My_NS3::variable" from the current context to find an object.
+    //
+    //      Alternatively:  "variable.member.member"
+    //              =>   namespaceList:
+    //              =>   objectList:     variable.member.member
+    //          After the next statement we get:
+    //                  namespaceList:  variable
+    //                  objectList:     member.member
+    //          Now we search for "variable" from the current context to find an object.
+    namespaceList.get().emplace_front(std::move(objectList.get().back()));
+    objectList.get().pop_back();
+
+    Decl&       findDecl    = searchScopeForPath(namespaceList.get());
+    Object&     object      = dynamic_cast<Object&>(findDecl);
+    Type const& memberType  = getMemberType(object, objectList.get());
+
+    return storage.add(ObjectId(object, std::move(objectList.get()), memberType));
 }
 
-Int Semantic::fullIdentiferAddPath(Int fp, Int id)
+Int Semantic::identifierListCreate()
 {
-    ScopePrinter        printer("fullIdentiferAddPath");
-    SAccessFullIdent    fullIdent(storage, fp);
-    SAccessString       identifier(storage, id);
+    return storage.add(IdentifierList{});
+}
 
-    fullIdent.get().emplace_front(std::move(identifier.get()));
+Int Semantic::identifierListAdd(Int il, Int id)
+{
+    SAccessIdentifierList   list(storage, il);
+    SAccessString           identifier(storage, id);
 
-    return fullIdent.reUse();
+    list.get().emplace_back(std::move(identifier.get()));
+    return list.reUse();
 }
 
 Int Semantic::paramListCreate()
@@ -195,33 +225,64 @@ Int Semantic::paramListAdd(Int pl, Int type)
 Int Semantic::objectListCreate()
 {
     ScopePrinter    printer("objectListCreate");
-    return storage.add(ObjectList{});
+    return storage.add(ObjectIdList{});
 }
 
 Int Semantic::objectListAdd(Int ol, Int object)
 {
     ScopePrinter        printer("objectListAdd");
-    SAccessObjectList   objectList(storage, ol);
-    SAccessObject       objectRef(storage, object);
+    SAccessObjectIdList objectList(storage, ol);
+    SAccessObjectId     objectRef(storage, object);
 
     objectList.get().emplace_back(std::move(objectRef));
 
     return objectList.reUse();
 }
 
-template<typename T>
-struct ReversView
+Type const& Semantic::getMemberType(Object& from, IdentifierList const& memberName) const
 {
-    T& range;
-    ReversView(T& range)
-        : range(range)
-    {}
+    Object*  result = &from;
 
-    auto begin() {return range.rbegin();}
-    auto end()   {return range.rend();}
-};
+    for (auto const& path: memberName)
+    {
+        Type      const& type     = result->getType();
+        Container const& contType = dynamic_cast<Container const&>(type);
 
-Decl* Semantic::searchScopeForIdentifier(std::string const& path, std::string& partialMatch)
+        auto find = contType.get(path);
+        if (!find.first)
+        {
+            std::stringstream errorMsg;
+            std::string sep = "";
+            errorMsg << "Invalid Member of Scope: '" << path << "'. Searching: '";
+            for (auto const& info: memberName)
+            {
+                errorMsg << sep << info;
+                sep = ".";
+            }
+            errorMsg << "'";
+            error(errorMsg.str());
+        }
+        Decl*   decl    = find.second->second.get();
+
+        result  = dynamic_cast<Object*>(decl);
+        if (result == nullptr)
+        {
+            std::stringstream errorMsg;
+            std::string sep = "";
+            errorMsg << "Member of Scope was not an object '" << path << "'. Searching: '";
+            for (auto const& info: memberName)
+            {
+                errorMsg << sep << info;
+                sep = ".";
+            }
+            errorMsg << "'";
+            error(errorMsg.str());
+        }
+    }
+    return result->getType();
+}
+
+Decl* Semantic::searchScopeForIdentifier(std::string const& path, std::string& partialMatch) const
 {
     Decl* result = nullptr;
 
@@ -262,7 +323,7 @@ Decl* Semantic::searchScopeForIdentifier(std::string const& path, std::string& p
     return result;
 }
 
-Decl&  Semantic::searchScopeForPath(FullIdent& fullIdent)
+Decl&  Semantic::searchScopeForPath(IdentifierList const& fullIdent) const
 {
     // Strings used to build error message if needed.
     std::string     fullPathString;
@@ -275,7 +336,7 @@ Decl&  Semantic::searchScopeForPath(FullIdent& fullIdent)
     bool    rootOfPath = true;
 
     // Loop over all members of the fullIdent.
-    for (auto& path: fullIdent)
+    for (auto& path: ReversView{fullIdent})
     {
         // Each time through the loop build the fullPAthString.
         // To get a good error message we must loop over all the path members
@@ -323,19 +384,47 @@ Decl&  Semantic::searchScopeForPath(FullIdent& fullIdent)
 
 Int Semantic::findTypeInScope(Int fp)
 {
-    ScopePrinter        printer("findTypeInScope");
-    SAccessFullIdent    fullIdent(storage, fp);
-    Decl&               decl = searchScopeForPath(fullIdent);
+    ScopePrinter            printer("findTypeInScope");
+    SAccessIdentifierList   identList(storage, fp);
+    Decl&                   decl = searchScopeForPath(identList);
     return storage.add(TypeRef{dynamic_cast<Type&>(decl)});
 }
 
+/*
 Int Semantic::findObjectInScope(Int fp)
 {
-    ScopePrinter        printer("findObjectInScope");
-    SAccessFullIdent    fullIdent(storage, fp);
-    Decl&               decl = searchScopeForPath(fullIdent);
-    return storage.add(ObjectRef{dynamic_cast<Object&>(decl)});
+    ScopePrinter            printer("findObjectInScope");
+    SAccessObjectId         objectId(storage, fp);
+
+    if (objectType.declType() != DeclType::Func)
+    {
+        // TODO
+        // Currently only works with Class
+        // Should work with Array and Map
+        //      Should be:
+        //          Scope& workingScope = dynamic_cast<Scope&>(objectType);
+        Scope const& workingScope = dynamic_cast<Scope const&>(dynamic_cast<Class const&>(objectType));
+        // TODO FINISH
+        ((void)workingScope);
+
+    }
+    else
+    {
+        if (objectId.get().resolutionPath().size() != 0)
+        {
+            std::stringstream errorMessage;
+            errorMessage << "Invalid Object Identifier. Main object is a function '"
+                         << objectId.get().objectName()
+                         << "'. Resolution of sub path can't happen '"
+                         << objectId.get().resolutionName()
+                         << "'";
+            error(errorMessage.str());
+        }
+    }
+    //return storage.add(ObjectRef{dynamic_cast<Object&>(decl)});
+    return 0;
 }
+*/
 
 template<typename T>
 T& Semantic::getOrAddScope(Scope& topScope, std::string const& scopeName)
@@ -437,16 +526,18 @@ Int Semantic::scopeAddObject(Int name, Int type, Int init)
 
     if (typeInfo.get().declType() == DeclType::Class)
     {
-        ObjectList empty;
-        std::reference_wrapper<ObjectList> initList(empty);
+        ObjectIdList empty;
+        std::reference_wrapper<ObjectIdList> initList(empty);
 
         if (init != 0) // Default
         {
-            SAccessObjectList   initInfo(storage, init);
+            SAccessObjectIdList   initInfo(storage, init);
             initList = initInfo.get();
         }
-        // codeAddObjectInit(object, std::move(initList.get()));
-        ((void)object);
+        ObjectId objectInit(object, IdentifierList{"$constructor"}, getMemberType(object, IdentifierList{"$constructor"}));
+        ObjectId objectDest(object, IdentifierList{"$destructor"},  getMemberType(object, IdentifierList{"$destructor"}));
+        addCodeToCurrentScope<true, StatExprFunctionCall>(objectInit, std::move(initList.get()));
+        addCodeToCurrentScope<false,StatExprFunctionCall>(objectDest, ObjectIdList{});
     }
     // TODO Init other types.
 
@@ -501,53 +592,73 @@ Int Semantic::scopeClose(Int oldScopeId)
 Int Semantic::addLiteralString()
 {
     ScopePrinter    printer("addLiteralString");
-    std::string objectName = generateAnonNameString();
-    Type& stringType = getScopeSymbol<Type>(globalScope, "Std", "String");
+    std::string     objectName = generateAnonNameString();
+    Type&           stringType = getScopeSymbol<Type>(globalScope, {"Std", "String"});
 
-    // TODO: Literal needs to be a const
-    Scope& literalScope = getScopeSymbol<Namespace>(globalScope, "$Literal");
-    Object& literalObject = literalScope.add<Literal<std::string>>(std::move(objectName), stringType, std::string(lexer.lexem()));
+    Scope&          literalScope = getScopeSymbol<Namespace>(globalScope, {"$Literal"});
+    Object&         literalObject = literalScope.add<Literal<std::string>>(std::move(objectName), stringType, std::string(lexer.lexem()));
 
-    return storage.add(ObjectRef{literalObject});
+    return storage.add(ObjectId{literalObject, {}, stringType});
 }
 
-// Code Generation
-void Semantic::codeAddObjectInit(Object& object, ObjectList&& param)
+void Semantic::codeAddFunctionCallError(char const* base, ObjectIdList const& parameters, ParamList const& paramTypeList)
 {
-    Scope&      topScope = currentScope.back().get();
-    CodeBlock*  codeBlock = dynamic_cast<CodeBlock*>(&topScope);
+    std::stringstream errorMsg;
 
-    if (codeBlock == nullptr)
+    errorMsg << base << "  Got(";
+    for (auto const& p: parameters)
     {
-        auto find = topScope.get("$constructor");
-        if (find.first != true)
-        {
-            error("Could not find constructor for non code block");
-        }
-        Decl* blockDecl = find.second->second.get();
-        codeBlock       = dynamic_cast<CodeBlock*>(blockDecl);
-        if (codeBlock == nullptr)
-        {
-            error("Failed to find Code Block");
-        }
+        errorMsg << ", " << p.get().getType().declName();
     }
-    codeBlock->addCode<StatExprInitObject>(object, std::move(param));
+    errorMsg << ")  Expecting: (";
+    for (auto const& p: paramTypeList)
+    {
+        errorMsg << ", " << p.get().declName();
+    }
+    errorMsg << ")";
+
+    error(errorMsg.str());
 }
 
 Int Semantic::codeAddFunctionCall(Int obj, Int pl)
 {
     ScopePrinter        printer("codeAddFunctionCall");
-    SAccessObject       object(storage, obj);
-    SAccessObjectList   param(storage, pl);
-    Scope&              topScope = currentScope.back().get();
+    SAccessObjectId     object(storage, obj);
+    SAccessObjectIdList param(storage, pl);
 
-    CodeBlock*  codeBlock = dynamic_cast<CodeBlock*>(&topScope);
-    if (codeBlock == nullptr)
+    // Compare the types in the parameter list to the expected types for the function call.
+    Type const& funcCallType = object.get().getType();
+    if (funcCallType.declType() != DeclType::Func)
     {
-        error("Adding code but not inside a code block. Statements can only be placed in functions and methods");
+        error("Trying to make a function call with a non function object");
+    }
+    Func const& funcCall = dynamic_cast<Func const&>(funcCallType);
+    ParamList const& functionParameter = funcCall.getParamList();
+
+    auto paramTypeLoop = param.get().begin();
+    auto paramTypeEnd  = param.get().end();
+    auto funcParamLoop = functionParameter.begin();
+    auto funcParamEnd  = functionParameter.end();
+
+    for (; paramTypeLoop != paramTypeEnd && funcParamLoop != funcParamEnd; ++paramTypeLoop, ++funcParamLoop)
+    {
+        Type const&   paramType = paramTypeLoop->get().getType();
+        Type const&   funcType = *funcParamLoop;
+
+        if (paramType != funcType)
+        {
+            codeAddFunctionCallError("Parameter type mismatch", param, functionParameter);
+        }
+    }
+    if (paramTypeLoop != paramTypeEnd)
+    {
+        codeAddFunctionCallError("To many parameters were passed to the function.", param, functionParameter);
+    }
+    if (funcParamLoop != funcParamEnd)
+    {
+        codeAddFunctionCallError("Not enough parameters were passed to the function.", param, functionParameter);
     }
 
-    codeBlock->addCode<StatExprFunctionCall>(object.get(), std::move(param.get()));
-
+    addCodeToCurrentScope<true, StatExprFunctionCall>(object.get(), std::move(param.get()));
     return 0;
 }

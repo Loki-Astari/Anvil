@@ -26,8 +26,8 @@ class Action
         virtual ~Action();
 
         // Messaging
-        void log(char const* msg);
-        [[ noreturn ]] void error(std::string const& msg);
+        void log(char const* msg) const;
+        [[ noreturn ]] void error(std::string const& msg) const;
 
         // Lexing
         virtual void invalidCharacter()                               {addToLine();error("Invalid Character");}
@@ -46,8 +46,9 @@ class Action
         virtual Int identifierCheckType(Int /*id*/)                   {return 0;}
         virtual Int identifierCheckNS(Int /*id*/)                     {return 0;}
 
-        virtual Int fullIdentiferCreate()                             {return 0;}
-        virtual Int fullIdentiferAddPath(Int /*fp*/, Int /*id*/)      {return 0;}
+        virtual Int objectIDCreate(Int /*il_ns*/, Int /*il_ob*/)      {return 0;}
+        virtual Int identifierListCreate()                            {return 0;}
+        virtual Int identifierListAdd(Int /*il*/, Int /*id*/)         {return 0;}
 
         virtual Int paramListCreate()                                 {return 0;}
         virtual Int paramListAdd(Int /*pl*/, Int /*type*/)            {return 0;}

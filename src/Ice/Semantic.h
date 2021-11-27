@@ -39,8 +39,9 @@ class Semantic: public Action
         virtual Int identifierCheckType(Int id)                     override;
         virtual Int identifierCheckNS(Int id)                       override;
 
-        virtual Int fullIdentiferCreate()                           override;
-        virtual Int fullIdentiferAddPath(Int fp, Int id)            override;
+        virtual Int objectIDCreate(Int il_ns, Int il_ob)            override;
+        virtual Int identifierListCreate()                          override;
+        virtual Int identifierListAdd(Int il, Int id)               override;
 
         virtual Int paramListCreate()                               override;
         virtual Int paramListAdd(Int pl, Int type)                  override;
@@ -49,7 +50,7 @@ class Semantic: public Action
         virtual Int objectListAdd(Int ol, Int object)               override;
 
         virtual Int findTypeInScope(Int fp)                         override;
-        virtual Int findObjectInScope(Int fp)                       override;
+        //virtual Int findObjectInScope(Int fp)                       override;
 
         virtual Int scopeAddNamespace(Int name)                     override;
         virtual Int scopeAddClass(Int name)                         override;
@@ -65,17 +66,49 @@ class Semantic: public Action
 
         virtual Int codeAddFunctionCall(Int obj, Int param)         override;
     private:
-        Decl& searchScopeForPath(FullIdent& fullIdent);
-        Decl* searchScopeForIdentifier(std::string const& path, std::string& partialMatch);
+        void codeAddFunctionCallError(char const* base, ObjectIdList const& parameters, ParamList const& paramTypeList);
+        Type const& getMemberType(Object& from, IdentifierList const& memberName) const;
+        Decl& searchScopeForPath(IdentifierList const& objectId) const;
+        Decl* searchScopeForIdentifier(std::string const& path, std::string& partialMatch) const;
         std::string  generateAnonNameString();
 
         template<typename T>
-        T& getScopeSymbol(Scope& scope, std::string const& name);
+        T& getScopeSymbol(Scope& scope, IdentifierList const& identifier);
 
-        template<typename T, typename... Args>
-        T& getScopeSymbol(Scope& scope, std::string const& name, Args&... path);
+        template<bool B>
+        auto getInitMethod(Scope& topScope)
+        {
+            if constexpr (B)
+            {
+                return topScope.get("$constructor$Code");
+            }
+            else
+            {
+                return topScope.get("$destructor$Code");
+            }
+        }
+        template<bool B, typename T, typename... Args>
+        void addCodeToCurrentScope(ObjectId const& objectId, Args&&... args)
+        {
+            Scope&      topScope = currentScope.back().get();
+            CodeBlock*  codeBlock = dynamic_cast<CodeBlock*>(&topScope);
 
-        void codeAddObjectInit(Object& obj, ObjectList&& param);
+            if (codeBlock == nullptr)
+            {
+                auto find = getInitMethod<B>(topScope);
+                if (find.first != true)
+                {
+                    error("Could not find constructor for non code block");
+                }
+                Decl*   blockDecl = find.second->second.get();
+                codeBlock       = dynamic_cast<CodeBlock*>(blockDecl);
+                if (codeBlock == nullptr)
+                {
+                    error("$constructor was not a code block!!!!");
+                }
+            }
+            codeBlock->addCode<B, T>(objectId, std::forward<Args>(args)...);
+        }
 
         template<typename T>
         T& getOrAddScope(Scope& topScope, std::string const& scopeName);
@@ -83,55 +116,47 @@ class Semantic: public Action
 };
 
 template<typename T>
-T& Semantic::getScopeSymbol(Scope& scope, std::string const& name)
-{
-    auto find = scope.get(name);
-    //ASSERT_TRUE(find.first);
-    if (!find.first)
-    {
-#pragma vera-pushoff
-        using namespace std::string_literals;
-#pragma vera-pop
-
-        error("Symbol '"s + name + "' not found");
-    }
-
-    Decl*  decl         = find.second->second.get();
-    return dynamic_cast<T&>(*decl);
-}
-
-template<typename T, typename... Args>
-T& Semantic::getScopeSymbol(Scope& scope, std::string const& name, Args&... path)
+T& Semantic::getScopeSymbol(Scope& scopeStart, IdentifierList const& identifierList)
 {
 #pragma vera-pushoff
     using namespace std::string_literals;
 #pragma vera-pop
 
-    auto find = scope.get(name);
-    //ASSERT_TRUE(find.first);
-    if (!find.first)
+    Scope*  scope = &scopeStart;
+    for (auto const& name: identifierList)
     {
-        error("Symbol '"s + name + "' not found");
+        auto find = scope->get(name);
+        //ASSERT_TRUE(find.first);
+        if (!find.first)
+        {
+            error("Symbol '"s + name + "' not found");
+        }
+
+        Decl*  decl         = find.second->second.get();
+
+        Class* classDecl    = dynamic_cast<Class*>(decl);
+        if (classDecl)
+        {
+            scope = dynamic_cast<Scope*>(classDecl);
+            continue;
+        }
+        // TODO Add Map/Array
+        Namespace* namespaceDecl    = dynamic_cast<Namespace*>(decl);
+        if (namespaceDecl)
+        {
+            scope = dynamic_cast<Scope*>(namespaceDecl);
+            continue;
+        }
+        CodeBlock* codeBlockDecl    = dynamic_cast<CodeBlock*>(decl);
+        if (codeBlockDecl)
+        {
+            scope = dynamic_cast<Scope*>(codeBlockDecl);
+            continue;
+        }
+        error("Not a valid Scope Path '"s + name + "'");
     }
 
-    Decl*  decl         = find.second->second.get();
-
-    Class* classDecl    = dynamic_cast<Class*>(decl);
-    if (classDecl)
-    {
-        return getScopeSymbol<T>(dynamic_cast<Scope&>(*classDecl), path...);
-    }
-    Namespace* namespaceDecl    = dynamic_cast<Namespace*>(decl);
-    if (namespaceDecl)
-    {
-        return getScopeSymbol<T>(dynamic_cast<Scope&>(*namespaceDecl), path...);
-    }
-    CodeBlock* codeBlockDecl    = dynamic_cast<CodeBlock*>(decl);
-    if (codeBlockDecl)
-    {
-        return getScopeSymbol<T>(dynamic_cast<Scope&>(*codeBlockDecl), path...);
-    }
-    error("Not a valid Scope Path '"s + name + "'");
+    return dynamic_cast<T&>(dynamic_cast<Decl&>(*scope));
 }
 
 }

@@ -13,6 +13,10 @@
 %}
 
 Identifier          [A-Za-z][A-Za-z0-9_]*
+
+IdentifierObject    [a-z][A-Za-z0-9_]*
+IdentifierType      [A-Z][A-Za-z0-9]{3,}
+IdentifierNS        [A-Z][A-Za-z0-9_]*
 WhiteSpace          [ \t\r]+
 NewLine             \n
 String              \"[^"]*\"
@@ -36,7 +40,9 @@ func                {action.token();return yy::Parser::token::FUNC;}
 \.                  {action.token();return '.';}
 ,                   {action.token();return ',';}
 
-{Identifier}        {action.token();return yy::Parser::token::IDENTIFIER;}
+{IdentifierObject}  {action.token();return yy::Parser::token::IDENTIFIER_OBJECT;}
+{IdentifierType}    {action.token();return yy::Parser::token::IDENTIFIER_TYPE;}
+{IdentifierNS}      {action.token();return yy::Parser::token::IDENTIFIER_NS;}
 
 {WhiteSpace}        {action.ignoreSpace();/* Ignore */}
 {NewLine}           {action.newLine();    /* Ignore */}
