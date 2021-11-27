@@ -1,0 +1,7 @@
+
+
+cmd    reg      off     dat
+
+Cmd:    4                                   Example                 Meaning
+    Load    reg(2) reg(2) off(8)            Load Stack This 12      Set the stack register with the value from the This[12] (must be a frame)
+    Jmp     flag(4)                         Jmp Always              
