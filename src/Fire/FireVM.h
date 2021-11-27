@@ -2,6 +2,7 @@
 #define THORSANVIL_ANVIL_FIRE_FIREVM_H
 
 #include "Memory.h"
+#include "Util.h"
 
 #include <map>
 #include <vector>
@@ -43,7 +44,6 @@ class FireVM
     // int         flags;
 
     // Application
-    using Instruction = std::int16_t;
     static constexpr Instruction cmdMask    = 0xF000;   // 16 instructions
     static constexpr Instruction cmdShift   = 12;
     static constexpr Instruction regMask    = 0x0C00;   // 4 registers
@@ -60,8 +60,6 @@ class FireVM
         FireVM(std::size_t size);
         void load(std::istream& file);
         void run();
-    private:
-        Instruction assemble(std::string const& line) const;
 };
 
 }

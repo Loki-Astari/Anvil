@@ -34,8 +34,3 @@ void FireVM::run()
         }
     }
 }
-
-FireVM::Instruction FireVM::assemble(std::string const& /*line*/) const
-{
-    return 0;
-}
