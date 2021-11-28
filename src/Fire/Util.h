@@ -3,7 +3,7 @@
 
 namespace ThorsAnvil::Anvil::Fire
 {
-    using Instruction = std::int16_t;
+    using Instruction = std::uint16_t;
 }
 
 #endif

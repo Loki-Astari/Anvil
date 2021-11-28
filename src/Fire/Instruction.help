@@ -1,7 +1,45 @@
 
 
-cmd    reg      off     dat
+    Cmd(4)
 
-Cmd:    4                                   Example                 Meaning
-    Load    reg(2) reg(2) off(8)            Load Stack This 12      Set the stack register with the value from the This[12] (must be a frame)
-    Jmp     flag(4)                         Jmp Always              
+    CMD: 0x0  Followed by 2 bit Operation.
+                Operation:  NoOp        0x0         10 bits ignored.
+                Operation:  Kill        0x1         10 bit status code.
+                Operation:  Init        0x2         10 bit GlobalObjectSpace 16 bit StackSize
+                Operation:  Load        0x3         Type(2) 0 -> Fire assembly file
+                                                            1 -> C++ module
+                                                            2 -> ?
+                                                            3 -> ?
+                                                    Size(8) File Name Size in bytes.
+                                                    If this is odd we round up to even (as instruction memory is 16 bytes) to read (ignoring the last byte in this case).
+                                                    This allows for 256 bytes file names.
+
+        Examples:
+            CMD NoOp
+            CMD Kill
+            CMD Init
+
+    Load: 0x1   Reg(2)  From(2)  Reg/Neg(2) Size(1) Offset/Value(5)
+                Reg:        Gloabl      0x0
+                Reg:        Stack       0x1
+                Reg:        This        0x2
+                Reg         Expr        0x3
+
+                From:       Literal     0x0
+                From:       Read        0x1
+                From:       Reg         0x2
+                From:       IndRead     0x3
+
+                Neg:        Positive    0x0     Used by Literal/Read.
+                Neg:        Negative    0x1     Used by Literal/Read.
+
+                Size:       Small       0x0 Offset 5 bits
+                Size:       Large       0x1 Offset 21 bits
+
+        Examples:
+            Load Stack Literal <Value>
+            Load This  Reg     Expr  <Value>
+
+    
+
+    Store: 0x2
