@@ -16,12 +16,7 @@ class Dead
 {};
 
 using Code = std::size_t;
-
-struct Frame
-{
-    std::vector<MemoryLocation> frame;
-    Frame(std::size_t size);
-};
+using Frame = std::vector<MemoryLocation>;
 
 class FrameView
 {

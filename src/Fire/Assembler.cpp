@@ -4,7 +4,7 @@
 
 using namespace ThorsAnvil::Anvil::Fire;
 
-Assembler::Assembler(std::istream& file, std::ostream& result, std::vector<Instruction>& memory)
+Assembler::Assembler(std::istream& file, std::ostream& result, CodeBlock& memory)
     : error(false)
 {
     std::string     line;
@@ -49,19 +49,19 @@ int Assembler::assembleCmd(std::stringstream& lineStream, std::ostream& result)
 
     if (operation == "NoOp")
     {
-        instructions[0] = TypeCmd | Cmd_NoOp;
+        instructions[0] = Act_CMD | Cmd_NoOp;
         return 1;
     }
     else if (operation == "Kill")
     {
-        instructions[0] = TypeCmd | Cmd_Kill;
+        instructions[0] = Act_CMD | Cmd_Kill;
         return 1;
     }
     else if (operation == "Init")
     {
         if ((lineStream >> instructions[0] >> instructions[1]) && ((instructions[0] & 0xFC00) == 0))
         {
-            instructions[0] |= (TypeCmd | Cmd_Init);
+            instructions[0] |= (Act_CMD | Cmd_Init);
             return 2;
         }
         result << "X: " << (instructions[0] & 0xFC00) << " : " << (instructions[0] & 0x03FF) << "\n";
@@ -98,7 +98,7 @@ int Assembler::assembleCmd(std::stringstream& lineStream, std::ostream& result)
                 error = true;
                 return 0;
             }
-            instructions[0] = TypeCmd | Cmd_Load | fileType | fileNameSize;
+            instructions[0] = Act_CMD | Cmd_Load | fileType | fileNameSize;
             int result = 1;
             for (std::size_t loop = 0; loop < fileNameSize; loop += 2)
             {
@@ -235,12 +235,12 @@ int Assembler::assembleLoad(std::stringstream& lineStream, std::ostream& result)
 
     if ((value & ValueMaskSmall) == 0)
     {
-        instructions[0] = (TypeLoad | dstReg | from | srcReg | ValueSmall | (value & ValueMaskDataSmall));
+        instructions[0] = (Act_Load | dstReg | from | srcReg | ValueSmall | (value & ValueMaskDataSmall));
         return 1;
     }
     else if ((value & ValueMaskLarge) == 0)
     {
-        instructions[0] = (TypeLoad | dstReg | from | srcReg | ValueLarge | ((value >> 16) & ValueMaskDataSmall));
+        instructions[0] = (Act_Load | dstReg | from | srcReg | ValueLarge | ((value >> 16) & ValueMaskDataSmall));
         instructions[1] = value & 0xFFFF;
         return 2;
     }

@@ -6,6 +6,7 @@ using namespace ThorsAnvil::Anvil::Fire;
 
 TEST(FireVMTest, CreaateFireVM)
 {
-    FireVM      fire(10);
+    CodeBlock   code;
+    FireVM      fire(code);
 }
 

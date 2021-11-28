@@ -3,7 +3,6 @@
 
 #include "Util.h"
 
-#include <vector>
 #include <array>
 #include <string>
 #include <istream>
@@ -19,7 +18,7 @@ class Assembler
     bool            error;
     std::array<Instruction, 200>   instructions;
     public:
-        Assembler(std::istream& file, std::ostream& message, std::vector<Instruction>& memory);
+        Assembler(std::istream& file, std::ostream& message, CodeBlock& memory);
 
         bool isOK() const {return !error;}
 
@@ -33,8 +32,9 @@ class Assembler
         bool getFromName(Instruction& reg, std::string const& value) const;
 
     public:
-        static constexpr Instruction TypeCmd            = 0x0000;
-        static constexpr Instruction TypeLoad           = 0x1000;
+        static constexpr Instruction ActionMask         = 0xF000;
+        static constexpr Instruction Act_CMD            = 0x0000;
+        static constexpr Instruction Act_Load           = 0x1000;
 
         static constexpr Instruction Cmd_NoOp           = 0x0000;
         static constexpr Instruction Cmd_Kill           = 0x1000;

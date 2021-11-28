@@ -1,36 +1,40 @@
 #include "FireVM.h"
+#include "Assembler.h"
 #include <string>
 
 using namespace ThorsAnvil::Anvil::Fire;
 
-FireVM::FireVM(std::size_t size)
-    : global(10)
-    , stack(size)
+FireVM::FireVM(CodeBlock& memory)
+    : memory(memory)
     , programCounter(0)
 {}
-
-void FireVM::load(std::istream& file)
-{
-    std::string line;
-    while (std::getline(file, line))
-    {
-
-    }
-}
 
 void FireVM::run()
 {
     bool running = true;
-    for (programCounter = 0; running && programCounter < application.size(); ++programCounter)
+    for (programCounter = 0; running && programCounter < memory.size(); ++programCounter)
     {
-        Instruction& instruction = application[programCounter];
-        Instruction  cmd = (instruction & cmdMask) >> cmdShift;
+        Instruction& instruction = memory[programCounter];
+        Instruction  cmd = (instruction & Assembler::ActionMask);
         //Instruction  reg = (instruction & regMask) >> regShift;
         //Instruction  off = (instruction & offMask) >> offShift;
         //Instruction  dat = (instruction & datMask) >> datShift;
 
         switch (cmd)
         {
+            case Assembler::Act_CMD:
+            {
+                break;
+            }
+            case Assembler::Act_Load:
+            {
+                break;
+            }
+            default:
+            {
+                running = false;
+                throw std::runtime_error("Invalid Instruction");
+            }
         }
     }
 }

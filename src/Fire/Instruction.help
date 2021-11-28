@@ -1,6 +1,6 @@
 
 
-    Cmd(4)
+    Action(4)
 
     CMD: 0x0  Followed by 2 bit Operation.
                 Operation:  NoOp        0x0         10 bits ignored.

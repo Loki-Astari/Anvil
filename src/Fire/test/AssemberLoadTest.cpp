@@ -20,7 +20,7 @@ TEST(Assembler, LoadGlobalLiteralMax1Byte)
     bool test = false;
     EXPECT_EQ_OR_LOG(test, memory.size(), 1, result);
     if (memory.size() == 1) {
-        EXPECT_EQ_OR_LOG(test, memory[0], Assembler::TypeLoad | Assembler::RegGlobal[0] | Assembler::FromLiteral | Assembler::ValueSmall | 31, result);
+        EXPECT_EQ_OR_LOG(test, memory[0], Assembler::Act_Load | Assembler::RegGlobal[0] | Assembler::FromLiteral | Assembler::ValueSmall | 31, result);
     }
     EXPECT_EQ_OR_LOG(test, assembler.isOK(), true, result);
     EXPECT_TRUE_OR_DEBUG(!test, result);
@@ -39,7 +39,7 @@ TEST(Assembler, LoadStackLiteralMax2Byte)
     bool test = false;
     EXPECT_EQ_OR_LOG(test, memory.size(), 2, result);
     if (memory.size() == 1) {
-        EXPECT_EQ_OR_LOG(test, memory[0], Assembler::TypeLoad | Assembler::RegStack[0] | Assembler::FromLiteral | Assembler::ValueLarge | (2097151 >> 16) , result);
+        EXPECT_EQ_OR_LOG(test, memory[0], Assembler::Act_Load | Assembler::RegStack[0] | Assembler::FromLiteral | Assembler::ValueLarge | (2097151 >> 16) , result);
     }
     EXPECT_EQ_OR_LOG(test, assembler.isOK(), true, result);
     EXPECT_TRUE_OR_DEBUG(!test, result);
@@ -74,7 +74,7 @@ TEST(Assembler, LoadThisReadMax1Byte)
     bool test = false;
     EXPECT_EQ_OR_LOG(test, memory.size(), 1, result);
     if (memory.size() == 1) {
-        EXPECT_EQ_OR_LOG(test, memory[0], Assembler::TypeLoad | Assembler::RegThis[0] | Assembler::FromRead | Assembler::MarkNeg | Assembler::ValueSmall | 31, result);
+        EXPECT_EQ_OR_LOG(test, memory[0], Assembler::Act_Load | Assembler::RegThis[0] | Assembler::FromRead | Assembler::MarkNeg | Assembler::ValueSmall | 31, result);
         // 0001 1001 0001 1111
         // 0001 1001 0101 1111
     }
@@ -95,7 +95,7 @@ TEST(Assembler, LoadExprReadMax2Byte)
     bool test = false;
     EXPECT_EQ_OR_LOG(test, memory.size(), 2, result);
     if (memory.size() == 1) {
-        EXPECT_EQ_OR_LOG(test, memory[0], Assembler::TypeLoad | Assembler::RegExpr[0] | Assembler::FromRead | Assembler::MarkNeg | Assembler::ValueLarge | (2097151 >> 16) , result);
+        EXPECT_EQ_OR_LOG(test, memory[0], Assembler::Act_Load | Assembler::RegExpr[0] | Assembler::FromRead | Assembler::MarkNeg | Assembler::ValueLarge | (2097151 >> 16) , result);
     }
     EXPECT_EQ_OR_LOG(test, assembler.isOK(), true, result);
     EXPECT_TRUE_OR_DEBUG(!test, result);
@@ -132,7 +132,7 @@ TEST(Assembler, LoadGlobalRegMax1Byte)
     bool test = false;
     EXPECT_EQ_OR_LOG(test, memory.size(), 1, result);
     if (memory.size() == 1) {
-        EXPECT_EQ_OR_LOG(test, memory[0], Assembler::TypeLoad | Assembler::RegGlobal[0] | Assembler::FromReg | Assembler::RegStack[1] | Assembler::ValueSmall | 31, result);
+        EXPECT_EQ_OR_LOG(test, memory[0], Assembler::Act_Load | Assembler::RegGlobal[0] | Assembler::FromReg | Assembler::RegStack[1] | Assembler::ValueSmall | 31, result);
     }
     EXPECT_EQ_OR_LOG(test, assembler.isOK(), true, result);
     EXPECT_TRUE_OR_DEBUG(!test, result);
@@ -151,7 +151,7 @@ TEST(Assembler, LoadStackRegMax2Byte)
     bool test = false;
     EXPECT_EQ_OR_LOG(test, memory.size(), 2, result);
     if (memory.size() == 1) {
-        EXPECT_EQ_OR_LOG(test, memory[0], Assembler::TypeLoad | Assembler::RegStack[0] | Assembler::FromReg | Assembler::RegThis[1] | Assembler::ValueLarge | (2097151 >> 16) , result);
+        EXPECT_EQ_OR_LOG(test, memory[0], Assembler::Act_Load | Assembler::RegStack[0] | Assembler::FromReg | Assembler::RegThis[1] | Assembler::ValueLarge | (2097151 >> 16) , result);
     }
     EXPECT_EQ_OR_LOG(test, assembler.isOK(), true, result);
     EXPECT_TRUE_OR_DEBUG(!test, result);
@@ -186,9 +186,7 @@ TEST(Assembler, LoadThisIndReadMax1Byte)
     bool test = false;
     EXPECT_EQ_OR_LOG(test, memory.size(), 1, result);
     if (memory.size() == 1) {
-        EXPECT_EQ_OR_LOG(test, memory[0], Assembler::TypeLoad | Assembler::RegThis[0] | Assembler::FromIndRead | Assembler::RegExpr[1] | Assembler::ValueSmall | 31, result);
-        // 0001 1001 0001 1111
-        // 0001 1001 0101 1111
+        EXPECT_EQ_OR_LOG(test, memory[0], Assembler::Act_Load | Assembler::RegThis[0] | Assembler::FromIndRead | Assembler::RegExpr[1] | Assembler::ValueSmall | 31, result);
     }
     EXPECT_EQ_OR_LOG(test, assembler.isOK(), true, result);
     EXPECT_TRUE_OR_DEBUG(!test, result);
@@ -207,7 +205,7 @@ TEST(Assembler, LoadExprIndReadMax2Byte)
     bool test = false;
     EXPECT_EQ_OR_LOG(test, memory.size(), 2, result);
     if (memory.size() == 1) {
-        EXPECT_EQ_OR_LOG(test, memory[0], Assembler::TypeLoad | Assembler::RegExpr[0] | Assembler::FromIndRead | Assembler::RegGlobal[1] | Assembler::ValueLarge | (2097151 >> 16) , result);
+        EXPECT_EQ_OR_LOG(test, memory[0], Assembler::Act_Load | Assembler::RegExpr[0] | Assembler::FromIndRead | Assembler::RegGlobal[1] | Assembler::ValueLarge | (2097151 >> 16) , result);
     }
     EXPECT_EQ_OR_LOG(test, assembler.isOK(), true, result);
     EXPECT_TRUE_OR_DEBUG(!test, result);
