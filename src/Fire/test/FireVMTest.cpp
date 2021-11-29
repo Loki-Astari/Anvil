@@ -6,7 +6,8 @@ using namespace ThorsAnvil::Anvil::Fire;
 
 TEST(FireVMTest, CreaateFireVM)
 {
+    VMState     state;
     CodeBlock   code;
-    FireVM      fire(code);
+    FireVM      fire(state, code);
 }
 

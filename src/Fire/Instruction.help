@@ -6,7 +6,7 @@
                 Operation:  NoOp        0x0         10 bits ignored.
                 Operation:  Kill        0x1         10 bit status code.
                 Operation:  Init        0x2         10 bit GlobalObjectSpace 16 bit StackSize
-                Operation:  Load        0x3         Type(2) 0 -> Fire assembly file
+                Operation:  Import      0x3         Type(2) 0 -> Fire assembly file
                                                             1 -> C++ module
                                                             2 -> ?
                                                             3 -> ?
@@ -19,7 +19,7 @@
             CMD Kill
             CMD Init
 
-    Load: 0x1   Reg(2)  From(2)  Reg/Neg(2) Size(1) Offset/Value(5)
+    Load: 0x1   Reg(2)  From(2)  Reg/Typ(2) Size(1) Offset/Value(5)
                 Reg:        Gloabl      0x0
                 Reg:        Stack       0x1
                 Reg:        This        0x2
@@ -30,15 +30,21 @@
                 From:       Reg         0x2
                 From:       IndRead     0x3
 
-                Neg:        Positive    0x0     Used by Literal/Read.
-                Neg:        Negative    0x1     Used by Literal/Read.
+                Typ:        Absolute/Positive   0x00
+                Typ:        Absolute/Negative   0x01        // ????? Not sure how that will be used.
+                Typ:        Relative/Positive   0x10
+                Typ:        Relative/Negative   0x11
 
                 Size:       Small       0x0 Offset 5 bits
                 Size:       Large       0x1 Offset 21 bits
 
         Examples:
-            Load Stack Literal <Value>
-            Load This  Reg     Expr  <Value>
+            Load Stack  =  Literal      <Value>     // Stack    = <Value>
+            Load Global += Literal      <Value>     // Global   += <Value>
+            Load Stack  =  Read         <Value>     // Stack    = memory[<Value>]
+            Load Stack  += Read         <Value>     // Stack    += memory[<Value>]
+            Load This   =  Reg Expr     <Offset>    // This     = Expr + value          // Add a value to the register variable
+            Load Stack  =  IndRead Expr <Offset>    // This     = memory[Expr + value]  // Add a value to the register variable
 
     
 

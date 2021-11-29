@@ -14,17 +14,38 @@
 namespace ThorsAnvil::Anvil::Fire
 {
 
-class FireVM
+enum Register {Global, Stack, This, Expr, MaxRegisters};
+
+struct VMState
 {
-    // Data
+    VMState()
+        : programCounter(0)
+        , registerFrame{0, 0, 0, 0}
+    {}
     Frame           global;
     Frame           stack;
-    CodeBlock&      memory;
     std::size_t     programCounter;
+    std::size_t     registerFrame[MaxRegisters];
+};
+
+class FireVM
+{
+    VMState&        state;
+    CodeBlock&      memory;
+    int             result;
+    bool            running;
 
     public:
-        FireVM(CodeBlock& memory);
-        void run();
+        FireVM(VMState& state, CodeBlock& memory);
+        int run();
+
+    private:
+        void runActionCMD(Instruction instruction);
+        void runActionLoad(Instruction instruction);
+
+        void runActionCmdKill(Instruction instruction);
+        void runActionCmdInit(Instruction instruction);
+        void runActionCmdImport(Instruction instruction);
 };
 
 }

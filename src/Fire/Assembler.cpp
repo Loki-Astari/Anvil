@@ -54,8 +54,16 @@ int Assembler::assembleCmd(std::stringstream& lineStream, std::ostream& result)
     }
     else if (operation == "Kill")
     {
-        instructions[0] = Act_CMD | Cmd_Kill;
-        return 1;
+        Instruction value = 0;
+        lineStream >> value;
+        if (value <= Cmd_KillStatusMask)
+        {
+            instructions[0] = Act_CMD | Cmd_Kill | value;
+            return 1;
+        }
+        result << "Invalid CMD Kill parameters: CMD Kill >" <<  value << "<\n";
+        error = true;
+        return 0;
     }
     else if (operation == "Init")
     {
@@ -64,12 +72,11 @@ int Assembler::assembleCmd(std::stringstream& lineStream, std::ostream& result)
             instructions[0] |= (Act_CMD | Cmd_Init);
             return 2;
         }
-        result << "X: " << (instructions[0] & 0xFC00) << " : " << (instructions[0] & 0x03FF) << "\n";
         result << "Invalid CMD Init parameters: CMD Init >" <<  instructions[0] << "< >" << instructions[1] << "<\n";
         error = true;
         return 0;
     }
-    else if (operation == "Load")
+    else if (operation == "Import")
     {
         std::string fileName;
         if (lineStream >> fileName)
@@ -85,20 +92,20 @@ int Assembler::assembleCmd(std::stringstream& lineStream, std::ostream& result)
             {
                 fileNameSize -= 5;
                 fileName[fileNameSize] = '\0';
-                fileType = LoadFileFire;
+                fileType = Cmd_ImportFileFire;
             }
             else
             {
                 // If no extension assume the platform specific dll extension.
-                fileType = LoadFileDLL;
+                fileType = Cmd_ImportFileDLL;
             }
             if (fileNameSize > 255)
             {
-                result << "Invalid CMD Load: File Name to large >" << fileName << "<\n";
+                result << "Invalid CMD Import: File Name to large >" << fileName << "<\n";
                 error = true;
                 return 0;
             }
-            instructions[0] = Act_CMD | Cmd_Load | fileType | fileNameSize;
+            instructions[0] = Act_CMD | Cmd_Import | fileType | fileNameSize;
             int result = 1;
             for (std::size_t loop = 0; loop < fileNameSize; loop += 2)
             {
@@ -107,7 +114,7 @@ int Assembler::assembleCmd(std::stringstream& lineStream, std::ostream& result)
             }
             return result;
         }
-        result << "Invalid CMD Load: Could not read filename:\n";
+        result << "Invalid CMD Import: Could not read filename:\n";
         error = true;
         return 0;
     }
@@ -150,19 +157,19 @@ bool Assembler::getFromName(Instruction& reg, std::string const& value) const
     bool result = true;
     if (value == "Literal")
     {
-        reg = FromLiteral;
+        reg = Load_FromLiteral;
     }
     else if (value == "Read")
     {
-        reg = FromRead;
+        reg = Load_FromRead;
     }
     else if (value == "Reg")
     {
-        reg = FromReg;
+        reg = Load_FromReg;
     }
     else if (value == "IndRead")
     {
-        reg = FromIndRead;
+        reg = Load_FromIndRead;
     }
     else
     {
@@ -184,26 +191,44 @@ int Assembler::assembleLoad(std::stringstream& lineStream, std::ostream& result)
         return 0;
     }
 
+    bool            absolute    = false;
+    std::string     typeValue   = "XX";
+    if (lineStream >> typeValue[0] && (typeValue[0] == '=' || (typeValue[0] == '+' && lineStream.read(&typeValue[1], 1) && typeValue[1] == '=')))
+    {
+        if (typeValue[1] == 'X')
+        {
+            absolute = true;
+            typeValue.resize(1);
+        }
+    }
+    else
+    {
+        result << "Invalid Operation: Load " << dstRegValue << " >" << typeValue[0] << (typeValue[1] == 'X' ? ' ' : typeValue[1]) << "< " << lineStream.rdbuf() << "\n";
+        error = true;
+        return 0;
+    }
+
+
     std::string     fromValue;
     Instruction     from;
 
     lineStream >> fromValue;
     if (!getFromName(from, fromValue))
     {
-        result << "Invalid From: Load " << dstRegValue << " >" << fromValue << "< " <<  lineStream.rdbuf() << "\n";
+        result << "Invalid From: Load " << dstRegValue << " " << typeValue << " >" << fromValue << "< " <<  lineStream.rdbuf() << "\n";
         error = true;
         return 0;
     }
 
     Instruction srcReg = 0;
 
-    if ((from & Assembler::ValueRegMask) != 0)
+    if ((from & Assembler::Load_ValueRegMask) != 0)
     {
         std::string srcRegValue;
         lineStream >> srcRegValue;
         if (!getRegisterName(srcReg, Source, srcRegValue))
         {
-            result << "Invalid Src Register: Load >" << dstRegValue << " " << fromValue << " >" << srcRegValue << "< " << lineStream.rdbuf() << "\n";
+            result << "Invalid Src Register: Load >" << dstRegValue << " " << typeValue << " " << fromValue << " >" << srcRegValue << "< " << lineStream.rdbuf() << "\n";
             error = true;
             return 0;
         }
@@ -212,41 +237,47 @@ int Assembler::assembleLoad(std::stringstream& lineStream, std::ostream& result)
     std::int32_t value;
     if (!(lineStream >> value))
     {
-        result << "Invalid Literal (Can't Read): Load " << dstRegValue << " " << fromValue << " >" << lineStream.rdbuf() << "<\n";
+        result << "Invalid Literal (Can't Read): Load " << dstRegValue << " " << typeValue << " " << fromValue << " >" << lineStream.rdbuf() << "<\n";
         error = true;
         return 0;
     }
 
-    if ((from & Assembler::ValueRegMask) != 0)
+    if ((from & Assembler::Load_ValueRegMask) != 0)
     {
         if (value < 0)
         {
-            result << "Invalid Offset (Negative): Load " << dstRegValue << " " << fromValue << " >" << value << "<\n";
+            result << "Invalid Offset (Negative): Load " << dstRegValue << " " << typeValue << " " << fromValue << " >" << value << "<\n";
+            error = true;
+            return 0;
+        }
+        if (!absolute)
+        {
+            result << "Invalid Assignment (+= not allowed here): Load " << dstRegValue << " >" << typeValue << "< " << fromValue << " " << value << "\n";
             error = true;
             return 0;
         }
     }
     else
     {
-        srcReg  = (value >= 0) ? 0 : MarkNeg;
+        srcReg  = (absolute ? 0 : Load_MarkRel) | ((value >= 0) ? 0 : Load_MarkNeg);
         value = value >= 0 ? value : -value;
     }
 
 
-    if ((value & ValueMaskSmall) == 0)
+    if ((value & Load_ValueMaskSmall) == 0)
     {
-        instructions[0] = (Act_Load | dstReg | from | srcReg | ValueSmall | (value & ValueMaskDataSmall));
+        instructions[0] = (Act_Load | dstReg | from | srcReg | Load_ValueSmall | (value & Load_ValueMaskDataSmall));
         return 1;
     }
-    else if ((value & ValueMaskLarge) == 0)
+    else if ((value & Load_ValueMaskLarge) == 0)
     {
-        instructions[0] = (Act_Load | dstReg | from | srcReg | ValueLarge | ((value >> 16) & ValueMaskDataSmall));
+        instructions[0] = (Act_Load | dstReg | from | srcReg | Load_ValueLarge | ((value >> 16) & Load_ValueMaskDataSmall));
         instructions[1] = value & 0xFFFF;
         return 2;
     }
     else
     {
-        result << "Invalid Literal (Too Large): Load " << dstRegValue << " " << fromValue << " >" << value << "<\n";
+        result << "Invalid Literal (Too Large): Load " << dstRegValue << " " << typeValue << " " << fromValue << " >" << value << "<\n";
         error = true;
         return 0;
     }
