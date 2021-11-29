@@ -19,32 +19,21 @@
             CMD Kill
             CMD Init
 
-    Load: 0x1   Reg(2)  From(2)  Reg/Typ(2) Size(1) Offset/Value(5)
+    Load: 0x1   Dst_Reg(2)  Src_Reg(2)  Action(1) Size(1) Offset/Value(6)
                 Reg:        Gloabl      0x0
                 Reg:        Stack       0x1
                 Reg:        This        0x2
                 Reg         Expr        0x3
 
-                From:       Literal     0x0
-                From:       Read        0x1
-                From:       Reg         0x2
-                From:       IndRead     0x3
+                Action:     Set         0x0
+                Action:     Read        0x1
 
-                Typ:        Absolute/Positive   0x00
-                Typ:        Absolute/Negative   0x01        // ????? Not sure how that will be used.
-                Typ:        Relative/Positive   0x10
-                Typ:        Relative/Negative   0x11
-
-                Size:       Small       0x0 Offset 5 bits
-                Size:       Large       0x1 Offset 21 bits
+                Size:       Small       0x0 Offset 6 bits
+                Size:       Large       0x1 Offset 22 bits
 
         Examples:
-            Load Stack  =  Literal      <Value>     // Stack    = <Value>
-            Load Global += Literal      <Value>     // Global   += <Value>
-            Load Stack  =  Read         <Value>     // Stack    = memory[<Value>]
-            Load Stack  += Read         <Value>     // Stack    += memory[<Value>]
-            Load This   =  Reg Expr     <Offset>    // This     = Expr + value          // Add a value to the register variable
-            Load Stack  =  IndRead Expr <Offset>    // This     = memory[Expr + value]  // Add a value to the register variable
+            Load Stack = Stack + 5      // dst = Stack src = Stack action = Set     Size = 0 value = 5
+            Load Expr  * Stack +5       // dsy = Expr  src = Stack action = Read    Size = 0 value = 5
 
     
 

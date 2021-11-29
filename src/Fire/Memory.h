@@ -75,6 +75,11 @@ class MemoryLocation
             value = std::move(v);
             return *this;
         }
+
+        MemoryLocation* getObject()
+        {
+            return std::get<Frame>(value).data();
+        }
 };
 
 }

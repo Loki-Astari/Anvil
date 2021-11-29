@@ -58,6 +58,9 @@ void FireVM::runActionCmdInit(Instruction instruction)
 
     state.global.resize(globalSize);
     state.stack.resize(stackSize);
+
+    state.registerFrame[Register::Global] = &state.global[0];
+    state.registerFrame[Register::Stack]  = &state.stack[0];
 }
 void FireVM::runActionCmdImport(Instruction instruction)
 {
@@ -79,53 +82,34 @@ void FireVM::runActionCmdImport(Instruction instruction)
 
 void FireVM::runActionLoad(Instruction instruction)
 {
-    bool absolute = true;
+    //bool absolute = true;
 
     Instruction dstReg = instruction & Assembler::Load_DstRegMask;
-    Instruction from   = instruction & Assembler::Load_FromMask;
     Instruction srcReg = instruction & Assembler::Load_SrcRegMask;
+    Instruction action = instruction & Assembler::Load_ActionMask;
     Instruction sizeI  = instruction & Assembler::Load_SizeMask;
     Instruction value1 = instruction & Assembler::Load_ValueMask;
+
     std::int32_t value = value1;
+    if (value & Assembler::Load_ValueSignBit)
+    {
+        // sign extend negative numbers;
+        std::int32_t extend = Assembler::Load_ValueMask;
+        extend = ~extend;
+        value = extend | value;
+    }
     if (sizeI == Assembler::Load_ValueLarge)
     {
         ++state.programCounter;
-        value  = value << 16;
-        value  = value | memory[state.programCounter];
+        value  = (value << 16) | memory[state.programCounter];
     }
 
+    MemoryLocation*&    dst = state.registerFrame[dstReg >> Assembler::DestinationShift];
+    MemoryLocation*     src = state.registerFrame[srcReg >> Assembler::SourceShift];
 
-    if ((from & Assembler::Load_ValueRegMask) != 0)
+    dst = src + value;
+    if (action)
     {
-        // this is register value;
-        value = state.registerFrame[srcReg >> Assembler::SourceShift] + value;
+        dst = dst->getObject();
     }
-    else
-    {
-        // This is a literal
-        // So there is no src register and it is used to store if the value is negative.
-        if (srcReg & Assembler::Load_MarkNeg)
-        {
-            // from != Register => Literal
-            // Then srcReg is used to record if the value is negative.
-            value = -value;
-        }
-        if (srcReg & Assembler::Load_MarkRel)
-        {
-            absolute = false;
-        }
-    }
-
-    if ((from & Assembler::Load_ValueIndMask))
-    {
-        value = memory[value];
-    }
-
-    if (!absolute)
-    {
-        value += state.registerFrame[dstReg >> Assembler::DestinationShift];
-    }
-
-    // Load the register with calculated value.
-    state.registerFrame[dstReg >> Assembler::DestinationShift] = value;
 }

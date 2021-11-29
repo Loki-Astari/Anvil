@@ -29,7 +29,6 @@ class Assembler
 
 
         bool getRegisterName(Instruction& reg, int type, std::string const& value) const;
-        bool getFromName(Instruction& reg, std::string const& value) const;
 
     public:
         // See Instruction.help
@@ -65,44 +64,35 @@ class Assembler
 
         // Action: Load: Load Mask(s)
             static constexpr Instruction Load_DstRegMask        = 0x0C00;
-            static constexpr Instruction Load_FromMask          = 0x0300;
-            static constexpr Instruction Load_SrcRegMask        = 0x00C0; // Also used for Typ field
-            static constexpr Instruction Load_SizeMask          = 0x0020;
-            static constexpr Instruction Load_ValueMask         = 0x001F;
+            static constexpr Instruction Load_SrcRegMask        = 0x0300;
+            static constexpr Instruction Load_ActionMask        = 0x0080;
+            static constexpr Instruction Load_SizeMask          = 0x0040;
+            static constexpr Instruction Load_ValueMask         = 0x003F;
 
             // Action: Load: Register Info (Load_DstRegMask, Load_SrcRegMask)
             static constexpr Instruction RegGlobal[2]           = {0x0000, 0x0000};
-            static constexpr Instruction RegStack[2]            = {0x0400, 0x0040};
-            static constexpr Instruction RegThis[2]             = {0x0800, 0x0080};
-            static constexpr Instruction RegExpr[2]             = {0x0C00, 0x00C0};
+            static constexpr Instruction RegStack[2]            = {0x0400, 0x0100};
+            static constexpr Instruction RegThis[2]             = {0x0800, 0x0200};
+            static constexpr Instruction RegExpr[2]             = {0x0C00, 0x0300};
 
             static constexpr int         Destination            = 0;
             static constexpr int         Source                 = 1;
             static constexpr int         DestinationShift       = 10;
-            static constexpr int         SourceShift            = 6;
+            static constexpr int         SourceShift            = 8;
 
-            // Action: Load: From Mask and Value (Load_FromMask)
-            static constexpr Instruction Load_FromLiteral       = 0x0000;
-            static constexpr Instruction Load_FromRead          = 0x0100;
-            static constexpr Instruction Load_FromReg           = 0x0200;
-            static constexpr Instruction Load_FromIndRead       = 0x0300;
-
-                // Action: Load From get sub information about the From Field.
-                static constexpr Instruction Load_ValueRegMask  = 0x0200;   // 0 => Literal 1 => Register
-                static constexpr Instruction Load_ValueIndMask  = 0x0100;   // 0 => Value   1 => Indirect (read from memory)
-
-            // Action: Load: Literal Typ Values (uses Load_SizeMask)
-            static constexpr Instruction Load_MarkNeg           = 0x0040;
-            static constexpr Instruction Load_MarkRel           = 0x0080;
+            // Action: Load: Action (Load_ActionMask)
+            static constexpr Instruction Load_Set               = 0x0000;
+            static constexpr Instruction Load_Read              = 0x0080;
 
             // Action: Load: Size Values (Load_SizeMask)
             static constexpr Instruction Load_ValueSmall        = 0x0000;
-            static constexpr Instruction Load_ValueLarge        = 0x0020;
+            static constexpr Instruction Load_ValueLarge        = 0x0040;
 
             // Action: Load Value (Load_ValueMask)
-            static constexpr int         Load_ValueMaskSmall    = 0xFFFFFFE0;   // Check if assembly literal fits into small value
-            static constexpr int         Load_ValueMaskLarge    = 0xFFE00000;   // Check if assembly literal fits into large value
-            static constexpr int         Load_ValueMaskDataSmall= 0x0000001F;
+            static constexpr int         Load_SmallMax          = 0x001F;
+            static constexpr int         Load_ValueSignBit      = 0x0020;
+            static constexpr int         Load_MaxPos            = 0x001FFFFF;
+            static constexpr int         Load_MaxNeg            = 0xFFE00001;
 };
 
 }

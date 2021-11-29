@@ -6,14 +6,14 @@
 
 using namespace ThorsAnvil::Anvil::Fire;
 
-TEST(FireVMLoadTest, LoadGlobalPosAbsoluteLiteral)
+// Set Stack
+TEST(FireVMLoadTest, LoadStackSetGloabl1Byte)
 {
-    CodeBlock                   memory;
-
+    std::vector<Instruction>    memory;
     std::stringstream           result;
     std::stringstream           file(buildStream(R"(
-
-    Load Global = Literal 6
+        CMD  Init   1000 1000
+        Load Stack = Global + 12
 )"));
 
     Assembler                   assembler(file, result, memory);
@@ -23,41 +23,19 @@ TEST(FireVMLoadTest, LoadGlobalPosAbsoluteLiteral)
     FireVM      fire(state, memory);
     int         vmResult = fire.run();
 
-    EXPECT_EQ(state.programCounter, 1);
+    EXPECT_EQ(state.programCounter, 3);
     EXPECT_EQ(vmResult, 0);
 
-    EXPECT_EQ(state.registerFrame[Register::Global], 6);
+    EXPECT_EQ(state.registerFrame[Register::Stack], state.global.data() + 12);
 }
-TEST(FireVMLoadTest, LoadStackPosAbsoluteLiteral)
-{
-    CodeBlock                   memory;
-
-    std::stringstream           result;
-    std::stringstream           file(buildStream(R"(
-
-    Load Stack = Literal 18
-)"));
-
-    Assembler                   assembler(file, result, memory);
-    ASSERT_TRUE(assembler.isOK());
 
-    VMState     state;
-    FireVM      fire(state, memory);
-    int         vmResult = fire.run();
-
-    EXPECT_EQ(state.programCounter, 1);
-    EXPECT_EQ(vmResult, 0);
-
-    EXPECT_EQ(state.registerFrame[Register::Stack], 18);
-}
-TEST(FireVMLoadTest, LoadThisPosAbsoluteLiteral)
+TEST(FireVMLoadTest, LoadStackSetStack1Byte)
 {
-    CodeBlock                   memory;
-
+    std::vector<Instruction>    memory;
     std::stringstream           result;
     std::stringstream           file(buildStream(R"(
-
-    Load This = Literal 22
+        CMD  Init   1000 1000
+        Load Stack = Stack + 12
 )"));
 
     Assembler                   assembler(file, result, memory);
@@ -67,41 +45,20 @@ TEST(FireVMLoadTest, LoadThisPosAbsoluteLiteral)
     FireVM      fire(state, memory);
     int         vmResult = fire.run();
 
-    EXPECT_EQ(state.programCounter, 1);
+    EXPECT_EQ(state.programCounter, 3);
     EXPECT_EQ(vmResult, 0);
 
-    EXPECT_EQ(state.registerFrame[Register::This], 22);
+    EXPECT_EQ(state.registerFrame[Register::Stack], state.stack.data() + 12);
 }
-TEST(FireVMLoadTest, LoadExprPosAbsoluteLiteral)
-{
-    CodeBlock                   memory;
-
-    std::stringstream           result;
-    std::stringstream           file(buildStream(R"(
-
-    Load Expr = Literal 12
-)"));
-
-    Assembler                   assembler(file, result, memory);
-    ASSERT_TRUE(assembler.isOK());
-
-    VMState     state;
-    FireVM      fire(state, memory);
-    int         vmResult = fire.run();
-
-    EXPECT_EQ(state.programCounter, 1);
-    EXPECT_EQ(vmResult, 0);
 
-    EXPECT_EQ(state.registerFrame[Register::Expr], 12);
-}
-TEST(FireVMLoadTest, LoadGlobalNegAbsoluteLiteral)
+TEST(FireVMLoadTest, LoadStackSetThis1Byte)
 {
-    CodeBlock                   memory;
-
+    std::vector<Instruction>    memory;
     std::stringstream           result;
     std::stringstream           file(buildStream(R"(
-
-    Load Global = Literal -8
+        CMD  Init   1000 1000
+        Load This = Stack + 0
+        Load Stack = This + 12
 )"));
 
     Assembler                   assembler(file, result, memory);
@@ -111,41 +68,20 @@ TEST(FireVMLoadTest, LoadGlobalNegAbsoluteLiteral)
     FireVM      fire(state, memory);
     int         vmResult = fire.run();
 
-    EXPECT_EQ(state.programCounter, 1);
+    EXPECT_EQ(state.programCounter, 4);
     EXPECT_EQ(vmResult, 0);
 
-    EXPECT_EQ(state.registerFrame[Register::Global], -8);
+    EXPECT_EQ(state.registerFrame[Register::Stack], state.stack.data() + 12);
 }
-TEST(FireVMLoadTest, LoadStackNegAbsoluteLiteral)
-{
-    CodeBlock                   memory;
-
-    std::stringstream           result;
-    std::stringstream           file(buildStream(R"(
-
-    Load Stack = Literal -30
-)"));
-
-    Assembler                   assembler(file, result, memory);
-    ASSERT_TRUE(assembler.isOK());
 
-    VMState     state;
-    FireVM      fire(state, memory);
-    int         vmResult = fire.run();
-
-    EXPECT_EQ(state.programCounter, 1);
-    EXPECT_EQ(vmResult, 0);
-
-    EXPECT_EQ(state.registerFrame[Register::Stack], -30);
-}
-TEST(FireVMLoadTest, LoadThisNegAbsoluteLiteral)
+TEST(FireVMLoadTest, LoadStackSetExpr1Byte)
 {
-    CodeBlock                   memory;
-
+    std::vector<Instruction>    memory;
     std::stringstream           result;
     std::stringstream           file(buildStream(R"(
-
-    Load This = Literal -11
+        CMD  Init   1000 1000
+        Load Expr = Stack + 0
+        Load Stack = Expr + 12
 )"));
 
     Assembler                   assembler(file, result, memory);
@@ -155,19 +91,19 @@ TEST(FireVMLoadTest, LoadThisNegAbsoluteLiteral)
     FireVM      fire(state, memory);
     int         vmResult = fire.run();
 
-    EXPECT_EQ(state.programCounter, 1);
+    EXPECT_EQ(state.programCounter, 4);
     EXPECT_EQ(vmResult, 0);
 
-    EXPECT_EQ(state.registerFrame[Register::This], -11);
+    EXPECT_EQ(state.registerFrame[Register::Stack], state.stack.data() + 12);
 }
-TEST(FireVMLoadTest, LoadExprNegAbsoluteLiteral)
+// Set This
+TEST(FireVMLoadTest, LoadThisSetGloabl1Byte)
 {
-    CodeBlock                   memory;
-
+    std::vector<Instruction>    memory;
     std::stringstream           result;
     std::stringstream           file(buildStream(R"(
-
-    Load Expr = Literal -13
+        CMD  Init   1000 1000
+        Load This = Global + 12
 )"));
 
     Assembler                   assembler(file, result, memory);
@@ -177,22 +113,19 @@ TEST(FireVMLoadTest, LoadExprNegAbsoluteLiteral)
     FireVM      fire(state, memory);
     int         vmResult = fire.run();
 
-    EXPECT_EQ(state.programCounter, 1);
+    EXPECT_EQ(state.programCounter, 3);
     EXPECT_EQ(vmResult, 0);
 
-    EXPECT_EQ(state.registerFrame[Register::Expr], -13);
+    EXPECT_EQ(state.registerFrame[Register::This], state.global.data() + 12);
 }
-
-//----
 
-TEST(FireVMLoadTest, LoadGlobalPosAbsoluteLargeLiteral)
+TEST(FireVMLoadTest, LoadThisSetStack1Byte)
 {
-    CodeBlock                   memory;
-
+    std::vector<Instruction>    memory;
     std::stringstream           result;
     std::stringstream           file(buildStream(R"(
-
-    Load Global = Literal 123
+        CMD  Init   1000 1000
+        Load This = Stack + 12
 )"));
 
     Assembler                   assembler(file, result, memory);
@@ -202,41 +135,20 @@ TEST(FireVMLoadTest, LoadGlobalPosAbsoluteLargeLiteral)
     FireVM      fire(state, memory);
     int         vmResult = fire.run();
 
-    EXPECT_EQ(state.programCounter, 2);
+    EXPECT_EQ(state.programCounter, 3);
     EXPECT_EQ(vmResult, 0);
 
-    EXPECT_EQ(state.registerFrame[Register::Global], 123);
+    EXPECT_EQ(state.registerFrame[Register::This], state.stack.data() + 12);
 }
-TEST(FireVMLoadTest, LoadStackPosAbsoluteLargeLiteral)
-{
-    CodeBlock                   memory;
-
-    std::stringstream           result;
-    std::stringstream           file(buildStream(R"(
-
-    Load Stack = Literal 456
-)"));
-
-    Assembler                   assembler(file, result, memory);
-    ASSERT_TRUE(assembler.isOK());
-
-    VMState     state;
-    FireVM      fire(state, memory);
-    int         vmResult = fire.run();
 
-    EXPECT_EQ(state.programCounter, 2);
-    EXPECT_EQ(vmResult, 0);
-
-    EXPECT_EQ(state.registerFrame[Register::Stack], 456);
-}
-TEST(FireVMLoadTest, LoadThisPosAbsoluteLargeLiteral)
+TEST(FireVMLoadTest, LoadThisSetThis1Byte)
 {
-    CodeBlock                   memory;
-
+    std::vector<Instruction>    memory;
     std::stringstream           result;
     std::stringstream           file(buildStream(R"(
-
-    Load This = Literal 344
+        CMD  Init   1000 1000
+        Load This = Stack + 0
+        Load This = This + 12
 )"));
 
     Assembler                   assembler(file, result, memory);
@@ -246,19 +158,20 @@ TEST(FireVMLoadTest, LoadThisPosAbsoluteLargeLiteral)
     FireVM      fire(state, memory);
     int         vmResult = fire.run();
 
-    EXPECT_EQ(state.programCounter, 2);
+    EXPECT_EQ(state.programCounter, 4);
     EXPECT_EQ(vmResult, 0);
 
-    EXPECT_EQ(state.registerFrame[Register::This], 344);
+    EXPECT_EQ(state.registerFrame[Register::This], state.stack.data() + 12);
 }
-TEST(FireVMLoadTest, LoadExprPosAbsoluteLargeLiteral)
-{
-    CodeBlock                   memory;
 
+TEST(FireVMLoadTest, LoadThisSetExpr1Byte)
+{
+    std::vector<Instruction>    memory;
     std::stringstream           result;
     std::stringstream           file(buildStream(R"(
-
-    Load Expr = Literal 89
+        CMD  Init   1000 1000
+        Load Expr = Stack + 0
+        Load This = Expr + 12
 )"));
 
     Assembler                   assembler(file, result, memory);
@@ -268,19 +181,19 @@ TEST(FireVMLoadTest, LoadExprPosAbsoluteLargeLiteral)
     FireVM      fire(state, memory);
     int         vmResult = fire.run();
 
-    EXPECT_EQ(state.programCounter, 2);
+    EXPECT_EQ(state.programCounter, 4);
     EXPECT_EQ(vmResult, 0);
 
-    EXPECT_EQ(state.registerFrame[Register::Expr], 89);
+    EXPECT_EQ(state.registerFrame[Register::This], state.stack.data() + 12);
 }
-TEST(FireVMLoadTest, LoadGlobalNegAbsoluteLargeLiteral)
+// Set Expr
+TEST(FireVMLoadTest, LoadExprSetGloabl1Byte)
 {
-    CodeBlock                   memory;
-
+    std::vector<Instruction>    memory;
     std::stringstream           result;
     std::stringstream           file(buildStream(R"(
-
-    Load Global = Literal -123
+        CMD  Init   1000 1000
+        Load Expr = Global + 12
 )"));
 
     Assembler                   assembler(file, result, memory);
@@ -290,19 +203,19 @@ TEST(FireVMLoadTest, LoadGlobalNegAbsoluteLargeLiteral)
     FireVM      fire(state, memory);
     int         vmResult = fire.run();
 
-    EXPECT_EQ(state.programCounter, 2);
+    EXPECT_EQ(state.programCounter, 3);
     EXPECT_EQ(vmResult, 0);
 
-    EXPECT_EQ(state.registerFrame[Register::Global], -123);
+    EXPECT_EQ(state.registerFrame[Register::Expr], state.global.data() + 12);
 }
-TEST(FireVMLoadTest, LoadStackNegAbsoluteLargeLiteral)
-{
-    CodeBlock                   memory;
 
+TEST(FireVMLoadTest, LoadExprSetStack1Byte)
+{
+    std::vector<Instruction>    memory;
     std::stringstream           result;
     std::stringstream           file(buildStream(R"(
-
-    Load Stack = Literal -364
+        CMD  Init   1000 1000
+        Load Expr = Stack + 12
 )"));
 
     Assembler                   assembler(file, result, memory);
@@ -312,19 +225,20 @@ TEST(FireVMLoadTest, LoadStackNegAbsoluteLargeLiteral)
     FireVM      fire(state, memory);
     int         vmResult = fire.run();
 
-    EXPECT_EQ(state.programCounter, 2);
+    EXPECT_EQ(state.programCounter, 3);
     EXPECT_EQ(vmResult, 0);
 
-    EXPECT_EQ(state.registerFrame[Register::Stack], -364);
+    EXPECT_EQ(state.registerFrame[Register::Expr], state.stack.data() + 12);
 }
-TEST(FireVMLoadTest, LoadThisNegAbsoluteLargeLiteral)
-{
-    CodeBlock                   memory;
 
+TEST(FireVMLoadTest, LoadExprSetThis1Byte)
+{
+    std::vector<Instruction>    memory;
     std::stringstream           result;
     std::stringstream           file(buildStream(R"(
-
-    Load This = Literal -126
+        CMD  Init   1000 1000
+        Load This = Stack + 0
+        Load Expr = This + 12
 )"));
 
     Assembler                   assembler(file, result, memory);
@@ -334,19 +248,20 @@ TEST(FireVMLoadTest, LoadThisNegAbsoluteLargeLiteral)
     FireVM      fire(state, memory);
     int         vmResult = fire.run();
 
-    EXPECT_EQ(state.programCounter, 2);
+    EXPECT_EQ(state.programCounter, 4);
     EXPECT_EQ(vmResult, 0);
 
-    EXPECT_EQ(state.registerFrame[Register::This], -126);
+    EXPECT_EQ(state.registerFrame[Register::Expr], state.stack.data() + 12);
 }
-TEST(FireVMLoadTest, LoadExprNegAbsoluteLargeLiteral)
-{
-    CodeBlock                   memory;
 
+TEST(FireVMLoadTest, LoadExprSetExpr1Byte)
+{
+    std::vector<Instruction>    memory;
     std::stringstream           result;
     std::stringstream           file(buildStream(R"(
-
-    Load Expr = Literal -59
+        CMD  Init   1000 1000
+        Load Expr = Stack + 0
+        Load Expr = Expr + 12
 )"));
 
     Assembler                   assembler(file, result, memory);
@@ -356,464 +271,340 @@ TEST(FireVMLoadTest, LoadExprNegAbsoluteLargeLiteral)
     FireVM      fire(state, memory);
     int         vmResult = fire.run();
 
-    EXPECT_EQ(state.programCounter, 2);
+    EXPECT_EQ(state.programCounter, 4);
     EXPECT_EQ(vmResult, 0);
 
-    EXPECT_EQ(state.registerFrame[Register::Expr], -59);
+    EXPECT_EQ(state.registerFrame[Register::Expr], state.stack.data() + 12);
 }
 
-// -----
 
-TEST(FireVMLoadTest, LoadGlobalPosRelativeLiteral)
+// Read Stack
+TEST(FireVMLoadTest, LoadStackReadGloabl1Byte)
 {
-    CodeBlock                   memory;
-
+    std::vector<Instruction>    memory;
     std::stringstream           result;
     std::stringstream           file(buildStream(R"(
-
-    Load Global += Literal 6
+        CMD  Init   1000 1000
+        Load Stack * Global + 12
 )"));
 
     Assembler                   assembler(file, result, memory);
     ASSERT_TRUE(assembler.isOK());
 
     VMState     state;
-    state.registerFrame[Register::Global]   = 2;
+    state.global.resize(20);
+    state.global[12] = Frame{};
+    MemoryLocation* regPtr = state.global[12].getObject();
 
     FireVM      fire(state, memory);
     int         vmResult = fire.run();
 
-    EXPECT_EQ(state.programCounter, 1);
+    EXPECT_EQ(state.programCounter, 3);
     EXPECT_EQ(vmResult, 0);
 
-    EXPECT_EQ(state.registerFrame[Register::Global], 8);
+    EXPECT_EQ(state.registerFrame[Register::Stack], regPtr);
 }
-TEST(FireVMLoadTest, LoadStackPosRelativeLiteral)
-{
-    CodeBlock                   memory;
-
-    std::stringstream           result;
-    std::stringstream           file(buildStream(R"(
-
-    Load Stack += Literal 18
-)"));
-
-    Assembler                   assembler(file, result, memory);
-    ASSERT_TRUE(assembler.isOK());
-
-    VMState     state;
-    state.registerFrame[Register::Stack]   = 2;
-    FireVM      fire(state, memory);
-    int         vmResult = fire.run();
-
-    EXPECT_EQ(state.programCounter, 1);
-    EXPECT_EQ(vmResult, 0);
 
-    EXPECT_EQ(state.registerFrame[Register::Stack], 20);
-}
-TEST(FireVMLoadTest, LoadThisPosRelativeLiteral)
+TEST(FireVMLoadTest, LoadStackReadStack1Byte)
 {
-    CodeBlock                   memory;
-
+    std::vector<Instruction>    memory;
     std::stringstream           result;
     std::stringstream           file(buildStream(R"(
-
-    Load This += Literal 22
+        CMD  Init   1000 1000
+        Load Stack * Stack + 12
 )"));
 
     Assembler                   assembler(file, result, memory);
     ASSERT_TRUE(assembler.isOK());
 
     VMState     state;
-    state.registerFrame[Register::This]   = 2;
-    FireVM      fire(state, memory);
-    int         vmResult = fire.run();
-
-    EXPECT_EQ(state.programCounter, 1);
-    EXPECT_EQ(vmResult, 0);
-
-    EXPECT_EQ(state.registerFrame[Register::This], 24);
-}
-TEST(FireVMLoadTest, LoadExprPosRelativeLiteral)
-{
-    CodeBlock                   memory;
-
-    std::stringstream           result;
-    std::stringstream           file(buildStream(R"(
-
-    Load Expr += Literal 12
-)"));
+    state.stack.resize(20);
+    state.stack[12] = Frame{};
+    MemoryLocation* regPtr = state.stack[12].getObject();
 
-    Assembler                   assembler(file, result, memory);
-    ASSERT_TRUE(assembler.isOK());
-
-    VMState     state;
-    state.registerFrame[Register::Expr]   = 2;
     FireVM      fire(state, memory);
     int         vmResult = fire.run();
 
-    EXPECT_EQ(state.programCounter, 1);
+    EXPECT_EQ(state.programCounter, 3);
     EXPECT_EQ(vmResult, 0);
 
-    EXPECT_EQ(state.registerFrame[Register::Expr], 14);
+    EXPECT_EQ(state.registerFrame[Register::Stack], regPtr);
 }
-TEST(FireVMLoadTest, LoadGlobalNegRelativeLiteral)
-{
-    CodeBlock                   memory;
-
-    std::stringstream           result;
-    std::stringstream           file(buildStream(R"(
-
-    Load Global += Literal -8
-)"));
-
-    Assembler                   assembler(file, result, memory);
-    ASSERT_TRUE(assembler.isOK());
-
-    VMState     state;
-    state.registerFrame[Register::Global]   = 2;
-    FireVM      fire(state, memory);
-    int         vmResult = fire.run();
-
-    EXPECT_EQ(state.programCounter, 1);
-    EXPECT_EQ(vmResult, 0);
 
-    EXPECT_EQ(state.registerFrame[Register::Global], -6);
-}
-TEST(FireVMLoadTest, LoadStackNegRelativeLiteral)
+TEST(FireVMLoadTest, LoadStackReadThis1Byte)
 {
-    CodeBlock                   memory;
-
+    std::vector<Instruction>    memory;
     std::stringstream           result;
     std::stringstream           file(buildStream(R"(
-
-    Load Stack += Literal -30
+        CMD  Init   1000 1000
+        Load This = Stack + 0
+        Load Stack * This + 12
 )"));
 
     Assembler                   assembler(file, result, memory);
     ASSERT_TRUE(assembler.isOK());
 
     VMState     state;
-    state.registerFrame[Register::Stack]   = 2;
+    state.stack.resize(20);
+    state.stack[12] = Frame{};
+    MemoryLocation* regPtr = state.stack[12].getObject();
+
     FireVM      fire(state, memory);
     int         vmResult = fire.run();
 
-    EXPECT_EQ(state.programCounter, 1);
+    EXPECT_EQ(state.programCounter, 4);
     EXPECT_EQ(vmResult, 0);
 
-    EXPECT_EQ(state.registerFrame[Register::Stack], -28);
+    EXPECT_EQ(state.registerFrame[Register::Stack], regPtr);
 }
-TEST(FireVMLoadTest, LoadThisNegRelativeLiteral)
-{
-    CodeBlock                   memory;
 
+TEST(FireVMLoadTest, LoadStackReadExpr1Byte)
+{
+    std::vector<Instruction>    memory;
     std::stringstream           result;
     std::stringstream           file(buildStream(R"(
-
-    Load This += Literal -11
+        CMD  Init   1000 1000
+        Load Expr = Stack + 0
+        Load Stack * Expr + 12
 )"));
 
     Assembler                   assembler(file, result, memory);
     ASSERT_TRUE(assembler.isOK());
 
     VMState     state;
-    state.registerFrame[Register::This]   = 2;
+    state.stack.resize(20);
+    state.stack[12] = Frame{};
+    MemoryLocation* regPtr = state.stack[12].getObject();
+
     FireVM      fire(state, memory);
     int         vmResult = fire.run();
 
-    EXPECT_EQ(state.programCounter, 1);
+    EXPECT_EQ(state.programCounter, 4);
     EXPECT_EQ(vmResult, 0);
 
-    EXPECT_EQ(state.registerFrame[Register::This], -9);
+    EXPECT_EQ(state.registerFrame[Register::Stack], regPtr);
 }
-TEST(FireVMLoadTest, LoadExprNegRelativeLiteral)
+// Read This
+TEST(FireVMLoadTest, LoadThisReadGloabl1Byte)
 {
-    CodeBlock                   memory;
-
+    std::vector<Instruction>    memory;
     std::stringstream           result;
     std::stringstream           file(buildStream(R"(
-
-    Load Expr += Literal -13
+        CMD  Init   1000 1000
+        Load This * Global + 12
 )"));
 
     Assembler                   assembler(file, result, memory);
     ASSERT_TRUE(assembler.isOK());
 
     VMState     state;
-    state.registerFrame[Register::Expr]   = 2;
+    state.global.resize(20);
+    state.global[12] = Frame{};
+    MemoryLocation* regPtr = state.global[12].getObject();
+
     FireVM      fire(state, memory);
     int         vmResult = fire.run();
 
-    EXPECT_EQ(state.programCounter, 1);
+    EXPECT_EQ(state.programCounter, 3);
     EXPECT_EQ(vmResult, 0);
 
-    EXPECT_EQ(state.registerFrame[Register::Expr], -11);
+    EXPECT_EQ(state.registerFrame[Register::This], regPtr);
 }
 
-//----
-
-TEST(FireVMLoadTest, LoadGlobalPosRelativeLargeLiteral)
+TEST(FireVMLoadTest, LoadThisReadStack1Byte)
 {
-    CodeBlock                   memory;
-
+    std::vector<Instruction>    memory;
     std::stringstream           result;
     std::stringstream           file(buildStream(R"(
-
-    Load Global += Literal 123
+        CMD  Init   1000 1000
+        Load This * Stack + 12
 )"));
 
     Assembler                   assembler(file, result, memory);
     ASSERT_TRUE(assembler.isOK());
 
     VMState     state;
-    state.registerFrame[Register::Global]   = 2;
-    FireVM      fire(state, memory);
-    int         vmResult = fire.run();
-
-    EXPECT_EQ(state.programCounter, 2);
-    EXPECT_EQ(vmResult, 0);
-
-    EXPECT_EQ(state.registerFrame[Register::Global], 125);
-}
-TEST(FireVMLoadTest, LoadStackPosRelativeLargeLiteral)
-{
-    CodeBlock                   memory;
-
-    std::stringstream           result;
-    std::stringstream           file(buildStream(R"(
-
-    Load Stack += Literal 456
-)"));
-
-    Assembler                   assembler(file, result, memory);
-    ASSERT_TRUE(assembler.isOK());
+    state.stack.resize(20);
+    state.stack[12] = Frame{};
+    MemoryLocation* regPtr = state.stack[12].getObject();
 
-    VMState     state;
-    state.registerFrame[Register::Stack]   = 2;
     FireVM      fire(state, memory);
     int         vmResult = fire.run();
 
-    EXPECT_EQ(state.programCounter, 2);
+    EXPECT_EQ(state.programCounter, 3);
     EXPECT_EQ(vmResult, 0);
 
-    EXPECT_EQ(state.registerFrame[Register::Stack], 458);
+    EXPECT_EQ(state.registerFrame[Register::This], regPtr);
 }
-TEST(FireVMLoadTest, LoadThisPosRelativeLargeLiteral)
-{
-    CodeBlock                   memory;
-
-    std::stringstream           result;
-    std::stringstream           file(buildStream(R"(
-
-    Load This += Literal 344
-)"));
-
-    Assembler                   assembler(file, result, memory);
-    ASSERT_TRUE(assembler.isOK());
-
-    VMState     state;
-    state.registerFrame[Register::This]   = 2;
-    FireVM      fire(state, memory);
-    int         vmResult = fire.run();
-
-    EXPECT_EQ(state.programCounter, 2);
-    EXPECT_EQ(vmResult, 0);
 
-    EXPECT_EQ(state.registerFrame[Register::This], 346);
-}
-TEST(FireVMLoadTest, LoadExprPosRelativeLargeLiteral)
+TEST(FireVMLoadTest, LoadThisReadThis1Byte)
 {
-    CodeBlock                   memory;
-
+    std::vector<Instruction>    memory;
     std::stringstream           result;
     std::stringstream           file(buildStream(R"(
-
-    Load Expr += Literal 89
+        CMD  Init   1000 1000
+        Load This = Stack + 0
+        Load This * This + 12
 )"));
 
     Assembler                   assembler(file, result, memory);
     ASSERT_TRUE(assembler.isOK());
 
     VMState     state;
-    state.registerFrame[Register::Expr]   = 2;
-    FireVM      fire(state, memory);
-    int         vmResult = fire.run();
-
-    EXPECT_EQ(state.programCounter, 2);
-    EXPECT_EQ(vmResult, 0);
-
-    EXPECT_EQ(state.registerFrame[Register::Expr], 91);
-}
-TEST(FireVMLoadTest, LoadGlobalNegRelativeLargeLiteral)
-{
-    CodeBlock                   memory;
-
-    std::stringstream           result;
-    std::stringstream           file(buildStream(R"(
-
-    Load Global += Literal -123
-)"));
-
-    Assembler                   assembler(file, result, memory);
-    ASSERT_TRUE(assembler.isOK());
+    state.stack.resize(20);
+    state.stack[12] = Frame{};
+    MemoryLocation* regPtr = state.stack[12].getObject();
 
-    VMState     state;
-    state.registerFrame[Register::Global]   = 2;
     FireVM      fire(state, memory);
     int         vmResult = fire.run();
 
-    EXPECT_EQ(state.programCounter, 2);
+    EXPECT_EQ(state.programCounter, 4);
     EXPECT_EQ(vmResult, 0);
 
-    EXPECT_EQ(state.registerFrame[Register::Global], -121);
+    EXPECT_EQ(state.registerFrame[Register::This], regPtr);
 }
-TEST(FireVMLoadTest, LoadStackNegRelativeLargeLiteral)
-{
-    CodeBlock                   memory;
-
-    std::stringstream           result;
-    std::stringstream           file(buildStream(R"(
-
-    Load Stack += Literal -364
-)"));
-
-    Assembler                   assembler(file, result, memory);
-    ASSERT_TRUE(assembler.isOK());
-
-    VMState     state;
-    state.registerFrame[Register::Stack]   = 2;
-    FireVM      fire(state, memory);
-    int         vmResult = fire.run();
 
-    EXPECT_EQ(state.programCounter, 2);
-    EXPECT_EQ(vmResult, 0);
-
-    EXPECT_EQ(state.registerFrame[Register::Stack], -362);
-}
-TEST(FireVMLoadTest, LoadThisNegRelativeLargeLiteral)
+TEST(FireVMLoadTest, LoadThisReadExpr1Byte)
 {
-    CodeBlock                   memory;
-
+    std::vector<Instruction>    memory;
     std::stringstream           result;
     std::stringstream           file(buildStream(R"(
-
-    Load This += Literal -126
+        CMD  Init   1000 1000
+        Load Expr = Stack + 0
+        Load This * Expr + 12
 )"));
 
     Assembler                   assembler(file, result, memory);
     ASSERT_TRUE(assembler.isOK());
 
     VMState     state;
-    state.registerFrame[Register::This]   = 2;
+    state.stack.resize(20);
+    state.stack[12] = Frame{};
+    MemoryLocation* regPtr = state.stack[12].getObject();
+
     FireVM      fire(state, memory);
     int         vmResult = fire.run();
 
-    EXPECT_EQ(state.programCounter, 2);
+    EXPECT_EQ(state.programCounter, 4);
     EXPECT_EQ(vmResult, 0);
 
-    EXPECT_EQ(state.registerFrame[Register::This], -124);
+    EXPECT_EQ(state.registerFrame[Register::This], regPtr);
 }
-TEST(FireVMLoadTest, LoadExprNegRelativeLargeLiteral)
+// Read Expr
+TEST(FireVMLoadTest, LoadExprReadGloabl1Byte)
 {
-    CodeBlock                   memory;
-
+    std::vector<Instruction>    memory;
     std::stringstream           result;
     std::stringstream           file(buildStream(R"(
-
-    Load Expr += Literal -59
+        CMD  Init   1000 1000
+        Load Expr * Global + 12
 )"));
 
     Assembler                   assembler(file, result, memory);
     ASSERT_TRUE(assembler.isOK());
 
     VMState     state;
-    state.registerFrame[Register::Expr]   = 2;
+    state.global.resize(20);
+    state.global[12] = Frame{};
+    MemoryLocation* regPtr = state.global[12].getObject();
+
     FireVM      fire(state, memory);
     int         vmResult = fire.run();
 
-    EXPECT_EQ(state.programCounter, 2);
+    EXPECT_EQ(state.programCounter, 3);
     EXPECT_EQ(vmResult, 0);
 
-    EXPECT_EQ(state.registerFrame[Register::Expr], -57);
+    EXPECT_EQ(state.registerFrame[Register::Expr], regPtr);
 }
 
-// ----
-/*
-TEST(FireVMLoadTest, LoadGlobalPosAbsoluteRead)
+TEST(FireVMLoadTest, LoadExprReadStack1Byte)
 {
-    CodeBlock                   memory;
-
+    std::vector<Instruction>    memory;
     std::stringstream           result;
     std::stringstream           file(buildStream(R"(
-
-    Load Global = Read 6
+        CMD  Init   1000 1000
+        Load Expr * Stack + 12
 )"));
 
     Assembler                   assembler(file, result, memory);
     ASSERT_TRUE(assembler.isOK());
 
     VMState     state;
-    state.
+    state.stack.resize(20);
+    state.stack[12] = Frame{};
+    MemoryLocation* regPtr = state.stack[12].getObject();
+
     FireVM      fire(state, memory);
     int         vmResult = fire.run();
 
-    EXPECT_EQ(state.programCounter, 1);
+    EXPECT_EQ(state.programCounter, 3);
     EXPECT_EQ(vmResult, 0);
 
-    EXPECT_EQ(state.registerFrame[Register::Global], 6);
+    EXPECT_EQ(state.registerFrame[Register::Expr], regPtr);
 }
-TEST(FireVMLoadTest, LoadStackPosAbsoluteRead)
-{
-    CodeBlock                   memory;
 
+TEST(FireVMLoadTest, LoadExprReadThis1Byte)
+{
+    std::vector<Instruction>    memory;
     std::stringstream           result;
     std::stringstream           file(buildStream(R"(
-
-    Load Stack = Read 18
+        CMD  Init   1000 1000
+        Load This = Stack + 0
+        Load Expr * This + 12
 )"));
 
     Assembler                   assembler(file, result, memory);
     ASSERT_TRUE(assembler.isOK());
 
     VMState     state;
+    state.stack.resize(20);
+    state.stack[12] = Frame{};
+    MemoryLocation* regPtr = state.stack[12].getObject();
+
     FireVM      fire(state, memory);
     int         vmResult = fire.run();
 
-    EXPECT_EQ(state.programCounter, 1);
+    EXPECT_EQ(state.programCounter, 4);
     EXPECT_EQ(vmResult, 0);
 
-    EXPECT_EQ(state.registerFrame[Register::Stack], 18);
+    EXPECT_EQ(state.registerFrame[Register::Expr], regPtr);
 }
-TEST(FireVMLoadTest, LoadThisPosAbsoluteRead)
-{
-    CodeBlock                   memory;
 
+TEST(FireVMLoadTest, LoadExprReadExpr1Byte)
+{
+    std::vector<Instruction>    memory;
     std::stringstream           result;
     std::stringstream           file(buildStream(R"(
-
-    Load This = Read 22
+        CMD  Init   1000 1000
+        Load Expr = Stack + 0
+        Load Expr * Expr + 12
 )"));
 
     Assembler                   assembler(file, result, memory);
     ASSERT_TRUE(assembler.isOK());
 
     VMState     state;
+    state.stack.resize(20);
+    state.stack[12] = Frame{};
+    MemoryLocation* regPtr = state.stack[12].getObject();
+
     FireVM      fire(state, memory);
     int         vmResult = fire.run();
 
-    EXPECT_EQ(state.programCounter, 1);
+    EXPECT_EQ(state.programCounter, 4);
     EXPECT_EQ(vmResult, 0);
 
-    EXPECT_EQ(state.registerFrame[Register::This], 22);
+    EXPECT_EQ(state.registerFrame[Register::Expr], regPtr);
 }
-TEST(FireVMLoadTest, LoadExprPosAbsoluteRead)
-{
-    CodeBlock                   memory;
 
+// Set Stack
+TEST(FireVMLoadTest, LoadStackSetGloabl2Byte)
+{
+    std::vector<Instruction>    memory;
     std::stringstream           result;
     std::stringstream           file(buildStream(R"(
-
-    Load Expr = Read 12
+        CMD  Init   1000 1000
+        Load Stack = Global + 345
 )"));
 
     Assembler                   assembler(file, result, memory);
@@ -823,19 +614,19 @@ TEST(FireVMLoadTest, LoadExprPosAbsoluteRead)
     FireVM      fire(state, memory);
     int         vmResult = fire.run();
 
-    EXPECT_EQ(state.programCounter, 1);
+    EXPECT_EQ(state.programCounter, 4);
     EXPECT_EQ(vmResult, 0);
 
-    EXPECT_EQ(state.registerFrame[Register::Expr], 12);
+    EXPECT_EQ(state.registerFrame[Register::Stack], state.global.data() + 345);
 }
-TEST(FireVMLoadTest, LoadGlobalNegAbsoluteRead)
-{
-    CodeBlock                   memory;
 
+TEST(FireVMLoadTest, LoadStackSetStack2Byte)
+{
+    std::vector<Instruction>    memory;
     std::stringstream           result;
     std::stringstream           file(buildStream(R"(
-
-    Load Global = Read -8
+        CMD  Init   1000 1000
+        Load Stack = Stack + 345
 )"));
 
     Assembler                   assembler(file, result, memory);
@@ -845,19 +636,20 @@ TEST(FireVMLoadTest, LoadGlobalNegAbsoluteRead)
     FireVM      fire(state, memory);
     int         vmResult = fire.run();
 
-    EXPECT_EQ(state.programCounter, 1);
+    EXPECT_EQ(state.programCounter, 4);
     EXPECT_EQ(vmResult, 0);
 
-    EXPECT_EQ(state.registerFrame[Register::Global], -8);
+    EXPECT_EQ(state.registerFrame[Register::Stack], state.stack.data() + 345);
 }
-TEST(FireVMLoadTest, LoadStackNegAbsoluteRead)
-{
-    CodeBlock                   memory;
 
+TEST(FireVMLoadTest, LoadStackSetThis2Byte)
+{
+    std::vector<Instruction>    memory;
     std::stringstream           result;
     std::stringstream           file(buildStream(R"(
-
-    Load Stack = Read -30
+        CMD  Init   1000 1000
+        Load This = Stack + 0
+        Load Stack = This + 345
 )"));
 
     Assembler                   assembler(file, result, memory);
@@ -867,19 +659,20 @@ TEST(FireVMLoadTest, LoadStackNegAbsoluteRead)
     FireVM      fire(state, memory);
     int         vmResult = fire.run();
 
-    EXPECT_EQ(state.programCounter, 1);
+    EXPECT_EQ(state.programCounter, 5);
     EXPECT_EQ(vmResult, 0);
 
-    EXPECT_EQ(state.registerFrame[Register::Stack], -30);
+    EXPECT_EQ(state.registerFrame[Register::Stack], state.stack.data() + 345);
 }
-TEST(FireVMLoadTest, LoadThisNegAbsoluteRead)
-{
-    CodeBlock                   memory;
 
+TEST(FireVMLoadTest, LoadStackSetExpr2Byte)
+{
+    std::vector<Instruction>    memory;
     std::stringstream           result;
     std::stringstream           file(buildStream(R"(
-
-    Load This = Read -11
+        CMD  Init   1000 1000
+        Load Expr = Stack + 0
+        Load Stack = Expr + 345
 )"));
 
     Assembler                   assembler(file, result, memory);
@@ -889,19 +682,19 @@ TEST(FireVMLoadTest, LoadThisNegAbsoluteRead)
     FireVM      fire(state, memory);
     int         vmResult = fire.run();
 
-    EXPECT_EQ(state.programCounter, 1);
+    EXPECT_EQ(state.programCounter, 5);
     EXPECT_EQ(vmResult, 0);
 
-    EXPECT_EQ(state.registerFrame[Register::This], -11);
+    EXPECT_EQ(state.registerFrame[Register::Stack], state.stack.data() + 345);
 }
-TEST(FireVMLoadTest, LoadExprNegAbsoluteRead)
+// Set This
+TEST(FireVMLoadTest, LoadThisSetGloabl2Byte)
 {
-    CodeBlock                   memory;
-
+    std::vector<Instruction>    memory;
     std::stringstream           result;
     std::stringstream           file(buildStream(R"(
-
-    Load Expr = Read -13
+        CMD  Init   1000 1000
+        Load This = Global + 345
 )"));
 
     Assembler                   assembler(file, result, memory);
@@ -911,22 +704,19 @@ TEST(FireVMLoadTest, LoadExprNegAbsoluteRead)
     FireVM      fire(state, memory);
     int         vmResult = fire.run();
 
-    EXPECT_EQ(state.programCounter, 1);
+    EXPECT_EQ(state.programCounter, 4);
     EXPECT_EQ(vmResult, 0);
 
-    EXPECT_EQ(state.registerFrame[Register::Expr], -13);
+    EXPECT_EQ(state.registerFrame[Register::This], state.global.data() + 345);
 }
 
-//----
-
-TEST(FireVMLoadTest, LoadGlobalPosAbsoluteLargeRead)
+TEST(FireVMLoadTest, LoadThisSetStack2Byte)
 {
-    CodeBlock                   memory;
-
+    std::vector<Instruction>    memory;
     std::stringstream           result;
     std::stringstream           file(buildStream(R"(
-
-    Load Global = Read 123
+        CMD  Init   1000 1000
+        Load This = Stack + 345
 )"));
 
     Assembler                   assembler(file, result, memory);
@@ -936,41 +726,20 @@ TEST(FireVMLoadTest, LoadGlobalPosAbsoluteLargeRead)
     FireVM      fire(state, memory);
     int         vmResult = fire.run();
 
-    EXPECT_EQ(state.programCounter, 2);
+    EXPECT_EQ(state.programCounter, 4);
     EXPECT_EQ(vmResult, 0);
 
-    EXPECT_EQ(state.registerFrame[Register::Global], 123);
+    EXPECT_EQ(state.registerFrame[Register::This], state.stack.data() + 345);
 }
-TEST(FireVMLoadTest, LoadStackPosAbsoluteLargeRead)
-{
-    CodeBlock                   memory;
-
-    std::stringstream           result;
-    std::stringstream           file(buildStream(R"(
-
-    Load Stack = Read 456
-)"));
-
-    Assembler                   assembler(file, result, memory);
-    ASSERT_TRUE(assembler.isOK());
-
-    VMState     state;
-    FireVM      fire(state, memory);
-    int         vmResult = fire.run();
-
-    EXPECT_EQ(state.programCounter, 2);
-    EXPECT_EQ(vmResult, 0);
 
-    EXPECT_EQ(state.registerFrame[Register::Stack], 456);
-}
-TEST(FireVMLoadTest, LoadThisPosAbsoluteLargeRead)
+TEST(FireVMLoadTest, LoadThisSetThis2Byte)
 {
-    CodeBlock                   memory;
-
+    std::vector<Instruction>    memory;
     std::stringstream           result;
     std::stringstream           file(buildStream(R"(
-
-    Load This = Read 344
+        CMD  Init   1000 1000
+        Load This = Stack + 0
+        Load This = This + 345
 )"));
 
     Assembler                   assembler(file, result, memory);
@@ -980,19 +749,20 @@ TEST(FireVMLoadTest, LoadThisPosAbsoluteLargeRead)
     FireVM      fire(state, memory);
     int         vmResult = fire.run();
 
-    EXPECT_EQ(state.programCounter, 2);
+    EXPECT_EQ(state.programCounter, 5);
     EXPECT_EQ(vmResult, 0);
 
-    EXPECT_EQ(state.registerFrame[Register::This], 344);
+    EXPECT_EQ(state.registerFrame[Register::This], state.stack.data() + 345);
 }
-TEST(FireVMLoadTest, LoadExprPosAbsoluteLargeRead)
-{
-    CodeBlock                   memory;
 
+TEST(FireVMLoadTest, LoadThisSetExpr2Byte)
+{
+    std::vector<Instruction>    memory;
     std::stringstream           result;
     std::stringstream           file(buildStream(R"(
-
-    Load Expr = Read 89
+        CMD  Init   1000 1000
+        Load Expr = Stack + 0
+        Load This = Expr + 345
 )"));
 
     Assembler                   assembler(file, result, memory);
@@ -1002,19 +772,19 @@ TEST(FireVMLoadTest, LoadExprPosAbsoluteLargeRead)
     FireVM      fire(state, memory);
     int         vmResult = fire.run();
 
-    EXPECT_EQ(state.programCounter, 2);
+    EXPECT_EQ(state.programCounter, 5);
     EXPECT_EQ(vmResult, 0);
 
-    EXPECT_EQ(state.registerFrame[Register::Expr], 89);
+    EXPECT_EQ(state.registerFrame[Register::This], state.stack.data() + 345);
 }
-TEST(FireVMLoadTest, LoadGlobalNegAbsoluteLargeRead)
+// Set Expr
+TEST(FireVMLoadTest, LoadExprSetGloabl2Byte)
 {
-    CodeBlock                   memory;
-
+    std::vector<Instruction>    memory;
     std::stringstream           result;
     std::stringstream           file(buildStream(R"(
-
-    Load Global = Read -123
+        CMD  Init   1000 1000
+        Load Expr = Global + 345
 )"));
 
     Assembler                   assembler(file, result, memory);
@@ -1024,19 +794,19 @@ TEST(FireVMLoadTest, LoadGlobalNegAbsoluteLargeRead)
     FireVM      fire(state, memory);
     int         vmResult = fire.run();
 
-    EXPECT_EQ(state.programCounter, 2);
+    EXPECT_EQ(state.programCounter, 4);
     EXPECT_EQ(vmResult, 0);
 
-    EXPECT_EQ(state.registerFrame[Register::Global], -123);
+    EXPECT_EQ(state.registerFrame[Register::Expr], state.global.data() + 345);
 }
-TEST(FireVMLoadTest, LoadStackNegAbsoluteLargeRead)
-{
-    CodeBlock                   memory;
 
+TEST(FireVMLoadTest, LoadExprSetStack2Byte)
+{
+    std::vector<Instruction>    memory;
     std::stringstream           result;
     std::stringstream           file(buildStream(R"(
-
-    Load Stack = Read -364
+        CMD  Init   1000 1000
+        Load Expr = Stack + 345
 )"));
 
     Assembler                   assembler(file, result, memory);
@@ -1046,19 +816,20 @@ TEST(FireVMLoadTest, LoadStackNegAbsoluteLargeRead)
     FireVM      fire(state, memory);
     int         vmResult = fire.run();
 
-    EXPECT_EQ(state.programCounter, 2);
+    EXPECT_EQ(state.programCounter, 4);
     EXPECT_EQ(vmResult, 0);
 
-    EXPECT_EQ(state.registerFrame[Register::Stack], -364);
+    EXPECT_EQ(state.registerFrame[Register::Expr], state.stack.data() + 345);
 }
-TEST(FireVMLoadTest, LoadThisNegAbsoluteLargeRead)
-{
-    CodeBlock                   memory;
 
+TEST(FireVMLoadTest, LoadExprSetThis2Byte)
+{
+    std::vector<Instruction>    memory;
     std::stringstream           result;
     std::stringstream           file(buildStream(R"(
-
-    Load This = Read -126
+        CMD  Init   1000 1000
+        Load This = Stack + 0
+        Load Expr = This + 345
 )"));
 
     Assembler                   assembler(file, result, memory);
@@ -1068,19 +839,20 @@ TEST(FireVMLoadTest, LoadThisNegAbsoluteLargeRead)
     FireVM      fire(state, memory);
     int         vmResult = fire.run();
 
-    EXPECT_EQ(state.programCounter, 2);
+    EXPECT_EQ(state.programCounter, 5);
     EXPECT_EQ(vmResult, 0);
 
-    EXPECT_EQ(state.registerFrame[Register::This], -126);
+    EXPECT_EQ(state.registerFrame[Register::Expr], state.stack.data() + 345);
 }
-TEST(FireVMLoadTest, LoadExprNegAbsoluteLargeRead)
-{
-    CodeBlock                   memory;
 
+TEST(FireVMLoadTest, LoadExprSetExpr2Byte)
+{
+    std::vector<Instruction>    memory;
     std::stringstream           result;
     std::stringstream           file(buildStream(R"(
-
-    Load Expr = Read -59
+        CMD  Init   1000 1000
+        Load Expr = Stack + 0
+        Load Expr = Expr + 345
 )"));
 
     Assembler                   assembler(file, result, memory);
@@ -1090,385 +862,356 @@ TEST(FireVMLoadTest, LoadExprNegAbsoluteLargeRead)
     FireVM      fire(state, memory);
     int         vmResult = fire.run();
 
-    EXPECT_EQ(state.programCounter, 2);
+    EXPECT_EQ(state.programCounter, 5);
     EXPECT_EQ(vmResult, 0);
 
-    EXPECT_EQ(state.registerFrame[Register::Expr], -59);
+    EXPECT_EQ(state.registerFrame[Register::Expr], state.stack.data() + 345);
 }
 
-// -----
 
-TEST(FireVMLoadTest, LoadGlobalPosRelativeRead)
+// Read Stack
+TEST(FireVMLoadTest, LoadStackReadGloabl2Byte)
 {
-    CodeBlock                   memory;
-
+    std::vector<Instruction>    memory;
     std::stringstream           result;
     std::stringstream           file(buildStream(R"(
-
-    Load Global += Read 6
+        CMD  Init   1000 1000
+        Load Stack * Global + 345
 )"));
 
     Assembler                   assembler(file, result, memory);
     ASSERT_TRUE(assembler.isOK());
 
     VMState     state;
-    state.registerFrame[Register::Global]   = 2;
+    state.global.resize(400);
+    state.global[345] = Frame{};
+    MemoryLocation* regPtr = state.global[345].getObject();
 
     FireVM      fire(state, memory);
     int         vmResult = fire.run();
 
-    EXPECT_EQ(state.programCounter, 1);
+    EXPECT_EQ(state.programCounter, 4);
     EXPECT_EQ(vmResult, 0);
 
-    EXPECT_EQ(state.registerFrame[Register::Global], 8);
+    EXPECT_EQ(state.registerFrame[Register::Stack], regPtr);
 }
-TEST(FireVMLoadTest, LoadStackPosRelativeRead)
-{
-    CodeBlock                   memory;
-
-    std::stringstream           result;
-    std::stringstream           file(buildStream(R"(
-
-    Load Stack += Read 18
-)"));
-
-    Assembler                   assembler(file, result, memory);
-    ASSERT_TRUE(assembler.isOK());
-
-    VMState     state;
-    state.registerFrame[Register::Stack]   = 2;
-    FireVM      fire(state, memory);
-    int         vmResult = fire.run();
 
-    EXPECT_EQ(state.programCounter, 1);
-    EXPECT_EQ(vmResult, 0);
-
-    EXPECT_EQ(state.registerFrame[Register::Stack], 20);
-}
-TEST(FireVMLoadTest, LoadThisPosRelativeRead)
+TEST(FireVMLoadTest, LoadStackReadStack2Byte)
 {
-    CodeBlock                   memory;
-
+    std::vector<Instruction>    memory;
     std::stringstream           result;
     std::stringstream           file(buildStream(R"(
-
-    Load This += Read 22
+        CMD  Init   1000 1000
+        Load Stack * Stack + 345
 )"));
 
     Assembler                   assembler(file, result, memory);
     ASSERT_TRUE(assembler.isOK());
 
     VMState     state;
-    state.registerFrame[Register::This]   = 2;
-    FireVM      fire(state, memory);
-    int         vmResult = fire.run();
-
-    EXPECT_EQ(state.programCounter, 1);
-    EXPECT_EQ(vmResult, 0);
-
-    EXPECT_EQ(state.registerFrame[Register::This], 24);
-}
-TEST(FireVMLoadTest, LoadExprPosRelativeRead)
-{
-    CodeBlock                   memory;
-
-    std::stringstream           result;
-    std::stringstream           file(buildStream(R"(
-
-    Load Expr += Read 12
-)"));
-
-    Assembler                   assembler(file, result, memory);
-    ASSERT_TRUE(assembler.isOK());
+    state.stack.resize(400);
+    state.stack[345] = Frame{};
+    MemoryLocation* regPtr = state.stack[345].getObject();
 
-    VMState     state;
-    state.registerFrame[Register::Expr]   = 2;
     FireVM      fire(state, memory);
     int         vmResult = fire.run();
 
-    EXPECT_EQ(state.programCounter, 1);
+    EXPECT_EQ(state.programCounter, 4);
     EXPECT_EQ(vmResult, 0);
 
-    EXPECT_EQ(state.registerFrame[Register::Expr], 14);
+    EXPECT_EQ(state.registerFrame[Register::Stack], regPtr);
 }
-TEST(FireVMLoadTest, LoadGlobalNegRelativeRead)
-{
-    CodeBlock                   memory;
-
-    std::stringstream           result;
-    std::stringstream           file(buildStream(R"(
-
-    Load Global += Read -8
-)"));
-
-    Assembler                   assembler(file, result, memory);
-    ASSERT_TRUE(assembler.isOK());
 
-    VMState     state;
-    state.registerFrame[Register::Global]   = 2;
-    FireVM      fire(state, memory);
-    int         vmResult = fire.run();
-
-    EXPECT_EQ(state.programCounter, 1);
-    EXPECT_EQ(vmResult, 0);
-
-    EXPECT_EQ(state.registerFrame[Register::Global], -6);
-}
-TEST(FireVMLoadTest, LoadStackNegRelativeRead)
+TEST(FireVMLoadTest, LoadStackReadThis2Byte)
 {
-    CodeBlock                   memory;
-
+    std::vector<Instruction>    memory;
     std::stringstream           result;
     std::stringstream           file(buildStream(R"(
-
-    Load Stack += Read -30
+        CMD  Init   1000 1000
+        Load This = Stack + 0
+        Load Stack * This + 345
 )"));
 
     Assembler                   assembler(file, result, memory);
     ASSERT_TRUE(assembler.isOK());
 
     VMState     state;
-    state.registerFrame[Register::Stack]   = 2;
+    state.stack.resize(400);
+    state.stack[345] = Frame{};
+    MemoryLocation* regPtr = state.stack[345].getObject();
+
     FireVM      fire(state, memory);
     int         vmResult = fire.run();
 
-    EXPECT_EQ(state.programCounter, 1);
+    EXPECT_EQ(state.programCounter, 5);
     EXPECT_EQ(vmResult, 0);
 
-    EXPECT_EQ(state.registerFrame[Register::Stack], -28);
+    EXPECT_EQ(state.registerFrame[Register::Stack], regPtr);
 }
-TEST(FireVMLoadTest, LoadThisNegRelativeRead)
-{
-    CodeBlock                   memory;
 
+TEST(FireVMLoadTest, LoadStackReadExpr2Byte)
+{
+    std::vector<Instruction>    memory;
     std::stringstream           result;
     std::stringstream           file(buildStream(R"(
-
-    Load This += Read -11
+        CMD  Init   1000 1000
+        Load Expr = Stack + 0
+        Load Stack * Expr + 345
 )"));
 
     Assembler                   assembler(file, result, memory);
     ASSERT_TRUE(assembler.isOK());
 
     VMState     state;
-    state.registerFrame[Register::This]   = 2;
+    state.stack.resize(400);
+    state.stack[345] = Frame{};
+    MemoryLocation* regPtr = state.stack[345].getObject();
+
     FireVM      fire(state, memory);
     int         vmResult = fire.run();
 
-    EXPECT_EQ(state.programCounter, 1);
+    EXPECT_EQ(state.programCounter, 5);
     EXPECT_EQ(vmResult, 0);
 
-    EXPECT_EQ(state.registerFrame[Register::This], -9);
+    EXPECT_EQ(state.registerFrame[Register::Stack], regPtr);
 }
-TEST(FireVMLoadTest, LoadExprNegRelativeRead)
+// Read This
+TEST(FireVMLoadTest, LoadThisReadGloabl2Byte)
 {
-    CodeBlock                   memory;
-
+    std::vector<Instruction>    memory;
     std::stringstream           result;
     std::stringstream           file(buildStream(R"(
-
-    Load Expr += Read -13
+        CMD  Init   1000 1000
+        Load This * Global + 345
 )"));
 
     Assembler                   assembler(file, result, memory);
     ASSERT_TRUE(assembler.isOK());
 
     VMState     state;
-    state.registerFrame[Register::Expr]   = 2;
     FireVM      fire(state, memory);
+    state.global.resize(400);
+    state.global[345] = Frame{};
+    MemoryLocation* regPtr = state.global[345].getObject();
+
     int         vmResult = fire.run();
 
-    EXPECT_EQ(state.programCounter, 1);
+    EXPECT_EQ(state.programCounter, 4);
     EXPECT_EQ(vmResult, 0);
 
-    EXPECT_EQ(state.registerFrame[Register::Expr], -11);
+    EXPECT_EQ(state.registerFrame[Register::This], regPtr);
 }
-
-//----
 
-TEST(FireVMLoadTest, LoadGlobalPosRelativeLargeRead)
+TEST(FireVMLoadTest, LoadThisReadStack2Byte)
 {
-    CodeBlock                   memory;
-
+    std::vector<Instruction>    memory;
     std::stringstream           result;
     std::stringstream           file(buildStream(R"(
-
-    Load Global += Read 123
+        CMD  Init   1000 1000
+        Load This * Stack + 345
 )"));
 
     Assembler                   assembler(file, result, memory);
     ASSERT_TRUE(assembler.isOK());
 
     VMState     state;
-    state.registerFrame[Register::Global]   = 2;
+    state.stack.resize(400);
+    state.stack[345] = Frame{};
+    MemoryLocation* regPtr = state.stack[345].getObject();
+
     FireVM      fire(state, memory);
     int         vmResult = fire.run();
 
-    EXPECT_EQ(state.programCounter, 2);
+    EXPECT_EQ(state.programCounter, 4);
     EXPECT_EQ(vmResult, 0);
 
-    EXPECT_EQ(state.registerFrame[Register::Global], 125);
+    EXPECT_EQ(state.registerFrame[Register::This], regPtr);
 }
-TEST(FireVMLoadTest, LoadStackPosRelativeLargeRead)
-{
-    CodeBlock                   memory;
 
+TEST(FireVMLoadTest, LoadThisReadThis2Byte)
+{
+    std::vector<Instruction>    memory;
     std::stringstream           result;
     std::stringstream           file(buildStream(R"(
-
-    Load Stack += Read 456
+        CMD  Init   1000 1000
+        Load This = Stack + 0
+        Load This * This + 345
 )"));
 
     Assembler                   assembler(file, result, memory);
     ASSERT_TRUE(assembler.isOK());
 
     VMState     state;
-    state.registerFrame[Register::Stack]   = 2;
+    state.stack.resize(400);
+    state.stack[345] = Frame{};
+    MemoryLocation* regPtr = state.stack[345].getObject();
+
     FireVM      fire(state, memory);
     int         vmResult = fire.run();
 
-    EXPECT_EQ(state.programCounter, 2);
+    EXPECT_EQ(state.programCounter, 5);
     EXPECT_EQ(vmResult, 0);
 
-    EXPECT_EQ(state.registerFrame[Register::Stack], 458);
+    EXPECT_EQ(state.registerFrame[Register::This], regPtr);
 }
-TEST(FireVMLoadTest, LoadThisPosRelativeLargeRead)
-{
-    CodeBlock                   memory;
 
+TEST(FireVMLoadTest, LoadThisReadExpr2Byte)
+{
+    std::vector<Instruction>    memory;
     std::stringstream           result;
     std::stringstream           file(buildStream(R"(
-
-    Load This += Read 344
+        CMD  Init   1000 1000
+        Load Expr = Stack + 0
+        Load This * Expr + 345
 )"));
 
     Assembler                   assembler(file, result, memory);
     ASSERT_TRUE(assembler.isOK());
 
     VMState     state;
-    state.registerFrame[Register::This]   = 2;
+    state.stack.resize(400);
+    state.stack[345] = Frame{};
+    MemoryLocation* regPtr = state.stack[345].getObject();
+
     FireVM      fire(state, memory);
     int         vmResult = fire.run();
 
-    EXPECT_EQ(state.programCounter, 2);
+    EXPECT_EQ(state.programCounter, 5);
     EXPECT_EQ(vmResult, 0);
 
-    EXPECT_EQ(state.registerFrame[Register::This], 346);
+    EXPECT_EQ(state.registerFrame[Register::This], regPtr);
 }
-TEST(FireVMLoadTest, LoadExprPosRelativeLargeRead)
+// Read Expr
+TEST(FireVMLoadTest, LoadExprReadGloabl2Byte)
 {
-    CodeBlock                   memory;
-
+    std::vector<Instruction>    memory;
     std::stringstream           result;
     std::stringstream           file(buildStream(R"(
-
-    Load Expr += Read 89
+        CMD  Init   1000 1000
+        Load Expr * Global + 345
 )"));
 
     Assembler                   assembler(file, result, memory);
     ASSERT_TRUE(assembler.isOK());
 
     VMState     state;
-    state.registerFrame[Register::Expr]   = 2;
+    state.global.resize(400);
+    state.global[345] = Frame{};
+    MemoryLocation* regPtr = state.global[345].getObject();
+
     FireVM      fire(state, memory);
     int         vmResult = fire.run();
 
-    EXPECT_EQ(state.programCounter, 2);
+    EXPECT_EQ(state.programCounter, 4);
     EXPECT_EQ(vmResult, 0);
 
-    EXPECT_EQ(state.registerFrame[Register::Expr], 91);
+    EXPECT_EQ(state.registerFrame[Register::Expr], regPtr);
 }
-TEST(FireVMLoadTest, LoadGlobalNegRelativeLargeRead)
-{
-    CodeBlock                   memory;
 
+TEST(FireVMLoadTest, LoadExprReadStack2Byte)
+{
+    std::vector<Instruction>    memory;
     std::stringstream           result;
     std::stringstream           file(buildStream(R"(
-
-    Load Global += Read -123
+        CMD  Init   1000 1000
+        Load Expr * Stack + 345
 )"));
 
     Assembler                   assembler(file, result, memory);
     ASSERT_TRUE(assembler.isOK());
 
     VMState     state;
-    state.registerFrame[Register::Global]   = 2;
+    state.stack.resize(400);
+    state.stack[345] = Frame{};
+    MemoryLocation* regPtr = state.stack[345].getObject();
+
     FireVM      fire(state, memory);
     int         vmResult = fire.run();
 
-    EXPECT_EQ(state.programCounter, 2);
+    EXPECT_EQ(state.programCounter, 4);
     EXPECT_EQ(vmResult, 0);
 
-    EXPECT_EQ(state.registerFrame[Register::Global], -121);
+    EXPECT_EQ(state.registerFrame[Register::Expr], regPtr);
 }
-TEST(FireVMLoadTest, LoadStackNegRelativeLargeRead)
-{
-    CodeBlock                   memory;
 
+TEST(FireVMLoadTest, LoadExprReadThis2Byte)
+{
+    std::vector<Instruction>    memory;
     std::stringstream           result;
     std::stringstream           file(buildStream(R"(
-
-    Load Stack += Read -364
+        CMD  Init   1000 1000
+        Load This = Stack + 0
+        Load Expr * This + 345
 )"));
 
     Assembler                   assembler(file, result, memory);
     ASSERT_TRUE(assembler.isOK());
 
     VMState     state;
-    state.registerFrame[Register::Stack]   = 2;
+    state.stack.resize(400);
+    state.stack[345] = Frame{};
+    MemoryLocation* regPtr = state.stack[345].getObject();
+
     FireVM      fire(state, memory);
     int         vmResult = fire.run();
 
-    EXPECT_EQ(state.programCounter, 2);
+    EXPECT_EQ(state.programCounter, 5);
     EXPECT_EQ(vmResult, 0);
 
-    EXPECT_EQ(state.registerFrame[Register::Stack], -362);
+    EXPECT_EQ(state.registerFrame[Register::Expr], regPtr);
 }
-TEST(FireVMLoadTest, LoadThisNegRelativeLargeRead)
-{
-    CodeBlock                   memory;
 
+TEST(FireVMLoadTest, LoadExprReadExpr2Byte)
+{
+    std::vector<Instruction>    memory;
     std::stringstream           result;
     std::stringstream           file(buildStream(R"(
-
-    Load This += Read -126
+        CMD  Init   1000 1000
+        Load Expr = Stack + 0
+        Load Expr * Expr + 345
 )"));
 
     Assembler                   assembler(file, result, memory);
     ASSERT_TRUE(assembler.isOK());
 
     VMState     state;
-    state.registerFrame[Register::This]   = 2;
+    state.stack.resize(400);
+    state.stack[345] = Frame{};
+    MemoryLocation* regPtr = state.stack[345].getObject();
+
     FireVM      fire(state, memory);
     int         vmResult = fire.run();
 
-    EXPECT_EQ(state.programCounter, 2);
+    EXPECT_EQ(state.programCounter, 5);
     EXPECT_EQ(vmResult, 0);
 
-    EXPECT_EQ(state.registerFrame[Register::This], -124);
+    EXPECT_EQ(state.registerFrame[Register::Expr], regPtr);
 }
-TEST(FireVMLoadTest, LoadExprNegRelativeLargeRead)
-{
-    CodeBlock                   memory;
 
+TEST(FireVMLoadTest, CheckNegativeOffsetsWork)
+{
+    std::vector<Instruction>    memory;
     std::stringstream           result;
     std::stringstream           file(buildStream(R"(
-
-    Load Expr += Read -59
+        CMD  Init   1000 1000
+        Load Expr = Stack + 32
+        Load Expr * Expr + -3
 )"));
 
     Assembler                   assembler(file, result, memory);
     ASSERT_TRUE(assembler.isOK());
 
     VMState     state;
-    state.registerFrame[Register::Expr]   = 2;
+    state.stack.resize(40);
+    state.stack[29] = Frame{};
+    MemoryLocation* regPtr = state.stack[29].getObject();
+
     FireVM      fire(state, memory);
     int         vmResult = fire.run();
 
-    EXPECT_EQ(state.programCounter, 2);
+    EXPECT_EQ(state.programCounter, 6);
     EXPECT_EQ(vmResult, 0);
 
-    EXPECT_EQ(state.registerFrame[Register::Expr], -57);
+    EXPECT_EQ(state.registerFrame[Register::Expr], regPtr);
 }
 
-*/

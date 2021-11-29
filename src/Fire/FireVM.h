@@ -20,12 +20,12 @@ struct VMState
 {
     VMState()
         : programCounter(0)
-        , registerFrame{0, 0, 0, 0}
+        , registerFrame{nullptr, nullptr, nullptr, nullptr}
     {}
     Frame           global;
     Frame           stack;
     std::size_t     programCounter;
-    std::size_t     registerFrame[MaxRegisters];
+    MemoryLocation* registerFrame[MaxRegisters];
 };
 
 class FireVM

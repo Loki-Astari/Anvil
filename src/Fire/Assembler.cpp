@@ -152,133 +152,82 @@ bool Assembler::getRegisterName(Instruction& reg, int type, std::string const& v
     return result;
 }
 
-bool Assembler::getFromName(Instruction& reg, std::string const& value) const
-{
-    bool result = true;
-    if (value == "Literal")
-    {
-        reg = Load_FromLiteral;
-    }
-    else if (value == "Read")
-    {
-        reg = Load_FromRead;
-    }
-    else if (value == "Reg")
-    {
-        reg = Load_FromReg;
-    }
-    else if (value == "IndRead")
-    {
-        reg = Load_FromIndRead;
-    }
-    else
-    {
-        result = false;
-    }
-    return result;
-}
-
 int Assembler::assembleLoad(std::stringstream& lineStream, std::ostream& result)
 {
     std::string     dstRegValue;
     Instruction     dstReg;
 
     lineStream >> dstRegValue;
-    if (!getRegisterName(dstReg, Destination, dstRegValue))
+    if (!getRegisterName(dstReg, Assembler::Destination, dstRegValue))
     {
-        result << "Invalid Dst Register: Load >" << dstRegValue << "< " << lineStream.rdbuf() << "\n";
+        result  << "Invalid Dst Register: Load\n"
+                << ">" << dstRegValue << "< " << lineStream.rdbuf() << "\n";
         error = true;
         return 0;
     }
 
-    bool            absolute    = false;
-    std::string     typeValue   = "XX";
-    if (lineStream >> typeValue[0] && (typeValue[0] == '=' || (typeValue[0] == '+' && lineStream.read(&typeValue[1], 1) && typeValue[1] == '=')))
+    char    actionValue = 'X';
+
+    lineStream >> actionValue;
+    if (actionValue != '=' && actionValue != '*')
     {
-        if (typeValue[1] == 'X')
-        {
-            absolute = true;
-            typeValue.resize(1);
-        }
-    }
-    else
-    {
-        result << "Invalid Operation: Load " << dstRegValue << " >" << typeValue[0] << (typeValue[1] == 'X' ? ' ' : typeValue[1]) << "< " << lineStream.rdbuf() << "\n";
+        result  << "Invalid Action: Load\n"
+                << dstRegValue << " >" << actionValue << "< " <<  lineStream.rdbuf() << "\n";
         error = true;
         return 0;
     }
+    Instruction action = (actionValue == '=') ? Load_Set : Load_Read;
 
-
-    std::string     fromValue;
-    Instruction     from;
-
-    lineStream >> fromValue;
-    if (!getFromName(from, fromValue))
-    {
-        result << "Invalid From: Load " << dstRegValue << " " << typeValue << " >" << fromValue << "< " <<  lineStream.rdbuf() << "\n";
-        error = true;
-        return 0;
-    }
-
+    std::string srcRegValue;
     Instruction srcReg = 0;
 
-    if ((from & Assembler::Load_ValueRegMask) != 0)
+    lineStream >> srcRegValue;
+    if (!getRegisterName(srcReg, Assembler::Source, srcRegValue))
     {
-        std::string srcRegValue;
-        lineStream >> srcRegValue;
-        if (!getRegisterName(srcReg, Source, srcRegValue))
-        {
-            result << "Invalid Src Register: Load >" << dstRegValue << " " << typeValue << " " << fromValue << " >" << srcRegValue << "< " << lineStream.rdbuf() << "\n";
-            error = true;
-            return 0;
-        }
+        result  << "Invalid Src Register: Load\n"
+                << dstRegValue << " " << actionValue << " >" << srcRegValue << "< " << lineStream.rdbuf() << "\n";
+        error = true;
+        return 0;
+    }
+
+    char    addition = 'X';
+
+    lineStream >> addition;
+    if (addition != '+')
+    {
+        result  << "Invalid Action Register: Load\n"
+                << dstRegValue << " " << actionValue << " " << srcRegValue << " >" << addition << "< " << lineStream.rdbuf() << "\n";
+        error = true;
+        return 0;
     }
 
     std::int32_t value;
     if (!(lineStream >> value))
     {
-        result << "Invalid Literal (Can't Read): Load " << dstRegValue << " " << typeValue << " " << fromValue << " >" << lineStream.rdbuf() << "<\n";
+        result  << "Invalid Literal (Can't Read): Load\n"
+                << dstRegValue << " " << actionValue << " " << srcRegValue << " " << addition << " >" << value << "< " << lineStream.rdbuf() << "<\n";
         error = true;
         return 0;
     }
 
-    if ((from & Assembler::Load_ValueRegMask) != 0)
+    if (value < Load_MaxNeg || value > Load_MaxPos)
     {
-        if (value < 0)
-        {
-            result << "Invalid Offset (Negative): Load " << dstRegValue << " " << typeValue << " " << fromValue << " >" << value << "<\n";
-            error = true;
-            return 0;
-        }
-        if (!absolute)
-        {
-            result << "Invalid Assignment (+= not allowed here): Load " << dstRegValue << " >" << typeValue << "< " << fromValue << " " << value << "\n";
-            error = true;
-            return 0;
-        }
-    }
-    else
-    {
-        srcReg  = (absolute ? 0 : Load_MarkRel) | ((value >= 0) ? 0 : Load_MarkNeg);
-        value = value >= 0 ? value : -value;
+        result  << "Invalid Literal (out of range): Load\n"
+                << dstRegValue << " " << actionValue << " " << srcRegValue << " " << addition << " >" << value << "< " << lineStream.rdbuf() << "<\n";
+        error = true;
+        return 0;
     }
 
 
-    if ((value & Load_ValueMaskSmall) == 0)
+    if (value >= 0 && value <= Load_SmallMax)
     {
-        instructions[0] = (Act_Load | dstReg | from | srcReg | Load_ValueSmall | (value & Load_ValueMaskDataSmall));
+        instructions[0] = (Act_Load | dstReg | srcReg | action | Load_ValueSmall | (value & Load_ValueMask));
         return 1;
     }
-    else if ((value & Load_ValueMaskLarge) == 0)
-    {
-        instructions[0] = (Act_Load | dstReg | from | srcReg | Load_ValueLarge | ((value >> 16) & Load_ValueMaskDataSmall));
-        instructions[1] = value & 0xFFFF;
-        return 2;
-    }
     else
     {
-        result << "Invalid Literal (Too Large): Load " << dstRegValue << " " << typeValue << " " << fromValue << " >" << value << "<\n";
-        error = true;
-        return 0;
+        instructions[0] = (Act_Load | dstReg | srcReg | action | Load_ValueLarge | ((value >> 16) & Load_ValueMask));
+        instructions[1] = value & 0xFFFF;
+        return 2;
     }
 }
