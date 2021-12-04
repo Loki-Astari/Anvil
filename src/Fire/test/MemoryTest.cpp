@@ -10,7 +10,7 @@ TEST(MemoryTest, MemoryLocationDefaultsToVoid)
     MemoryLocation  m1;
 
     MemoryType  type = m1.visit(MemoryLocationVisitorCheckType{});
-    ASSERT_EQ(type, MemoryType::Void);
+    EXPECT_EQ(type, MemoryType::Void);
 }
 
 TEST(MemoryTest, InitMemoryLocationWithVoid)
@@ -20,7 +20,7 @@ TEST(MemoryTest, InitMemoryLocationWithVoid)
     m1.init(Void{});
 
     MemoryType  type = m1.visit(MemoryLocationVisitorCheckType{});
-    ASSERT_EQ(type, MemoryType::Void);
+    EXPECT_EQ(type, MemoryType::Void);
 }
 
 TEST(MemoryTest, InitMemoryLocationWithCodeAddress)
@@ -30,7 +30,7 @@ TEST(MemoryTest, InitMemoryLocationWithCodeAddress)
     m1.init(CodeAddress{});
 
     MemoryType  type = m1.visit(MemoryLocationVisitorCheckType{});
-    ASSERT_EQ(type, MemoryType::CodeAddress);
+    EXPECT_EQ(type, MemoryType::CodeAddress);
 }
 
 TEST(MemoryTest, InitMemoryLocationWithDataAddress)
@@ -40,7 +40,7 @@ TEST(MemoryTest, InitMemoryLocationWithDataAddress)
     m1.init(DataAddress{});
 
     MemoryType  type = m1.visit(MemoryLocationVisitorCheckType{});
-    ASSERT_EQ(type, MemoryType::DataAddress);
+    EXPECT_EQ(type, MemoryType::DataAddress);
 }
 
 TEST(MemoryTest, InitMemoryLocationWithDataFrame)
@@ -50,7 +50,7 @@ TEST(MemoryTest, InitMemoryLocationWithDataFrame)
     m1.init(DataFrame{});
 
     MemoryType  type = m1.visit(MemoryLocationVisitorCheckType{});
-    ASSERT_EQ(type, MemoryType::DataFrame);
+    EXPECT_EQ(type, MemoryType::DataFrame);
 }
 
 TEST(MemoryTest, InitMemoryLocationWithInt)
@@ -60,7 +60,7 @@ TEST(MemoryTest, InitMemoryLocationWithInt)
     m1.init(Int{});
 
     MemoryType  type = m1.visit(MemoryLocationVisitorCheckType{});
-    ASSERT_EQ(type, MemoryType::Int);
+    EXPECT_EQ(type, MemoryType::Int);
 }
 
 TEST(MemoryTest, InitMemoryLocationWithString)
@@ -70,7 +70,7 @@ TEST(MemoryTest, InitMemoryLocationWithString)
     m1.init(String{});
 
     MemoryType  type = m1.visit(MemoryLocationVisitorCheckType{});
-    ASSERT_EQ(type, MemoryType::String);
+    EXPECT_EQ(type, MemoryType::String);
 }
 
 TEST(MemoryTest, InitMemoryLocationWithArray)
@@ -80,7 +80,7 @@ TEST(MemoryTest, InitMemoryLocationWithArray)
     m1.init(Array{});
 
     MemoryType  type = m1.visit(MemoryLocationVisitorCheckType{});
-    ASSERT_EQ(type, MemoryType::Array);
+    EXPECT_EQ(type, MemoryType::Array);
 }
 
 TEST(MemoryTest, InitMemoryLocationWithMap)
@@ -90,6 +90,6 @@ TEST(MemoryTest, InitMemoryLocationWithMap)
     m1.init(Map{});
 
     MemoryType  type = m1.visit(MemoryLocationVisitorCheckType{});
-    ASSERT_EQ(type, MemoryType::Map);
+    EXPECT_EQ(type, MemoryType::Map);
 }
 
