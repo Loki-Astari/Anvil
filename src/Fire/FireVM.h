@@ -42,6 +42,7 @@ class FireVM
 
     private:
         void runActionCMD(Instruction instruction);
+            void runActionCMDKill(Instruction instruction);
 
     public:
         static constexpr Result     haltRanOutOfProgramMemory   = 0xFFFF0000;

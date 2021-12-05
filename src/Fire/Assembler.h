@@ -36,7 +36,9 @@ class Assembler
         void doPass(std::istream& input, std::function<void(Instruction)>&& action, bool buildSymbols);
 
         int assemble(std::string& line, bool buildSymbols);
-        int assemble_Cmd(std::istream& lineStream);
+            int assemble_Cmd(std::istream& lineStream);
+                int assemble_CmdNoOp(std::istream& lineStream);
+                int assemble_CmdKill(std::istream& lineStream);
 
         std::string getAction(std::stringstream& lineStream, bool buildSymbols);
 
@@ -47,9 +49,12 @@ class Assembler
 
 
         // CMD
-        static constexpr Instruction ActionCMDMask  = 0x0300;
+        static constexpr Instruction ActionCMDMask  = 0x0C00;
         static constexpr Instruction Cmd_NoOp       = 0x0000;
+        static constexpr Instruction Cmd_Kill       = 0x0400;
 
+        // CMD Kill
+        static constexpr Instruction Cmd_ResultMask = 0x03FF;
 
         // Invalid Instructions
         static constexpr Instruction InvalidAction  = 0xFFFF;
