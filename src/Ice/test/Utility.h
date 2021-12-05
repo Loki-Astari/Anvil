@@ -13,7 +13,7 @@
 #define EXPECT_TRUE_OR_DEBUG(check, output) \
                                      {                                  \
                                         EXPECT_TRUE(check);             \
-                                        if (!check) {                   \
+                                        if (!(check)) {                 \
                                             std::cout << "TRUE: FAIL\n";\
                                             std::cout << output.rdbuf();\
                                         }                               \

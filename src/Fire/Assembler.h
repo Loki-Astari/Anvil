@@ -68,7 +68,8 @@ class Assembler
         static constexpr Instruction Cmd_Kill_Result_Mask   = 0x03FF;
 
         // Action CMD Init
-        static constexpr Instruction Cmd_Init_Size_Mask     = 0x0300;
+        static constexpr Instruction Cmd_Init_GlobalMask    = 0x0200;
+        static constexpr Instruction Cmd_Init_StackMask     = 0x0100;
         static constexpr Instruction Cmd_Init_Size_8_16     = 0x0000;
         static constexpr Instruction Cmd_Init_Size_8_32     = 0x0100;
         static constexpr Instruction Cmd_Init_Size_16_16    = 0x0200;

@@ -47,7 +47,7 @@ CMD NoOp
     EXPECT_FALSE_OR_DEBUG(bad, result);
 }
 
-TEST(FireVM_CmdTest, Cmd_Kill_128)
+TEST(Assembler_CmdTest, Cmd_Kill_128)
 {
     std::stringstream    result;
     std::istringstream   input(R"(
@@ -70,7 +70,7 @@ CMD Kill 128
     EXPECT_FALSE_OR_DEBUG(bad, result);
 }
 
-TEST(FireVM_CmdTest, Cmd_Init_8_16)
+TEST(Assembler_CmdTest, Cmd_Init_8_16)
 {
     std::stringstream    result;
     std::istringstream   input(R"(
@@ -94,7 +94,7 @@ CMD Init 255 65535
     EXPECT_FALSE_OR_DEBUG(bad, result);
 }
 
-TEST(FireVM_CmdTest, Cmd_Init_16_16)
+TEST(Assembler_CmdTest, Cmd_Init_16_16)
 {
     std::stringstream    result;
     std::istringstream   input(R"(
@@ -120,7 +120,7 @@ CMD Init 256 65535
 }
 
 
-TEST(FireVM_CmdTest, Cmd_Init_8_32)
+TEST(Assembler_CmdTest, Cmd_Init_8_32)
 {
     std::stringstream    result;
     std::istringstream   input(R"(
@@ -145,7 +145,7 @@ CMD Init 255 65536
     EXPECT_FALSE_OR_DEBUG(bad, result);
 }
 
-TEST(FireVM_CmdTest, Cmd_Init_16_32)
+TEST(Assembler_CmdTest, Cmd_Init_16_32)
 {
     std::stringstream    result;
     std::istringstream   input(R"(
@@ -170,6 +170,7 @@ CMD Init 256 65536
     }
     EXPECT_FALSE_OR_DEBUG(bad, result);
 }
+
 
 // Error Conditions
 
@@ -205,7 +206,7 @@ CMD NoOp Invalid
     EXPECT_FALSE_OR_DEBUG(assembler.isOK(), result);
 }
 
-TEST(FireVM_CmdTest, Cmd_Kill_NegativeValue)
+TEST(Assembler_CmdTest, Cmd_Kill_NegativeValue)
 {
     std::stringstream    result;
     std::istringstream   input(R"(
@@ -220,7 +221,7 @@ CMD Kill -10
     EXPECT_FALSE_OR_DEBUG(assembler.isOK(), result);
 }
 
-TEST(FireVM_CmdTest, Cmd_Kill_OutOfBounds)
+TEST(Assembler_CmdTest, Cmd_Kill_OutOfBounds)
 {
     std::stringstream    result;
     std::istringstream   input(R"(
@@ -235,7 +236,7 @@ CMD Kill 1024
     EXPECT_FALSE_OR_DEBUG(assembler.isOK(), result);
 }
 
-TEST(FireVM_CmdTest, Cmd_Init_GlobalOverSize)
+TEST(Assembler_CmdTest, Cmd_Init_GlobalOverSize)
 {
     std::stringstream    result;
     std::istringstream   input(R"(
@@ -250,7 +251,7 @@ CMD Init 65536 65536
     EXPECT_FALSE_OR_DEBUG(assembler.isOK(), result);
 }
 
-TEST(FireVM_CmdTest, Cmd_Init_StackOverSize)
+TEST(Assembler_CmdTest, Cmd_Init_StackOverSize)
 {
     std::stringstream    result;
     std::istringstream   input(R"(
@@ -265,7 +266,7 @@ CMD Init 255 4294967296
     EXPECT_FALSE_OR_DEBUG(assembler.isOK(), result);
 }
 
-TEST(FireVM_CmdTest, Cmd_Init_NegativeGlobal)
+TEST(Assembler_CmdTest, Cmd_Init_NegativeGlobal)
 {
     std::stringstream    result;
     std::istringstream   input(R"(
@@ -281,7 +282,7 @@ CMD Init -255 255
     std::cerr << "Result:\n=============\n" << result.rdbuf() << "\n==============\n";
 }
 
-TEST(FireVM_CmdTest, Cmd_Init_NegativeStack)
+TEST(Assembler_CmdTest, Cmd_Init_NegativeStack)
 {
     std::stringstream    result;
     std::istringstream   input(R"(
