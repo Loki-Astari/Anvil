@@ -1,0 +1,257 @@
+
+Anvil VM
+========
+
+Address Space
+-------------
+    Code address space is separate from the data address space.
+
+    Code space can be accessed in a contagious manner (ie incrementing/decrementing a code
+    address location will move from the through all the code in the program).
+
+    Data space can **NOT** be accessed contagiously. All objects in data space are contagious
+    within the same "Data Frame", but no assumptions can be made about objects in different
+    "Data Frames".
+
+    A "Data Frame" represents a set of data objects that can be accessed vi a Data Address Register
+    plus (or minus) an offset. It can represent an "Object" a "Stack Frame" or "Global Area".
+
+Registers
+---------
+There is a "PC" register that points at an address in code space.
+
+    PC  Register:
+
+There is a 3 bit flag register.
+Any operation on a data space memory location to an Integer can affect the conditions of the flags.
+    eg. SET or arithmetic operation
+A code instruction that does a comparison "CMP" has the effect of doing LHS - RHS the result of
+this operation sets the flags as if we had set a memory location
+
+
+    0:      Zero:       A memory location was just set to zero (or a comparison was equal)
+    1:      Pos:        A memory location was just set to a positive value (or a comparison right was smaller)
+    2:      Neg:        A memory location was just set to a negative value (or a comparison right was greater)
+
+Any conditional instructions has a 4 bit FFFF section of the instruction.
+    The bottom 3 bits of this flag are anded against the 3 bit flag register.
+    If bit 3 of the FFFF flag is set the result is noted.
+    If the resulting value is non zero the instruction is executed.
+
+    CMP Cp Expr-1 56        // Compare the value in data space pointed at by Expr-1 with 56
+                            // This sets the flags abvove:  If they are equal bit zero is set.
+
+    JUMP JP REL EQ  123     // EQ => 0001
+                            //  if (flagReg & 001) {
+                            //      Jump relative 123 positions
+                            //  }
+    JUMP JP REL NE  123     // NE => 1001
+                            //  if (!(flagReg & 001) {
+                            //      Jump relative 123 positions
+                            //  }
+    JUMP JP REL LE 123      // LE => 0101       (both neg and zero flags set)
+                            //  if ((flagReg & 101) {
+                            //      Jump relative 123 positions
+                            //  }
+    JUMP JP REL 123         // Unconditional Jump FFFF = 0000
+
+There are six Address Registers (16 bit) that point at locations in a "Data Frame" (data space).
+
+    Global
+    Frame Pointer
+    This
+    ?
+
+    Stack Pointer
+    Expr-1
+    Expr-2
+    Expr-3
+
+There are zero data registers.
+
+The "Frame Pointer" points at the first element in the current "Stack Frame" the "Stack Pointer"
+points at one past end of the current "Stack Frame" (ie it points at the location where we will
+put the next item in the frame). If "Frame Pointer" and "Stack Pointer" are the same then there
+are currently no active objects.
+
+
+
+
+Code Memory Locations
+---------------------
+    Code memory has no concept of type (other than they are 16 bit integers) each memory
+    location is individually addressable and hold 16 bit instructions or 16 bit data objects.
+
+Data Memory Locations
+---------------------
+    Data memory locations represent objects of specific types.
+
+
+        0: Void                                 set to make sure resources are released.
+        1: Code Address Location:               Used to store the PC (eg for calls)/.
+        2: Data Address Location:               Pointer to an object in a Data Frame.
+        3: A Data Frame:                        Used to represent an object.
+        4: A 32 bit integer
+        5: A string
+        6: An array of Data Frames
+        7: A map of String to Data Frame
+
+Instructions
+------------
+
+Invalid:
+    To give some testing flexability.
+    All instructions Ending with 0xFF are invalid and will cause the VM to halt.
+        0xFFFF          => Invalid Action.
+        0x0FFF          => Invalid CMD
+        0x1FFF          => Invalid Jump
+        0x2FFF          => Invalid Move
+        0x3FFF          => Invalid Load
+
+
+
+    16 Bit: 4 bit cmd 12 bits that are command specific.
+
+    0000 = CMD
+
+        CMD Action<2bit>
+
+        CMD NoOp            0000 0000 0000
+        CMD Kill            01xx xxxx xxxx     10 bit result code
+        CMD Init            10SS xxxx xxxx     S Size Info
+                                                00:     8 bit global size 16 bit stack size.
+                                                01:     8 bit global size 32 bit stack size.
+                                                10:     8 bit ignored. 16 bit global size 32 bit stack size.
+                                                11:     8 bit ignored. 32 bit global size 32 bit stack size.
+        CMD Import          11SS SSSS SSSS     S Size Info.
+                                                S 10 bit size info: Number of bytes (8 bit)  following this
+                                                instruction are used to encode UTF-8 file name.
+
+        Note: We can add some instruction where the prefix is: 0000 00 As long as 1 of the following bits is set.
+
+    0001 = JUMP
+        Change the address of the PC.
+
+        JUMP Type<2bit> Length<2>
+
+        Return         0000 FFFF ----
+        Call Rel       0001 FFFF ----
+        Call Abs       0010 FFFF ----
+        Call Mem       0011 FFFF ----
+
+                       0100 ---- ----       ????
+        Jp Rel         0101 FFFF ----
+        Jp Abs         0110 FFFF ----
+        Jp Mem         0111 FFFF RRRR
+
+        FFFF    Flags to check. Jump if ((FFFF & Flag Register) == 0)
+        Rel:    Read the next 16 byte value (interpret it as signed integer) add to pc.
+        Abs:    Read the next 32 byte value (Interpret it as unsigned integer) load into pc.
+        Mem:    Read the next 16 byte value (Interpret it as singed) add this to the RRRR register
+                read the value from that memory location (must have type of Code Address Location)
+        RRRR:   Register number:
+                        0000        Global
+                        0001        Frame Pointer
+                        0010        This
+                        0011        ???
+
+                        0100        Stack Pointer
+                        01nn        Expr-nn
+
+        Note:   The PC will already have been incremented prior to the JUMP being executed.
+                This is relevant to "Rel"ative jumps as the offset will be relative the next location.
+
+        Call:   Write the PC to the memory location pointed at by the "Stack Pointer"
+                Increment the "Stack Pointer"
+                Write Current "Frame Pointer" to the memory location pointed at by the "Stack Pointer"
+                Increment the "Stack Pointer"
+                Set the "Frame Pointer" equal to the "Stack Pointer"
+
+        Return: If the "Frame Pointer" and "Stack Pointer" are not equal "Halt"
+                Decrement the "Stack Pointer"
+                Read the memory location pointed at by "Stack Pointer" assign it to "Frame Pointer"
+                Note: must be "Data Address Location" or "Halt"
+                Decrement the "Stack Pointer"
+                Read the memory location pointed at by "Stack Pointer" assign it to PC
+                Note: must be "Code Address Location" or "Halt"
+                Decrement the "Stack Pointer"
+
+        Calling convention:
+            Old Frame Pointer->         Return Value
+                                        Parameter-0
+                                        ...
+                                        Parameter-(n-2)
+                                        Parameter-(n-1)
+                                        Saved PC
+                                        Saved "Frame Pointer"
+                                        Saved "This"
+            Frame/Stack Pointer         Next Space.
+
+            When executing a function. The last parameter can be found at "Frame Pointer" - 3, the second to last parameter can be found at "Frame Pointer" - 4 etc.
+            On a return the value being returned should be copied to the location pointed at by the old "Frame Pointer".
+
+            Thus we can summarize the calling convention as:
+
+                1: Increment "Stack Pointer"            (Make room for return value)
+                2: Initiate parameters:
+                      For each parameter
+                        Save parameter at "Stack Pointer"
+                        Increment "Stack Pointer"
+                3: Call function:
+                    JUMP Call <Function>
+
+                4: Execute function Body
+                5: Copy the result value out to the result location.
+
+                5: Return to call point
+                    Jump Return
+                6: Destroy Parameters.
+                      For each parameter
+                        Decrement the "Stack Pointer"
+                        Note if appropriate the compiler should plant appropriate code
+                        to destroy the object by calling its destructor.
+                        Then setting the memory location pointed at by SP to Void.
+
+    0010 = Move Address Register
+        Move what an address register is pointing at.
+
+        Move XX Actions<2> Register<2>
+
+            Inc XX          00XX BBBB BBBB      Increment XX by BBBB BBBB
+            Dec XX          01XX BBBB BBBB      Decrement XX by BBBB BBBB
+            Push XX         10XX ---- RRRR      Read next 16 byte value (interpreted as signed) add to register RRRR.
+                                                Copy the value at this calculated location to the value pointed at by XX.
+                                                Increment the XX.
+            Pop XX          11XX ---- RRRR      Decrement the XX.
+                                                Read next 16 byte value (interpreted as signed) add to register RRRR.
+                                                Copy the value pointed at by XX to the calculated location.
+                                                    // I would like to do this:
+                                                    //      Set the location pointed at by XX to Void.
+                                                    //      But for some object we need to call destructor
+                                                    //      first so this may need to be a=explicit manual
+                                                    //      step planted by the compiler.
+
+            XX  =>  00      Stack Pointer
+                    01      Expr-1
+                    10      Expr-2
+                    11      Expr-3
+
+    0011 = Load Address Register
+
+        Load RRRR 
+
+            
+
+
+    0001 = Load
+        Load the expression register.
+
+
+
+
+
+
+
+
+
+

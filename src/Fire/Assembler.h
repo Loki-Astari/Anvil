@@ -38,7 +38,22 @@ class Assembler
         int assemble(std::string& line, bool buildSymbols);
         int assemble_Cmd(std::istream& lineStream);
 
-        std::string getCommand(std::stringstream& lineStream, bool buildSymbols);
+        std::string getAction(std::stringstream& lineStream, bool buildSymbols);
+
+    public:
+        // Actions
+        static constexpr Instruction ActionMask     = 0xF000;
+        static constexpr Instruction Act_CMD        = 0x0000;
+
+
+        // CMD
+        static constexpr Instruction ActionCMDMask  = 0x0300;
+        static constexpr Instruction Cmd_NoOp       = 0x0000;
+
+
+        // Invalid Instructions
+        static constexpr Instruction InvalidAction  = 0xFFFF;
+        static constexpr Instruction InvalidCmd     = 0x0FFF;
 };
 
 }

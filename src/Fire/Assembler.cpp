@@ -67,59 +67,59 @@ int Assembler::assemble(std::string& line, bool buildSymbols)
     }
 
     std::stringstream   lineStream(std::move(line));
-    std::string         cmd = getCommand(lineStream, buildSymbols);
+    std::string         action = getAction(lineStream, buildSymbols);
 
     // Check for valid commands.
-    if (cmd == "")
+    if (action == "")
     {
         // Ignore Empty lines
         return 0;
     }
-    if (cmd == "CMD")
+    if (action == "CMD")
     {
         return assemble_Cmd(lineStream);
     }
 
     // Unknown command report an error.
-    output << "Invalid Input: >" << cmd << "< " << lineStream.rdbuf() << "\n";
+    output << "Invalid Input: >" << action << "< " << lineStream.rdbuf() << "\n";
     error = true;
     return 0;
 }
 
-std::string Assembler::getCommand(std::stringstream& lineStream, bool buildSymbols)
+std::string Assembler::getAction(std::stringstream& lineStream, bool buildSymbols)
 {
-    std::string cmd;
-    while (lineStream >> cmd)
+    std::string action;
+    while (lineStream >> action)
     {
-        while (cmd.size() != 0)
+        while (action.size() != 0)
         {
             // Check for a label.
-            auto pos = cmd.find(":");
+            auto pos = action.find(":");
             if (pos == std::string::npos)
             {
-                return cmd;
+                return action;
             }
 
             // We found a label so record it.
             if (buildSymbols)
             {
-                stable[cmd.substr(0, pos)] = addr;
+                stable[action.substr(0, pos)] = addr;
             }
 
             // Remove label from line.
-            if (pos + 1 == cmd.size())
+            if (pos + 1 == action.size())
             {
                 // If there is no text after the colon
                 // we need to read the next word from
                 // the stream.
-                cmd.clear();
+                action.clear();
             }
             else
             {
                 // The label was immediately followed by text.
                 // Remove the label we just processed and
                 // repeat the processes.
-                cmd = cmd.substr(pos+1);
+                action = action.substr(pos+1);
             }
         }
     }

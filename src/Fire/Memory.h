@@ -10,9 +10,14 @@
 namespace ThorsAnvil::Anvil::Fire
 {
 
-class MemoryLocation;
-using Frame = std::vector<MemoryLocation>;
+// Code Space representation
+using Instruction   = std::int16_t;
+using CodeBlock     = std::vector<Instruction>;
 
+// Data space representation
+class MemoryLocation;
+
+// Objects that can be stored in a memory location.
 class Void {};
 using CodeAddress   = std::size_t;
 using DataAddress   = MemoryLocation*;
