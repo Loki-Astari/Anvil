@@ -25,15 +25,17 @@ TEST(AssemblerTest, AssembleEmptyFile)
     Assembler           assembler(result, stable);
 
     assembler.assemble(input, codeBlock);
-    EXPECT_TRUE(assembler.isOK());
+    bool bad = false;
+    EXPECT_EQ_OR_LOG(bad, assembler.isOK(), true, result);
 
-    EXPECT_EQ(codeBlock.size(), 0);
-    EXPECT_EQ(stable.size(), 0);
+    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 0, result);
+    EXPECT_EQ_OR_LOG(bad, stable.size(), 0, result);
+    EXPECT_FALSE_OR_DEBUG(bad, result);
 }
 
 TEST(AssemblerTest, CheckLabelsWork)
 {
-    std::ostringstream   result;
+    std::stringstream    result;
     std::istringstream   input(R"(
 L1:L2: L3: CMD NoOp
 L4:  L5:L6: CMD NoOp
@@ -47,26 +49,46 @@ L4:  L5:L6: CMD NoOp
     Assembler           assembler(result, stable);
 
     assembler.assemble(input, codeBlock);
+    bool bad = false;
     EXPECT_TRUE(assembler.isOK());
 
-    EXPECT_EQ(codeBlock.size(), 2);
-    ASSERT_EQ(stable.size(), 10);
+    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 2, result);
+    EXPECT_EQ_OR_LOG(bad, stable.size(), 10, result);
+    if (stable.size() == 10)
+    {
+        EXPECT_EQ_OR_LOG(bad, stable["L1"], 0, result);
+        EXPECT_EQ_OR_LOG(bad, stable["L2"], 0, result);
+        EXPECT_EQ_OR_LOG(bad, stable["L3"], 0, result);
+        EXPECT_EQ_OR_LOG(bad, stable["L4"], 1, result);
+        EXPECT_EQ_OR_LOG(bad, stable["L5"], 1, result);
+        EXPECT_EQ_OR_LOG(bad, stable["L6"], 1, result);
+        EXPECT_EQ_OR_LOG(bad, stable["L7"], 2, result);
+        EXPECT_EQ_OR_LOG(bad, stable["L8"], 2, result);
+        EXPECT_EQ_OR_LOG(bad, stable["L9"], 2, result);
+        EXPECT_EQ_OR_LOG(bad, stable["LA"], 2, result);
+    }
+    EXPECT_FALSE_OR_DEBUG(bad, result);
+}
 
-    EXPECT_EQ(stable["L1"], 0);
-    EXPECT_EQ(stable["L2"], 0);
-    EXPECT_EQ(stable["L3"], 0);
-    EXPECT_EQ(stable["L4"], 1);
-    EXPECT_EQ(stable["L5"], 1);
-    EXPECT_EQ(stable["L6"], 1);
-    EXPECT_EQ(stable["L7"], 2);
-    EXPECT_EQ(stable["L8"], 2);
-    EXPECT_EQ(stable["L9"], 2);
-    EXPECT_EQ(stable["LA"], 2);
+TEST(AssemblerTest, CheckEmptyLabelIsInvalid)
+{
+    std::stringstream    result;
+    std::istringstream   input(R"(
+    :
+)");
+
+    SymbolTable         stable;
+    CodeBlock           codeBlock;
+
+    Assembler           assembler(result, stable);
+
+    assembler.assemble(input, codeBlock);
+    EXPECT_FALSE_OR_DEBUG(assembler.isOK(), result);
 }
 
 TEST(AssemblerTest, CheckCommentsAreIgnored)
 {
-    std::ostringstream   result;
+    std::stringstream    result;
     std::istringstream   input(R"(
 // Code startup
 L1: CMD NoOp
@@ -82,19 +104,24 @@ CMD NoOp
     Assembler           assembler(result, stable);
 
     assembler.assemble(input, codeBlock);
-    EXPECT_TRUE(assembler.isOK());
+    bool bad = false;
+    EXPECT_EQ_OR_LOG(bad, assembler.isOK(), true, result);
 
-    EXPECT_EQ(codeBlock.size(), 3);
+    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 3, result);
 
-    ASSERT_EQ(stable.size(), 2);
-    EXPECT_EQ(stable["L1"], 0);
-    EXPECT_EQ(stable["L4"], 1);
+    EXPECT_EQ_OR_LOG(bad, stable.size(), 2, result);
+    if (stable.size() == 2)
+    {
+        EXPECT_EQ_OR_LOG(bad, stable["L1"], 0, result);
+        EXPECT_EQ_OR_LOG(bad, stable["L4"], 1, result);
+    }
+    EXPECT_FALSE_OR_DEBUG(bad, result);
 }
 
 
 TEST(AssemblerTest, CheckCommandBlock)
 {
-    std::ostringstream   result;
+    std::stringstream    result;
     std::istringstream   input(R"(
 CMD NoOp
 CMD NoOp
@@ -107,20 +134,24 @@ CMD NoOp
     Assembler           assembler(result, stable);
 
     assembler.assemble(input, codeBlock);
-    EXPECT_TRUE(assembler.isOK());
+    bool bad = false;
+    EXPECT_EQ_OR_LOG(bad, assembler.isOK(), true, result);
 
-    ASSERT_EQ(codeBlock.size(), 3);
-
-    // TODO Add instructions other than NoOp
-    //      To easy to accidentally have zero in here
-    EXPECT_EQ(codeBlock[0], 0);
-    EXPECT_EQ(codeBlock[1], 0);
-    EXPECT_EQ(codeBlock[2], 0);
+    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 3, result);
+    if (codeBlock.size() == 3)
+    {
+        // TODO Add instructions other than NoOp
+        //      To easy to accidentally have zero in here
+        EXPECT_EQ_OR_LOG(bad, codeBlock[0], 0, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[1], 0, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[2], 0, result);
+    }
+    EXPECT_FALSE_OR_DEBUG(bad, result);
 }
 
 TEST(AssemblerTest, CheckOutputStream)
 {
-    std::ostringstream   result;
+    std::stringstream    result;
     std::istringstream   input(R"(
 CMD NoOp
 CMD NoOp
@@ -133,24 +164,29 @@ CMD NoOp
     Assembler           assembler(result, stable);
 
     assembler.assemble(input, codeBlock);
-    EXPECT_TRUE(assembler.isOK());
+    bool bad = false;
+    EXPECT_EQ_OR_LOG(bad, assembler.isOK(), true, result);
 
     std::string         output = codeBlock.str();
-    ASSERT_EQ(output.size(), 6);    // 6 bytes
+    EXPECT_EQ_OR_LOG(bad, output.size(), 6, result);    // 6 bytes
 
-    // TODO Add instructions other than NoOp
-    //      To easy to accidentally have zero in here
-    EXPECT_EQ(output[0], 0);
-    EXPECT_EQ(output[1], 0);
-    EXPECT_EQ(output[2], 0);
-    EXPECT_EQ(output[3], 0);
-    EXPECT_EQ(output[4], 0);
-    EXPECT_EQ(output[5], 0);
+    if (output.size() == 6)
+    {
+        // TODO Add instructions other than NoOp
+        //      To easy to accidentally have zero in here
+        EXPECT_EQ_OR_LOG(bad, output[0], 0, result);
+        EXPECT_EQ_OR_LOG(bad, output[1], 0, result);
+        EXPECT_EQ_OR_LOG(bad, output[2], 0, result);
+        EXPECT_EQ_OR_LOG(bad, output[3], 0, result);
+        EXPECT_EQ_OR_LOG(bad, output[4], 0, result);
+        EXPECT_EQ_OR_LOG(bad, output[5], 0, result);
+    }
+    EXPECT_FALSE_OR_DEBUG(bad, result);
 }
 
 TEST(AssemblerTest, InvalidCommand)
 {
-    std::ostringstream   result;
+    std::stringstream    result;
     std::istringstream   input(R"(
 Cmd NoOp
 )");
@@ -161,7 +197,7 @@ Cmd NoOp
     Assembler           assembler(result, stable);
 
     assembler.assemble(input, codeBlock);
-    EXPECT_FALSE(assembler.isOK());
+    EXPECT_FALSE_OR_DEBUG(assembler.isOK(), result);
 }
 
 

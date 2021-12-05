@@ -132,31 +132,40 @@ Invalid:
     0001 = JUMP
         Change the address of the PC.
 
-        JUMP Type<2bit> Length<2>
+        JUMP Type<2bit> Length<2> Flags<4> Reg<4> || Value
 
-        Return         0000 FFFF ----
-        Call Rel       0001 FFFF ----
-        Call Abs       0010 FFFF ----
-        Call Mem       0011 FFFF ----
+        JUMP Return ff      0000 FFFF ----
+        JUMP Call ff Rel    0101 FFFF ----
+        JUMP Call ff Abs    0110 FFFF ----
+        JUMP Call ff Mem    0111 FFFF -RRR
 
-                       0100 ---- ----       ????
-        Jp Rel         0101 FFFF ----
-        Jp Abs         0110 FFFF ----
-        Jp Mem         0111 FFFF RRRR
+        JUMP Jp Rel   ff    1001 FFFF ----
+        JUMP Jp Abs   ff    1010 FFFF ----
+        JUMP Jp Mem   ff    1011 FFFF -RRR
+
+                            11XX ---- ----       ????
+
+        ff      AL          Always          0000
+                EQ          Equal           0001
+                NE          Not Equal       1001
+                LT          Less            0100
+                GT          Greater         0010
+                LE          Less Equal      0101
+                GE          Greater Equal   0011
 
         FFFF    Flags to check. Jump if ((FFFF & Flag Register) == 0)
         Rel:    Read the next 16 byte value (interpret it as signed integer) add to pc.
         Abs:    Read the next 32 byte value (Interpret it as unsigned integer) load into pc.
-        Mem:    Read the next 16 byte value (Interpret it as singed) add this to the RRRR register
+        Mem:    Read the next 16 byte value (Interpret it as singed) add this to the RRR register
                 read the value from that memory location (must have type of Code Address Location)
-        RRRR:   Register number:
-                        0000        Global
-                        0001        Frame Pointer
-                        0010        This
-                        0011        ???
+        RRR:   Register number:
+                        000         Global
+                        001         Frame Pointer
+                        010         This
+                        011         ???
 
-                        0100        Stack Pointer
-                        01nn        Expr-nn
+                        100         Stack Pointer
+                        1nn         Expr-nn
 
         Note:   The PC will already have been incremented prior to the JUMP being executed.
                 This is relevant to "Rel"ative jumps as the offset will be relative the next location.
@@ -219,11 +228,11 @@ Invalid:
 
             Inc XX          00XX BBBB BBBB      Increment XX by BBBB BBBB
             Dec XX          01XX BBBB BBBB      Decrement XX by BBBB BBBB
-            Push XX         10XX ---- RRRR      Read next 16 byte value (interpreted as signed) add to register RRRR.
+            Push XX         10XX ---- -RRR      Read next 16 byte value (interpreted as signed) add to register RRR.
                                                 Copy the value at this calculated location to the value pointed at by XX.
                                                 Increment the XX.
-            Pop XX          11XX ---- RRRR      Decrement the XX.
-                                                Read next 16 byte value (interpreted as signed) add to register RRRR.
+            Pop XX          11XX ---- -RRR      Decrement the XX.
+                                                Read next 16 byte value (interpreted as signed) add to register RRR.
                                                 Copy the value pointed at by XX to the calculated location.
                                                     // I would like to do this:
                                                     //      Set the location pointed at by XX to Void.
@@ -238,7 +247,7 @@ Invalid:
 
     0011 = Load Address Register
 
-        Load RRRR 
+        Load RRR 
 
             
 

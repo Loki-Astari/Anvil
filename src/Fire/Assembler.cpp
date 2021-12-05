@@ -7,7 +7,7 @@ using namespace ThorsAnvil::Anvil::Fire;
 Assembler::Assembler(std::ostream& errorStream, SymbolTable& stable)
     : error(false)
     , addr(0)
-    , output(errorStream)
+    , errorStream(errorStream)
     , stable(stable)
 {}
 
@@ -79,9 +79,13 @@ int Assembler::assemble(std::string& line, bool buildSymbols)
     {
         return assemble_Cmd(lineStream);
     }
+    if (action == "JUMP")
+    {
+        return assemble_Jump(lineStream, buildSymbols);
+    }
 
     // Unknown command report an error.
-    output << "Invalid Input: >" << action << "< " << lineStream.rdbuf() << "\n";
+    errorStream << "Invalid Input: >" << action << "< " << lineStream.rdbuf() << "\n";
     error = true;
     return 0;
 }
@@ -98,6 +102,13 @@ std::string Assembler::getAction(std::stringstream& lineStream, bool buildSymbol
             if (pos == std::string::npos)
             {
                 return action;
+            }
+
+            if (pos == 0)
+            {
+                errorStream << "Invalid Input: Bad Label\n";
+                error = true;
+                return "";
             }
 
             // We found a label so record it.

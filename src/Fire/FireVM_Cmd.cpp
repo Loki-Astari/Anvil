@@ -8,7 +8,7 @@ using ThorsAnvil::Anvil::Fire::FireVM;
 
 void FireVM::runActionCMD(Instruction instruction)
 {
-    switch (instruction & Assembler::ActionCMDMask)
+    switch (instruction & Assembler::Action_CMD_Mask)
     {
         case Assembler::Cmd_NoOp:       {return; /*Do Nothing*/}
         case Assembler::Cmd_Kill:       {return runActionCMDKill(instruction);}
@@ -23,5 +23,5 @@ void FireVM::runActionCMD(Instruction instruction)
 void FireVM::runActionCMDKill(Instruction instruction)
 {
     running = false;
-    result = instruction & Assembler::Cmd_ResultMask;
+    result = instruction & Assembler::Cmd_Result_Mask;
 }

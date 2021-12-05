@@ -17,7 +17,7 @@ int Assembler::assemble_Cmd(std::istream& lineStream)
     }
 
     // Unknown command report an error.
-    output << "Invalid Input: CMD >" << cmd << "< " << lineStream.rdbuf() << "\n";
+    errorStream << "Invalid Input: CMD >" << cmd << "< " << lineStream.rdbuf() << "\n";
     error = true;
     return 0;
 }
@@ -27,7 +27,7 @@ int Assembler::assemble_CmdNoOp(std::istream& lineStream)
     char invalid;
     if (lineStream >> invalid)
     {
-        output << "Invalid Input: CMD NoOp >" << invalid << lineStream.rdbuf() << "<\n";
+        errorStream << "Invalid Input: CMD NoOp >" << invalid << lineStream.rdbuf() << "<\n";
         error = true;
         return 0;
     }
@@ -39,9 +39,9 @@ int Assembler::assemble_CmdNoOp(std::istream& lineStream)
 int Assembler::assemble_CmdKill(std::istream& lineStream)
 {
     std::int16_t  result;
-    if (!(lineStream >> result && (result & Assembler::Cmd_ResultMask) == result))
+    if (!(lineStream >> result && (result & Assembler::Cmd_Result_Mask) == result))
     {
-        output << "Invalid Input: CMD Kill >" << result << "< " << lineStream.rdbuf() << ": value out of range.\n";
+        errorStream << "Invalid Input: CMD Kill >" << result << "< " << lineStream.rdbuf() << ": value out of range.\n";
         error = true;
         return 0;
     }

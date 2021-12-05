@@ -20,7 +20,7 @@ Result FireVM::run()
     {
         Instruction instruction = memory[state.programCounter];
 
-        switch (instruction & Assembler::ActionMask)
+        switch (instruction & Assembler::Action_Mask)
         {
             case Assembler::Act_CMD: { runActionCMD(instruction);   break;}
             default:

@@ -21,7 +21,7 @@ TEST(FireVM_CmdTest, InvalidCmd)
 
 TEST(FireVM_CmdTest, CmdNoOp)
 {
-    std::ostringstream   result;
+    std::stringstream    result;
     std::istringstream   input(R"(
 CMD NoOp
 CMD Kill 0
@@ -37,12 +37,12 @@ CMD Kill 0
     FireVM      vm(machineState, codeBlock);
     Result      output = vm.run();
 
-    EXPECT_EQ(output, 0);
+    EXPECT_TRUE_OR_DEBUG(output == 0, result);
 }
 
 TEST(FireVM_CmdTest, CmdKill_10)
 {
-    std::ostringstream   result;
+    std::stringstream    result;
     std::istringstream   input(R"(
 CMD NoOp
 CMD Kill 10
@@ -58,12 +58,12 @@ CMD Kill 10
     FireVM      vm(machineState, codeBlock);
     Result      output = vm.run();
 
-    EXPECT_EQ(output, 10);
+    EXPECT_TRUE_OR_DEBUG(output == 10, result);
 }
 
 TEST(FireVM_CmdTest, CmdKill_Max)
 {
-    std::ostringstream   result;
+    std::stringstream    result;
     std::istringstream   input(R"(
 CMD NoOp
 CMD Kill 1023
@@ -79,7 +79,7 @@ CMD Kill 1023
     FireVM      vm(machineState, codeBlock);
     Result      output = vm.run();
 
-    EXPECT_EQ(output, 1023);
+    EXPECT_TRUE_OR_DEBUG(output == 1023, result);
 }
 
 

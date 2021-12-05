@@ -9,7 +9,7 @@ using namespace ThorsAnvil::Anvil::Fire;
 
 TEST(Assembler_CmdTest, InvalidCmd)
 {
-    std::ostringstream   result;
+    std::stringstream    result;
     std::istringstream   input(R"(
 CMD ZZZ
 )");
@@ -20,12 +20,12 @@ CMD ZZZ
     Assembler           assembler(result, stable);
 
     assembler.assemble(input, codeBlock);
-    EXPECT_FALSE(assembler.isOK());
+    EXPECT_FALSE_OR_DEBUG(assembler.isOK(), result);
 }
 
 TEST(Assembler_CmdTest, CMD_NoOp_BadOperands)
 {
-    std::ostringstream   result;
+    std::stringstream    result;
     std::istringstream   input(R"(
 CMD NoOp Invalid
 )");
@@ -36,12 +36,12 @@ CMD NoOp Invalid
     Assembler           assembler(result, stable);
 
     assembler.assemble(input, codeBlock);
-    EXPECT_FALSE(assembler.isOK());
+    EXPECT_FALSE_OR_DEBUG(assembler.isOK(), result);
 }
 
 TEST(Assembler_CmdTest, CMD_NoOp)
 {
-    std::ostringstream   result;
+    std::stringstream    result;
     std::istringstream   input(R"(
 CMD NoOp
 )");
@@ -52,15 +52,20 @@ CMD NoOp
     Assembler           assembler(result, stable);
 
     assembler.assemble(input, codeBlock);
-    EXPECT_TRUE(assembler.isOK());
+    bool bad = false;
+    EXPECT_EQ_OR_LOG(bad, assembler.isOK(), true, result);
 
-    EXPECT_EQ(codeBlock.size(), 1);
-    ASSERT_EQ(codeBlock[0], Assembler::Act_CMD | Assembler::Cmd_NoOp);
+    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 1, result);
+    if (codeBlock.size() == 1)
+    {
+        EXPECT_EQ_OR_LOG(bad, codeBlock[0], Assembler::Act_CMD | Assembler::Cmd_NoOp, result);
+    }
+    EXPECT_FALSE_OR_DEBUG(bad, result);
 }
 
 TEST(FireVM_CmdTest, CmdKill_NegativeValue)
 {
-    std::ostringstream   result;
+    std::stringstream    result;
     std::istringstream   input(R"(
 CMD Kill -10
 )");
@@ -70,12 +75,12 @@ CMD Kill -10
 
     Assembler           assembler(result, stable);
     assembler.assemble(input, codeBlock);
-    EXPECT_FALSE(assembler.isOK());
+    EXPECT_FALSE_OR_DEBUG(assembler.isOK(), result);
 }
 
 TEST(FireVM_CmdTest, CmdKill_OutOfBounds)
 {
-    std::ostringstream   result;
+    std::stringstream    result;
     std::istringstream   input(R"(
 CMD Kill 1024
 )");
@@ -85,12 +90,12 @@ CMD Kill 1024
 
     Assembler           assembler(result, stable);
     assembler.assemble(input, codeBlock);
-    EXPECT_FALSE(assembler.isOK());
+    EXPECT_FALSE_OR_DEBUG(assembler.isOK(), result);
 }
 
 TEST(FireVM_CmdTest, CmdKill_128)
 {
-    std::ostringstream   result;
+    std::stringstream    result;
     std::istringstream   input(R"(
 CMD Kill 128
 )");
@@ -100,9 +105,14 @@ CMD Kill 128
 
     Assembler           assembler(result, stable);
     assembler.assemble(input, codeBlock);
-    EXPECT_TRUE(assembler.isOK());
+    bool bad = false;
+    EXPECT_EQ_OR_LOG(bad, assembler.isOK(), true, result);
 
-    ASSERT_EQ(codeBlock.size(), 1);
-    ASSERT_EQ(codeBlock[0], Assembler::Act_CMD | Assembler::Cmd_Kill | 128);
+    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 1, result);
+    if (codeBlock.size() == 1)
+    {
+        EXPECT_EQ_OR_LOG(bad, codeBlock[0], Assembler::Act_CMD | Assembler::Cmd_Kill | 128, result);
+    }
+    EXPECT_FALSE_OR_DEBUG(bad, result);
 }
 
