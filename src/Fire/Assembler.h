@@ -44,7 +44,7 @@ class Assembler
 
         std::uint32_t getAddress(std::string const& lineStream, bool buildSymbols);
         bool getRegister(std::string const& addressRegValue);
-        int assemble_JumpLength(std::string const& cmd, std::string const& flagValue, std::string const& regValue, std::string const& jumpDestination, std::istream& lineStream, bool buildSymbols);
+        int assemble_JumpLength(std::string const& cmd, std::string const& flagValue, std::string& regValue, std::string& jumpDestination, std::istream& lineStream, bool buildSymbols);
         bool assemble_JumpConditionFlag(std::string const& flagValue);
 
         std::string getAction(std::stringstream& lineStream, bool buildSymbols);

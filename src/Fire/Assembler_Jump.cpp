@@ -4,10 +4,13 @@ using ThorsAnvil::Anvil::Fire::Assembler;
 
 std::uint32_t Assembler::getAddress(std::string const& destination, bool buildSymbols)
 {
+    // If there is not a valid destination then return an invalid address.
     if (destination == "")
     {
         return 0;
     }
+    // If we are building symbols return the current address.
+    // This will make sure relative jumps are in range for the first pass.
     if (buildSymbols)
     {
         return addr;
@@ -18,6 +21,7 @@ std::uint32_t Assembler::getAddress(std::string const& destination, bool buildSy
     {
         return find->second;
     }
+    // We did not find the symbol return invalid address.
     return 0;
 }
 
@@ -38,8 +42,31 @@ bool Assembler::getRegister(std::string const& addressRegValue)
     return true;
 }
 
-int Assembler::assemble_JumpLength(std::string const& cmd, std::string const& flagValue, std::string const& regValue, std::string const& jumpDestination,  std::istream& lineStream, bool buildSymbols)
+bool Assembler::assemble_JumpConditionFlag(std::string const& flagValue)
 {
+    if (flagValue == "AL")          {instructions[0] |= Jump_Condition_AL;}
+    else if (flagValue == "EQ")     {instructions[0] |= Jump_Condition_EQ;}
+    else if (flagValue == "NE")     {instructions[0] |= Jump_Condition_NE;}
+    else if (flagValue == "LT")     {instructions[0] |= Jump_Condition_LT;}
+    else if (flagValue == "GT")     {instructions[0] |= Jump_Condition_GT;}
+    else if (flagValue == "LE")     {instructions[0] |= Jump_Condition_LE;}
+    else if (flagValue == "GE")     {instructions[0] |= Jump_Condition_GE;}
+    else
+    {
+        return false;
+    }
+    return true;
+}
+
+int Assembler::assemble_JumpLength(std::string const& cmd, std::string const& flagValue, std::string& regValue, std::string& jumpDestination,  std::istream& lineStream, bool buildSymbols)
+{
+    if (cmd == "Return")
+    {
+        return 1;
+    }
+
+    lineStream >> regValue >> jumpDestination;
+
     if (regValue == "Rel")
     {
         std::uint32_t destination = getAddress(jumpDestination, buildSymbols);
@@ -83,25 +110,9 @@ int Assembler::assemble_JumpLength(std::string const& cmd, std::string const& fl
     return 0;
 }
 
-bool Assembler::assemble_JumpConditionFlag(std::string const& flagValue)
-{
-    if (flagValue == "AL")          {instructions[0] |= Jump_Condition_AL;}
-    else if (flagValue == "EQ")     {instructions[0] |= Jump_Condition_EQ;}
-    else if (flagValue == "NE")     {instructions[0] |= Jump_Condition_NE;}
-    else if (flagValue == "LT")     {instructions[0] |= Jump_Condition_LT;}
-    else if (flagValue == "GT")     {instructions[0] |= Jump_Condition_GT;}
-    else if (flagValue == "LE")     {instructions[0] |= Jump_Condition_LE;}
-    else if (flagValue == "GE")     {instructions[0] |= Jump_Condition_GE;}
-    else
-    {
-        return false;
-    }
-    return true;
-}
-
 int Assembler::assemble_Jump(std::istream& lineStream, bool buildSymbols)
 {
-    instructions[0] = 0;
+    instructions[0] = Act_Jump;
 
     std::string     cmd;
     std::string     flagValue;
@@ -114,8 +125,8 @@ int Assembler::assemble_Jump(std::istream& lineStream, bool buildSymbols)
         return 0;
     }
 
-    if (cmd == "Return")        {return assemble_JumpReturn(lineStream);}
-    else if (cmd == "Call")     {instructions[0] |= Act_Jump | JumpType_Call;}
+    if (cmd == "Return")        {instructions[0] |= JumpType_Return;}
+    else if (cmd == "Call")     {instructions[0] |= JumpType_Call;}
     else
     {
         // Unknown command report an error.
@@ -123,11 +134,11 @@ int Assembler::assemble_Jump(std::istream& lineStream, bool buildSymbols)
         error = true;
         return 0;
     }
+
     std::string     jumpDestination;
     std::string     regValue;
-    lineStream >> regValue >> jumpDestination;
-
     int length = assemble_JumpLength(cmd, flagValue, regValue, jumpDestination, lineStream, buildSymbols);
+
     if (length != 0)
     {
         char invalid;
@@ -139,18 +150,4 @@ int Assembler::assemble_Jump(std::istream& lineStream, bool buildSymbols)
         }
     }
     return length;
-}
-
-int Assembler::assemble_JumpReturn(std::istream& lineStream)
-{
-    char invalid;
-    if (lineStream >> invalid)
-    {
-        errorStream << "Invalid Input: Jump Return >" << invalid << lineStream.rdbuf() << "<\n";
-        error = true;
-        return 0;
-    }
-
-    instructions[0] |= Act_Jump | JumpType_Return;
-    return 1;
 }

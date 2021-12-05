@@ -7,14 +7,8 @@ int Assembler::assemble_Cmd(std::istream& lineStream)
     std::string     cmd;
     lineStream >> cmd;
 
-    if (cmd == "NoOp")
-    {
-        return assemble_CmdNoOp(lineStream);
-    }
-    if (cmd == "Kill")
-    {
-        return assemble_CmdKill(lineStream);
-    }
+    if (cmd == "NoOp")      {return assemble_CmdNoOp(lineStream);}
+    if (cmd == "Kill")      {return assemble_CmdKill(lineStream);}
 
     // Unknown command report an error.
     errorStream << "Invalid Input: CMD >" << cmd << "< " << lineStream.rdbuf() << "\n";
