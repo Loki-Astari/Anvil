@@ -23,5 +23,5 @@ void FireVM::runActionCMD(Instruction instruction)
 void FireVM::runActionCMDKill(Instruction instruction)
 {
     running = false;
-    result = instruction & Assembler::Cmd_Result_Mask;
+    result = instruction & Assembler::Cmd_Kill_Result_Mask;
 }

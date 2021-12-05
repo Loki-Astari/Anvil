@@ -58,12 +58,10 @@ bool Assembler::assemble_JumpConditionFlag(std::string const& flagValue)
     return true;
 }
 
-int Assembler::assemble_JumpLength(std::string const& cmd, std::string const& flagValue, std::string& regValue, std::string& jumpDestination,  std::istream& lineStream, bool buildSymbols)
+int Assembler::assemble_JumpLength(std::string const& cmd, std::string const& flagValue, std::istream& lineStream, bool buildSymbols)
 {
-    if (cmd == "Return")
-    {
-        return 1;
-    }
+    std::string regValue;
+    std::string jumpDestination;
 
     lineStream >> regValue >> jumpDestination;
 
@@ -101,7 +99,7 @@ int Assembler::assemble_JumpLength(std::string const& cmd, std::string const& fl
     }
     else
     {
-        errorStream << "Invalid Input: JUMP " << cmd << " " << flagValue << " >" << regValue << "< " << lineStream.rdbuf() << "\n";
+        errorStream << "Invalid Input: JUMP " << cmd << " " << flagValue << " >" << regValue << "< " << jumpDestination << " " << lineStream.rdbuf() << "\n";
         error = true;
         return 0;
     }
@@ -115,39 +113,46 @@ int Assembler::assemble_Jump(std::istream& lineStream, bool buildSymbols)
     instructions[0] = Act_Jump;
 
     std::string     cmd;
-    std::string     flagValue;
-    lineStream >> cmd >> flagValue;
+    lineStream >> cmd;
 
-    if (!assemble_JumpConditionFlag(flagValue))
-    {
-        errorStream << "Invalid Input: JUMP " << cmd << " >" << flagValue << "< " << lineStream.rdbuf() << "\n";
-        error = true;
-        return 0;
-    }
-
-    if (cmd == "Return")        {instructions[0] |= JumpType_Return;}
-    else if (cmd == "Call")     {instructions[0] |= JumpType_Call;}
+    if (cmd == "Return")        {return assemble_JumpReturn(lineStream);}
+    else if (cmd == "Call")     {return assemble_JumpCall(lineStream, buildSymbols);}
     else
     {
         // Unknown command report an error.
-        errorStream << "Invalid Input: JUMP >" << cmd << "< " << flagValue << " " << lineStream.rdbuf() << "\n";
+        errorStream << "Invalid Input: JUMP >" << cmd << "< " << lineStream.rdbuf() << "\n";
+        error = true;
+        return 0;
+    }
+}
+int Assembler::assemble_JumpReturn(std::istream& lineStream)
+{
+    std::string     flagValue;
+    lineStream >> flagValue;
+
+    if (!assemble_JumpConditionFlag(flagValue))
+    {
+        errorStream << "Invalid Input: JUMP Return >" << flagValue << "< " << lineStream.rdbuf() << "\n";
         error = true;
         return 0;
     }
 
-    std::string     jumpDestination;
-    std::string     regValue;
-    int length = assemble_JumpLength(cmd, flagValue, regValue, jumpDestination, lineStream, buildSymbols);
+    instructions[0] |= JumpType_Return;
+    return 1;
+}
 
-    if (length != 0)
+int Assembler::assemble_JumpCall(std::istream& lineStream, bool buildSymbols)
+{
+    std::string     flagValue;
+    lineStream >> flagValue;
+
+    if (!assemble_JumpConditionFlag(flagValue))
     {
-        char invalid;
-        if (lineStream >> invalid)
-        {
-            errorStream << "Invalid Input: JUMP " << cmd << " " << flagValue << " " << regValue << " " << jumpDestination << " >" << invalid << "< " << lineStream.rdbuf() << "\n";
-            error = true;
-            return 0;
-        }
+        errorStream << "Invalid Input: JUMP Call >" << flagValue << "< " << lineStream.rdbuf() << "\n";
+        error = true;
+        return 0;
     }
-    return length;
+
+    instructions[0] |= JumpType_Call;
+    return assemble_JumpLength("Call", flagValue, lineStream, buildSymbols);
 }

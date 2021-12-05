@@ -121,8 +121,8 @@ Invalid:
         CMD Init            10SS xxxx xxxx     S Size Info
                                                 00:     8 bit global size 16 bit stack size.
                                                 01:     8 bit global size 32 bit stack size.
-                                                10:     8 bit ignored. 16 bit global size 32 bit stack size.
-                                                11:     8 bit ignored. 32 bit global size 32 bit stack size.
+                                                10:     8 bit ignored. 16 bit global size 16 bit stack size.
+                                                11:     8 bit ignored. 16 bit global size 32 bit stack size.
         CMD Import          11SS SSSS SSSS     S Size Info.
                                                 S 10 bit size info: Number of bytes (8 bit)  following this
                                                 instruction are used to encode UTF-8 file name.

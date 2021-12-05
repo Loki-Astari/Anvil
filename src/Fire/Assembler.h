@@ -1,6 +1,8 @@
 #ifndef THORSANVIL_ANVIL_FIRE_ASSEMBLER_H
 #define THORSANVIL_ANVIL_FIRE_ASSEMBLER_H
 
+#include "Memory.h"
+
 #include <map>
 #include <vector>
 #include <iostream>
@@ -9,8 +11,6 @@
 namespace ThorsAnvil::Anvil::Fire
 {
 
-using Instruction = std::int16_t;
-using CodeBlock = std::vector<Instruction>;
 using SymbolTable = std::map<std::string, std::int32_t>;
 
 class Assembler
@@ -19,7 +19,7 @@ class Assembler
     std::size_t     addr;
     std::ostream&   errorStream;
     SymbolTable&    stable;
-    Instruction     instructions[4];
+    Instruction     instructions[5];
 
     public:
         Assembler(std::ostream& errorStream, SymbolTable& stable);
@@ -37,15 +37,17 @@ class Assembler
 
         int assemble(std::string& line, bool buildSymbols);
             int assemble_Cmd(std::istream& lineStream);
-                int assemble_CmdNoOp(std::istream& lineStream);
+                int assemble_CmdNoOp();
                 int assemble_CmdKill(std::istream& lineStream);
+                int assemble_CmdInit(std::istream& lineStream);
             int assemble_Jump(std::istream& lineStream, bool BuildSymbols);
                 int assemble_JumpReturn(std::istream& lineStream);
+                int assemble_JumpCall(std::istream& lineStream, bool buildSymbols);
 
         std::uint32_t getAddress(std::string const& lineStream, bool buildSymbols);
-        bool getRegister(std::string const& addressRegValue);
-        int assemble_JumpLength(std::string const& cmd, std::string const& flagValue, std::string& regValue, std::string& jumpDestination, std::istream& lineStream, bool buildSymbols);
-        bool assemble_JumpConditionFlag(std::string const& flagValue);
+        bool          getRegister(std::string const& addressRegValue);
+        int           assemble_JumpLength(std::string const& cmd, std::string const& flagValue, std::istream& lineStream, bool buildSymbols);
+        bool          assemble_JumpConditionFlag(std::string const& flagValue);
 
         std::string getAction(std::stringstream& lineStream, bool buildSymbols);
 
@@ -60,9 +62,18 @@ class Assembler
         static constexpr Instruction Action_CMD_Mask        = 0x0C00;
         static constexpr Instruction Cmd_NoOp               = 0x0000;
         static constexpr Instruction Cmd_Kill               = 0x0400;
+        static constexpr Instruction Cmd_Init               = 0x0800;
 
-        // ActionCMD Kill
-        static constexpr Instruction Cmd_Result_Mask        = 0x03FF;
+        // Action CMD Kill
+        static constexpr Instruction Cmd_Kill_Result_Mask   = 0x03FF;
+
+        // Action CMD Init
+        static constexpr Instruction Cmd_Init_Size_Mask     = 0x0300;
+        static constexpr Instruction Cmd_Init_Size_8_16     = 0x0000;
+        static constexpr Instruction Cmd_Init_Size_8_32     = 0x0100;
+        static constexpr Instruction Cmd_Init_Size_16_16    = 0x0200;
+        static constexpr Instruction Cmd_Init_Size_16_32    = 0x0300;
+
 
         // Action Jump Type
         static constexpr Instruction Action_JumpType_Mask   = 0x0C00;

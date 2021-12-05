@@ -5,23 +5,51 @@
 
 #include <sstream>
 
+/*
+ * Jump_Return_AL)
+ * Jump_Return_EQ)
+ * Jump_Return_NE)
+ * Jump_Return_LT)
+ * Jump_Return_LE)
+ * Jump_Return_GT)
+ * Jump_Return_GE)
+ * Jump_Call_Rel_AL)
+ * Jump_Call_Rel_EQ)
+ * Jump_Call_Rel_NE)
+ * Jump_Call_Rel_LT)
+ * Jump_Call_Rel_LE)
+ * Jump_Call_Rel_GT)
+ * Jump_Call_Rel_GE)
+ * Jump_Call_Abs_AL)
+ * Jump_Call_Abs_EQ)
+ * Jump_Call_Abs_NE)
+ * Jump_Call_Abs_LT)
+ * Jump_Call_Abs_LE)
+ * Jump_Call_Abs_GT)
+ * Jump_Call_Abs_GE)
+ * Jump_Call_Mem_AL)
+ * Jump_Call_Mem_EQ)
+ * Jump_Call_Mem_NE)
+ * Jump_Call_Mem_LT)
+ * Jump_Call_Mem_LE)
+ * Jump_Call_Mem_GT)
+ * Jump_Call_Mem_GE)
+ * Jump_Call_Mem_Expr3)
+ * ------------------
+ * Jump_Invalid
+ * Jump_Invalid_Call_Condition
+ * Jump_Invalid_Return_Condition
+ * Jump_Return_Extra)
+ * Jump_Call_Extra)
+ * Jump_Call_NoDestiantion)
+ * Jump_Call_BadLabel)
+ * Jump_Call_BadJump)
+ * Jump_Call_BadLength)
+ * Jump_Call_BadRegister)
+ * Jump_Call_BadRelative)
+*/
+
 using namespace ThorsAnvil::Anvil::Fire;
-
-TEST(Assembler_JumpTest, Invalid_Jump)
-{
-    std::stringstream    result;
-    std::istringstream   input(R"(
-JUMP XX AL Dest
-)");
-
-    SymbolTable         stable;
-    CodeBlock           codeBlock;
-
-    Assembler           assembler(result, stable);
-
-    assembler.assemble(input, codeBlock);
-    EXPECT_FALSE_OR_DEBUG(assembler.isOK(), result);
-}
 
 TEST(Assembler_JumpTest, Jump_Return_AL)
 {
@@ -206,7 +234,7 @@ JUMP Call AL Rel Dest
     if (codeBlock.size() == 4)
     {
         EXPECT_EQ_OR_LOG(bad, codeBlock[2], Assembler::Act_Jump | Assembler::JumpType_Call | Assembler::JumpSize_Rel | Assembler::Jump_Condition_AL, result);
-        EXPECT_EQ_OR_LOG(bad, codeBlock[3], -3, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[3], static_cast<Instruction>(-3), result);
     }
     EXPECT_FALSE_OR_DEBUG(bad, result);
 }
@@ -287,7 +315,7 @@ JUMP Call LT Rel Dest
     if (codeBlock.size() == 5)
     {
         EXPECT_EQ_OR_LOG(bad, codeBlock[3], Assembler::Act_Jump | Assembler::JumpType_Call | Assembler::JumpSize_Rel | Assembler::Jump_Condition_LT, result);
-        EXPECT_EQ_OR_LOG(bad, codeBlock[4], -4, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[4], static_cast<Instruction>(-4), result);
     }
     EXPECT_FALSE_OR_DEBUG(bad, result);
 }
@@ -340,7 +368,7 @@ JUMP Call GT Rel Dest
     if (codeBlock.size() == 4)
     {
         EXPECT_EQ_OR_LOG(bad, codeBlock[2], Assembler::Act_Jump | Assembler::JumpType_Call | Assembler::JumpSize_Rel | Assembler::Jump_Condition_GT, result);
-        EXPECT_EQ_OR_LOG(bad, codeBlock[3], -3, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[3], static_cast<Instruction>(-3), result);
     }
     EXPECT_FALSE_OR_DEBUG(bad, result);
 }
@@ -365,7 +393,7 @@ Dest: JUMP Call GE Rel Dest
     if (codeBlock.size() == 3)
     {
         EXPECT_EQ_OR_LOG(bad, codeBlock[1], Assembler::Act_Jump | Assembler::JumpType_Call | Assembler::JumpSize_Rel | Assembler::Jump_Condition_GE, result);
-        EXPECT_EQ_OR_LOG(bad, codeBlock[2], -2, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[2], static_cast<Instruction>(-2), result);
     }
     EXPECT_FALSE_OR_DEBUG(bad, result);
 }
@@ -764,6 +792,110 @@ Dest: JUMP Call GE Mem Expr-3
     EXPECT_FALSE_OR_DEBUG(bad, result);
 }
 
+
+// Error Conditions
+
+TEST(Assembler_JumpTest, Jump_Invalid)
+{
+    std::stringstream    result;
+    std::istringstream   input(R"(
+CMD NoOp                // TODO Remove once we have CMD Init
+Dest: JUMP ZZ AL Dest
+)");
+
+    SymbolTable         stable;
+    CodeBlock           codeBlock;
+
+    Assembler           assembler(result, stable);
+
+    assembler.assemble(input, codeBlock);
+    EXPECT_FALSE_OR_DEBUG(assembler.isOK(), result);
+}
+
+TEST(Assembler_JumpTest, Jump_Invalid_Call_Condition)
+{
+    std::stringstream    result;
+    std::istringstream   input(R"(
+CMD NoOp                // TODO Remove once we have CMD Init
+Dest: JUMP Call XX Dest
+)");
+
+    SymbolTable         stable;
+    CodeBlock           codeBlock;
+
+    Assembler           assembler(result, stable);
+
+    assembler.assemble(input, codeBlock);
+    EXPECT_FALSE_OR_DEBUG(assembler.isOK(), result);
+}
+
+TEST(Assembler_JumpTest, Jump_Invalid_Return_Condition)
+{
+    std::stringstream    result;
+    std::istringstream   input(R"(
+CMD NoOp                // TODO Remove once we have CMD Init
+Dest: JUMP Return XX
+)");
+
+    SymbolTable         stable;
+    CodeBlock           codeBlock;
+
+    Assembler           assembler(result, stable);
+
+    assembler.assemble(input, codeBlock);
+    EXPECT_FALSE_OR_DEBUG(assembler.isOK(), result);
+}
+
+TEST(Assembler_JumpTest, Jump_Return_Extra)
+{
+    std::stringstream    result;
+    std::istringstream   input(R"(
+CMD NoOp                // TODO Remove once we have CMD Init
+Dest: JUMP Return AL Dest
+)");
+
+    SymbolTable         stable;
+    CodeBlock           codeBlock;
+
+    Assembler           assembler(result, stable);
+
+    assembler.assemble(input, codeBlock);
+    EXPECT_FALSE_OR_DEBUG(assembler.isOK(), result);
+}
+
+TEST(Assembler_JumpTest, Jump_Call_Extra)
+{
+    std::stringstream    result;
+    std::istringstream   input(R"(
+CMD NoOp                // TODO Remove once we have CMD Init
+Dest: JUMP Call AL Rel Dest XX
+)");
+
+    SymbolTable         stable;
+    CodeBlock           codeBlock;
+
+    Assembler           assembler(result, stable);
+
+    assembler.assemble(input, codeBlock);
+    EXPECT_FALSE_OR_DEBUG(assembler.isOK(), result);
+}
+
+TEST(Assembler_JumpTest, Invalid_Jump)
+{
+    std::stringstream    result;
+    std::istringstream   input(R"(
+JUMP XX AL Dest
+)");
+
+    SymbolTable         stable;
+    CodeBlock           codeBlock;
+
+    Assembler           assembler(result, stable);
+
+    assembler.assemble(input, codeBlock);
+    EXPECT_FALSE_OR_DEBUG(assembler.isOK(), result);
+}
+
 TEST(Assembler_JumpTest, Jump_Call_NoDestiantion)
 {
     std::stringstream    result;
@@ -838,40 +970,6 @@ TEST(Assembler_JumpTest, Jump_Call_BadRegister)
     std::istringstream   input(R"(
 CMD NoOp                // TODO Remove once we have CMD Init
 Dest: JUMP Call GE Mem Plop
-)");
-
-    SymbolTable         stable;
-    CodeBlock           codeBlock;
-
-    Assembler           assembler(result, stable);
-
-    assembler.assemble(input, codeBlock);
-    EXPECT_FALSE_OR_DEBUG(assembler.isOK(), result);
-}
-
-TEST(Assembler_JumpTest, Jump_Return_Extra)
-{
-    std::stringstream    result;
-    std::istringstream   input(R"(
-CMD NoOp                // TODO Remove once we have CMD Init
-Dest: JUMP Return AL Dest
-)");
-
-    SymbolTable         stable;
-    CodeBlock           codeBlock;
-
-    Assembler           assembler(result, stable);
-
-    assembler.assemble(input, codeBlock);
-    EXPECT_FALSE_OR_DEBUG(assembler.isOK(), result);
-}
-
-TEST(Assembler_JumpTest, Jump_Call_Extra)
-{
-    std::stringstream    result;
-    std::istringstream   input(R"(
-CMD NoOp                // TODO Remove once we have CMD Init
-Dest: JUMP Call AL Rel Dest XX
 )");
 
     SymbolTable         stable;

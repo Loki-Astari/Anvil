@@ -67,27 +67,49 @@ int Assembler::assemble(std::string& line, bool buildSymbols)
     }
 
     std::stringstream   lineStream(std::move(line));
-    std::string         action = getAction(lineStream, buildSymbols);
+    std::string         action  = getAction(lineStream, buildSymbols);
+    int                 length  = 0;
 
     // Check for valid commands.
     if (action == "")
     {
         // Ignore Empty lines
+    }
+    else if (action == "CMD")
+    {
+        length = assemble_Cmd(lineStream);
+    }
+    else if (action == "JUMP")
+    {
+        length = assemble_Jump(lineStream, buildSymbols);
+    }
+    else
+    {
+        // Unknown command report an error.
+        errorStream << "Invalid Input: >" << action << "< " << lineStream.rdbuf() << "\n";
+        error = true;
         return 0;
     }
-    if (action == "CMD")
-    {
-        return assemble_Cmd(lineStream);
-    }
-    if (action == "JUMP")
-    {
-        return assemble_Jump(lineStream, buildSymbols);
-    }
 
-    // Unknown command report an error.
-    errorStream << "Invalid Input: >" << action << "< " << lineStream.rdbuf() << "\n";
-    error = true;
-    return 0;
+    // Check for an unconsumed input on the line
+    char invalid;
+    if (lineStream >> invalid)
+    {
+        std::string badInput;
+        std::getline(lineStream, badInput);
+        badInput.insert(0, 1, invalid);
+
+        auto find = line.find(badInput);
+        for (auto lastFind = find; lastFind < line.size(); lastFind = line.find(badInput, lastFind + 1))
+        {
+            find = lastFind;
+        }
+
+        errorStream << "Invalid Input: " << line.substr(0, find) << " >" << badInput << "<\n";
+        error = true;
+        return 0;
+    }
+    return length;
 }
 
 std::string Assembler::getAction(std::stringstream& lineStream, bool buildSymbols)

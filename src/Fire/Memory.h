@@ -11,7 +11,7 @@ namespace ThorsAnvil::Anvil::Fire
 {
 
 // Code Space representation
-using Instruction   = std::int16_t;
+using Instruction   = std::uint16_t;
 using CodeBlock     = std::vector<Instruction>;
 
 // Data space representation
