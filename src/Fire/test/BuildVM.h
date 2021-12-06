@@ -27,15 +27,18 @@ struct BuildAssembler
 
 struct BuildVM
 {
-    ThorsAnvil::Anvil::Fire::VMState             machineState;
-    ThorsAnvil::Anvil::Fire::CodeBlock           codeBlock;
-    ThorsAnvil::Anvil::Fire::FireVM              vm;
+    ThorsAnvil::Anvil::Fire::VMState            machineState;
+    ThorsAnvil::Anvil::Fire::CodeBlock          codeBlock;
+    ThorsAnvil::Anvil::Fire::FireVM             vm;
+    ThorsAnvil::Anvil::Fire::SymbolTable        stable;
 
     BuildVM(std::ostream& result, bool& bad, std::string&& input)
         : vm(machineState, codeBlock)
     {
+        machineState.global.resize(100);
+        machineState.stack.resize(100);
+
         std::istringstream                      inputStream(std::move(input));
-        ThorsAnvil::Anvil::Fire::SymbolTable    stable;
         ThorsAnvil::Anvil::Fire::Assembler      assembler(result, stable);
 
         assembler.assemble(inputStream, codeBlock);
