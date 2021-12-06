@@ -23,15 +23,11 @@ void FireVM::runActionJump(Instruction instruction)
 bool FireVM::checkInstructionFlagWithRegister(Instruction instruction)
 {
     std::byte instructionFlag = static_cast<std::byte>(((instruction & Assembler::Action_JumpFlag_Mask) >> Assembler::Action_JumpFlag_Shift) & 0x07);
-    std::cerr << "I Flag: " << ((int)instructionFlag) << "\n";
-    std::cerr << "I Reg:  " << ((int)state.flagRegister) << "\n";
     std::byte test = instructionFlag & state.flagRegister;
     bool      result = (test != std::byte{0});
-    std::cerr << "Result: " << result << "\n";
 
     if (instruction & Assembler::Action_JumpFNot_Mask)
     {
-        std::cerr << "Notting Result\n";
         result = !result;
     }
     return !result;
@@ -69,10 +65,8 @@ void FireVM::runActionJumpReturn(Instruction instruction)
 
 void FireVM::runActionJumpCall(Instruction instruction)
 {
-    std::cerr << "runActionJumpCall\n";
     if (checkInstructionFlagWithRegister(instruction))
     {
-        std::cerr << "No Flag Match\n";
         return;
     }
 

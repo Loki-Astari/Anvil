@@ -13,7 +13,8 @@ std::uint32_t Assembler::getAddress(std::string const& destination, bool buildSy
     // This will make sure relative jumps are in range for the first pass.
     if (buildSymbols)
     {
-        return addr;
+        // Can't have 0 as a value
+        return addr == 0 ? 1 : addr;
     }
 
     auto find = stable.find(destination);

@@ -2,6 +2,7 @@
 
 #include "FireVM.h"
 #include "Assembler.h"
+#include "test/BuildVM.h"
 #include "../Ice/test/Utility.h"
 
 #include <sstream>
@@ -23,165 +24,106 @@ using namespace ThorsAnvil::Anvil::Fire;
 TEST(FireVM_CmdTest, Cmd_NoOp)
 {
     std::stringstream    result;
-    std::istringstream   input(R"(
+    BuildVM              vm(result, R"(
 CMD NoOp
 CMD Kill 0
 )");
 
-    SymbolTable         stable;
-    CodeBlock           codeBlock;
-
-    Assembler           assembler(result, stable);
-    assembler.assemble(input, codeBlock);
-
-    VMState     machineState;
-    FireVM      vm(machineState, codeBlock);
     Result      output = vm.run();
-
     EXPECT_TRUE_OR_DEBUG(output == 0, result);
 }
 
 TEST(FireVM_CmdTest, Cmd_Kill_10)
 {
     std::stringstream    result;
-    std::istringstream   input(R"(
+    BuildVM              vm(result, R"(
 CMD NoOp
 CMD Kill 10
 )");
 
-    SymbolTable         stable;
-    CodeBlock           codeBlock;
-
-    Assembler           assembler(result, stable);
-    assembler.assemble(input, codeBlock);
-
-    VMState     machineState;
-    FireVM      vm(machineState, codeBlock);
     Result      output = vm.run();
-
     EXPECT_TRUE_OR_DEBUG(output == 10, result);
 }
 
 TEST(FireVM_CmdTest, Cmd_Kill_Max)
 {
     std::stringstream    result;
-    std::istringstream   input(R"(
+    BuildVM              vm(result, R"(
 CMD NoOp
 CMD Kill 1023
 )");
 
-    SymbolTable         stable;
-    CodeBlock           codeBlock;
-
-    Assembler           assembler(result, stable);
-    assembler.assemble(input, codeBlock);
-
-    VMState     machineState;
-    FireVM      vm(machineState, codeBlock);
     Result      output = vm.run();
-
     EXPECT_TRUE_OR_DEBUG(output == 1023, result);
 }
 
 TEST(FireVM_CmdTest, Cmd_Init_8_16)
 {
     std::stringstream    result;
-    std::istringstream   input(R"(
+    BuildVM              vm(result, R"(
 CMD Init 255 256
 CMD Kill 1023
 )");
 
-    SymbolTable         stable;
-    CodeBlock           codeBlock;
-
-    Assembler           assembler(result, stable);
-    assembler.assemble(input, codeBlock);
-
-    VMState     machineState;
-    FireVM      vm(machineState, codeBlock);
     Result      output = vm.run();
 
     bool bad = false;
-    EXPECT_EQ_OR_LOG(bad, machineState.global.size(), 255, result);
-    EXPECT_EQ_OR_LOG(bad, machineState.stack.size(), 256, result);
+    EXPECT_EQ_OR_LOG(bad, vm.machineState.global.size(), 255, result);
+    EXPECT_EQ_OR_LOG(bad, vm.machineState.stack.size(), 256, result);
+    EXPECT_EQ_OR_LOG(bad, vm.codeBlock.size(), 3, result);
     EXPECT_EQ_OR_LOG(bad, output, 1023, result);
-    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 3, result);
     EXPECT_FALSE_OR_DEBUG(bad, result);
 }
 
 TEST(FireVM_CmdTest, Cmd_Init_16_16)
 {
     std::stringstream    result;
-    std::istringstream   input(R"(
+    BuildVM              vm(result, R"(
 CMD Init 256 256
 CMD Kill 1023
 )");
 
-    SymbolTable         stable;
-    CodeBlock           codeBlock;
-
-    Assembler           assembler(result, stable);
-    assembler.assemble(input, codeBlock);
-
-    VMState     machineState;
-    FireVM      vm(machineState, codeBlock);
     Result      output = vm.run();
 
     bool bad = false;
-    EXPECT_EQ_OR_LOG(bad, machineState.global.size(), 256, result);
-    EXPECT_EQ_OR_LOG(bad, machineState.stack.size(), 256, result);
+    EXPECT_EQ_OR_LOG(bad, vm.machineState.global.size(), 256, result);
+    EXPECT_EQ_OR_LOG(bad, vm.machineState.stack.size(), 256, result);
+    EXPECT_EQ_OR_LOG(bad, vm.codeBlock.size(), 4, result);
     EXPECT_EQ_OR_LOG(bad, output, 1023, result);
-    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 4, result);
     EXPECT_FALSE_OR_DEBUG(bad, result);
 }
 TEST(FireVM_CmdTest, Cmd_Init_8_32)
 {
     std::stringstream    result;
-    std::istringstream   input(R"(
+    BuildVM              vm(result, R"(
 CMD Init 255 65536
 CMD Kill 1023
 )");
 
-    SymbolTable         stable;
-    CodeBlock           codeBlock;
-
-    Assembler           assembler(result, stable);
-    assembler.assemble(input, codeBlock);
-
-    VMState     machineState;
-    FireVM      vm(machineState, codeBlock);
     Result      output = vm.run();
 
     bool bad = false;
-    EXPECT_EQ_OR_LOG(bad, machineState.global.size(), 255, result);
-    EXPECT_EQ_OR_LOG(bad, machineState.stack.size(), 65536, result);
+    EXPECT_EQ_OR_LOG(bad, vm.machineState.global.size(), 255, result);
+    EXPECT_EQ_OR_LOG(bad, vm.machineState.stack.size(), 65536, result);
+    EXPECT_EQ_OR_LOG(bad, vm.codeBlock.size(), 4, result);
     EXPECT_EQ_OR_LOG(bad, output, 1023, result);
-    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 4, result);
     EXPECT_FALSE_OR_DEBUG(bad, result);
 }
 TEST(FireVM_CmdTest, Cmd_Init_16_32)
 {
     std::stringstream    result;
-    std::istringstream   input(R"(
+    BuildVM              vm(result, R"(
 CMD Init 256 65536
 CMD Kill 1023
 )");
 
-    SymbolTable         stable;
-    CodeBlock           codeBlock;
-
-    Assembler           assembler(result, stable);
-    assembler.assemble(input, codeBlock);
-
-    VMState     machineState;
-    FireVM      vm(machineState, codeBlock);
     Result      output = vm.run();
 
     bool bad = false;
-    EXPECT_EQ_OR_LOG(bad, machineState.global.size(), 256, result);
-    EXPECT_EQ_OR_LOG(bad, machineState.stack.size(), 65536, result);
+    EXPECT_EQ_OR_LOG(bad, vm.machineState.global.size(), 256, result);
+    EXPECT_EQ_OR_LOG(bad, vm.machineState.stack.size(), 65536, result);
+    EXPECT_EQ_OR_LOG(bad, vm.codeBlock.size(), 5, result);
     EXPECT_EQ_OR_LOG(bad, output, 1023, result);
-    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 5, result);
     EXPECT_FALSE_OR_DEBUG(bad, result);
 }
 
