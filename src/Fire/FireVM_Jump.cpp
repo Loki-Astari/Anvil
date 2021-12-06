@@ -93,7 +93,7 @@ void FireVM::runActionJumpCall(Instruction instruction)
 
     state.addressRegister[FrameP] = state.addressRegister[StackP];
 
-    switch(instruction & Assembler::Action_JumpSize_Mask)
+    switch (instruction & Assembler::Action_JumpSize_Mask)
     {
         case Assembler::JumpSize_Rel:
         {

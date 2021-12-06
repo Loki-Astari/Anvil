@@ -55,6 +55,7 @@ TEST(Assembler_JumpTest, Jump_Return_AL)
 {
     std::stringstream    result;
     std::istringstream   input(R"(
+CMD Init 5 10
 JUMP Return AL
 )");
 
@@ -66,10 +67,10 @@ JUMP Return AL
     assembler.assemble(input, codeBlock);
     bool bad = false;
     EXPECT_EQ_OR_LOG(bad, assembler.isOK(), true, result);
-    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 1, result);
-    if (codeBlock.size() == 1)
+    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 3, result);
+    if (codeBlock.size() == 3)
     {
-        EXPECT_EQ_OR_LOG(bad, codeBlock[0], Assembler::Act_Jump | Assembler::Jump_Return | Assembler::Jump_Condition_AL, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Return | Assembler::Jump_Condition_AL, result);
     }
     EXPECT_FALSE_OR_DEBUG(bad, result);
 }
@@ -78,6 +79,7 @@ TEST(Assembler_JumpTest, Jump_Return_EQ)
 {
     std::stringstream    result;
     std::istringstream   input(R"(
+CMD Init 5 10
 JUMP Return EQ
 )");
 
@@ -89,10 +91,10 @@ JUMP Return EQ
     assembler.assemble(input, codeBlock);
     bool bad = false;
     EXPECT_EQ_OR_LOG(bad, assembler.isOK(), true, result);
-    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 1, result);
-    if (codeBlock.size() == 1)
+    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 3, result);
+    if (codeBlock.size() == 3)
     {
-        EXPECT_EQ_OR_LOG(bad, codeBlock[0], Assembler::Act_Jump | Assembler::Jump_Return | Assembler::Jump_Condition_EQ, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Return | Assembler::Jump_Condition_EQ, result);
     }
     EXPECT_FALSE_OR_DEBUG(bad, result);
 }
@@ -101,6 +103,7 @@ TEST(Assembler_JumpTest, Jump_Return_NE)
 {
     std::stringstream    result;
     std::istringstream   input(R"(
+CMD Init 5 10
 JUMP Return NE
 )");
 
@@ -112,10 +115,10 @@ JUMP Return NE
     assembler.assemble(input, codeBlock);
     bool bad = false;
     EXPECT_EQ_OR_LOG(bad, assembler.isOK(), true, result);
-    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 1, result);
-    if (codeBlock.size() == 1)
+    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 3, result);
+    if (codeBlock.size() == 3)
     {
-        EXPECT_EQ_OR_LOG(bad, codeBlock[0], Assembler::Act_Jump | Assembler::Jump_Return | Assembler::Jump_Condition_NE, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Return | Assembler::Jump_Condition_NE, result);
     }
     EXPECT_FALSE_OR_DEBUG(bad, result);
 }
@@ -124,6 +127,7 @@ TEST(Assembler_JumpTest, Jump_Return_LT)
 {
     std::stringstream    result;
     std::istringstream   input(R"(
+CMD Init 5 10
 JUMP Return LT
 )");
 
@@ -135,10 +139,10 @@ JUMP Return LT
     assembler.assemble(input, codeBlock);
     bool bad = false;
     EXPECT_EQ_OR_LOG(bad, assembler.isOK(), true, result);
-    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 1, result);
-    if (codeBlock.size() == 1)
+    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 3, result);
+    if (codeBlock.size() == 3)
     {
-        EXPECT_EQ_OR_LOG(bad, codeBlock[0], Assembler::Act_Jump | Assembler::Jump_Return | Assembler::Jump_Condition_LT, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Return | Assembler::Jump_Condition_LT, result);
     }
     EXPECT_FALSE_OR_DEBUG(bad, result);
 }
@@ -147,6 +151,7 @@ TEST(Assembler_JumpTest, Jump_Return_LE)
 {
     std::stringstream    result;
     std::istringstream   input(R"(
+CMD Init 5 10
 JUMP Return LE
 )");
 
@@ -158,10 +163,10 @@ JUMP Return LE
     assembler.assemble(input, codeBlock);
     bool bad = false;
     EXPECT_EQ_OR_LOG(bad, assembler.isOK(), true, result);
-    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 1, result);
-    if (codeBlock.size() == 1)
+    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 3, result);
+    if (codeBlock.size() == 3)
     {
-        EXPECT_EQ_OR_LOG(bad, codeBlock[0], Assembler::Act_Jump | Assembler::Jump_Return | Assembler::Jump_Condition_LE, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Return | Assembler::Jump_Condition_LE, result);
     }
     EXPECT_FALSE_OR_DEBUG(bad, result);
 }
@@ -170,6 +175,7 @@ TEST(Assembler_JumpTest, Jump_Return_GT)
 {
     std::stringstream    result;
     std::istringstream   input(R"(
+CMD Init 5 10
 JUMP Return GT
 )");
 
@@ -181,10 +187,10 @@ JUMP Return GT
     assembler.assemble(input, codeBlock);
     bool bad = false;
     EXPECT_EQ_OR_LOG(bad, assembler.isOK(), true, result);
-    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 1, result);
-    if (codeBlock.size() == 1)
+    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 3, result);
+    if (codeBlock.size() == 3)
     {
-        EXPECT_EQ_OR_LOG(bad, codeBlock[0], Assembler::Act_Jump | Assembler::Jump_Return | Assembler::Jump_Condition_GT, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Return | Assembler::Jump_Condition_GT, result);
     }
     EXPECT_FALSE_OR_DEBUG(bad, result);
 }
@@ -193,6 +199,7 @@ TEST(Assembler_JumpTest, Jump_Return_GE)
 {
     std::stringstream    result;
     std::istringstream   input(R"(
+CMD Init 5 10
 JUMP Return GE
 )");
 
@@ -204,10 +211,10 @@ JUMP Return GE
     assembler.assemble(input, codeBlock);
     bool bad = false;
     EXPECT_EQ_OR_LOG(bad, assembler.isOK(), true, result);
-    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 1, result);
-    if (codeBlock.size() == 1)
+    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 3, result);
+    if (codeBlock.size() == 3)
     {
-        EXPECT_EQ_OR_LOG(bad, codeBlock[0], Assembler::Act_Jump | Assembler::Jump_Return | Assembler::Jump_Condition_GE, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Return | Assembler::Jump_Condition_GE, result);
     }
     EXPECT_FALSE_OR_DEBUG(bad, result);
 }
@@ -217,7 +224,7 @@ TEST(Assembler_JumpTest, Jump_Call_Rel_AL)
 {
     std::stringstream    result;
     std::istringstream   input(R"(
-CMD NoOp                // TODO Remove once we have CMD Init
+CMD Init 5 10
 Dest: CMD NoOp
 JUMP Call AL Rel Dest
 )");
@@ -230,11 +237,11 @@ JUMP Call AL Rel Dest
     assembler.assemble(input, codeBlock);
     bool bad = false;
     EXPECT_EQ_OR_LOG(bad, assembler.isOK(), true, result);
-    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 4, result);
-    if (codeBlock.size() == 4)
+    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 5, result);
+    if (codeBlock.size() == 5)
     {
-        EXPECT_EQ_OR_LOG(bad, codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Rel | Assembler::Jump_Condition_AL, result);
-        EXPECT_EQ_OR_LOG(bad, codeBlock[3], static_cast<Instruction>(-3), result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[3], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Rel | Assembler::Jump_Condition_AL, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[4], static_cast<Instruction>(-3), result);
     }
     EXPECT_FALSE_OR_DEBUG(bad, result);
 }
@@ -243,7 +250,7 @@ TEST(Assembler_JumpTest, Jump_Call_Rel_EQ)
 {
     std::stringstream    result;
     std::istringstream   input(R"(
-CMD NoOp                // TODO Remove once we have CMD Init
+CMD Init 5 10
 JUMP Call EQ Rel Dest
 CMD NoOp
 Dest: CMD NoOp
@@ -258,11 +265,11 @@ Dest: CMD NoOp
     assembler.assemble(input, codeBlock);
     bool bad = false;
     EXPECT_EQ_OR_LOG(bad, assembler.isOK(), true, result);
-    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 5, result);
-    if (codeBlock.size() == 5)
+    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 6, result);
+    if (codeBlock.size() == 6)
     {
-        EXPECT_EQ_OR_LOG(bad, codeBlock[1], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Rel | Assembler::Jump_Condition_EQ, result);
-        EXPECT_EQ_OR_LOG(bad, codeBlock[2], 1, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Rel | Assembler::Jump_Condition_EQ, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[3], 1, result);
     }
     EXPECT_FALSE_OR_DEBUG(bad, result);
 }
@@ -271,7 +278,7 @@ TEST(Assembler_JumpTest, Jump_Call_Rel_NE)
 {
     std::stringstream    result;
     std::istringstream   input(R"(
-CMD NoOp                // TODO Remove once we have CMD Init
+CMD Init 5 10
 JUMP Call NE Rel Dest
 Dest: CMD NoOp
 )");
@@ -284,11 +291,11 @@ Dest: CMD NoOp
     assembler.assemble(input, codeBlock);
     bool bad = false;
     EXPECT_EQ_OR_LOG(bad, assembler.isOK(), true, result);
-    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 4, result);
-    if (codeBlock.size() == 4)
+    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 5, result);
+    if (codeBlock.size() == 5)
     {
-        EXPECT_EQ_OR_LOG(bad, codeBlock[1], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Rel | Assembler::Jump_Condition_NE, result);
-        EXPECT_EQ_OR_LOG(bad, codeBlock[2], 0, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Rel | Assembler::Jump_Condition_NE, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[3], 0, result);
     }
     EXPECT_FALSE_OR_DEBUG(bad, result);
 }
@@ -297,7 +304,7 @@ TEST(Assembler_JumpTest, Jump_Call_Rel_LT)
 {
     std::stringstream    result;
     std::istringstream   input(R"(
-CMD NoOp                // TODO Remove once we have CMD Init
+CMD Init 5 10
 Dest: CMD NoOp
 CMD NoOp
 JUMP Call LT Rel Dest
@@ -311,11 +318,11 @@ JUMP Call LT Rel Dest
     assembler.assemble(input, codeBlock);
     bool bad = false;
     EXPECT_EQ_OR_LOG(bad, assembler.isOK(), true, result);
-    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 5, result);
-    if (codeBlock.size() == 5)
+    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 6, result);
+    if (codeBlock.size() == 6)
     {
-        EXPECT_EQ_OR_LOG(bad, codeBlock[3], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Rel | Assembler::Jump_Condition_LT, result);
-        EXPECT_EQ_OR_LOG(bad, codeBlock[4], static_cast<Instruction>(-4), result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[4], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Rel | Assembler::Jump_Condition_LT, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[5], static_cast<Instruction>(-4), result);
     }
     EXPECT_FALSE_OR_DEBUG(bad, result);
 }
@@ -324,7 +331,7 @@ TEST(Assembler_JumpTest, Jump_Call_Rel_LE)
 {
     std::stringstream    result;
     std::istringstream   input(R"(
-CMD NoOp                // TODO Remove once we have CMD Init
+CMD Init 5 10
 JUMP Call LE Rel Dest
 Dest: CMD NoOp
 )");
@@ -337,11 +344,11 @@ Dest: CMD NoOp
     assembler.assemble(input, codeBlock);
     bool bad = false;
     EXPECT_EQ_OR_LOG(bad, assembler.isOK(), true, result);
-    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 4, result);
-    if (codeBlock.size() == 4)
+    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 5, result);
+    if (codeBlock.size() == 5)
     {
-        EXPECT_EQ_OR_LOG(bad, codeBlock[1], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Rel | Assembler::Jump_Condition_LE, result);
-        EXPECT_EQ_OR_LOG(bad, codeBlock[2], 0, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Rel | Assembler::Jump_Condition_LE, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[3], 0, result);
     }
     EXPECT_FALSE_OR_DEBUG(bad, result);
 }
@@ -350,7 +357,7 @@ TEST(Assembler_JumpTest, Jump_Call_Rel_GT)
 {
     std::stringstream    result;
     std::istringstream   input(R"(
-CMD NoOp                // TODO Remove once we have CMD Init
+CMD Init 5 10
 Dest:
 CMD NoOp
 JUMP Call GT Rel Dest
@@ -364,11 +371,11 @@ JUMP Call GT Rel Dest
     assembler.assemble(input, codeBlock);
     bool bad = false;
     EXPECT_EQ_OR_LOG(bad, assembler.isOK(), true, result);
-    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 4, result);
-    if (codeBlock.size() == 4)
+    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 5, result);
+    if (codeBlock.size() == 5)
     {
-        EXPECT_EQ_OR_LOG(bad, codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Rel | Assembler::Jump_Condition_GT, result);
-        EXPECT_EQ_OR_LOG(bad, codeBlock[3], static_cast<Instruction>(-3), result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[3], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Rel | Assembler::Jump_Condition_GT, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[4], static_cast<Instruction>(-3), result);
     }
     EXPECT_FALSE_OR_DEBUG(bad, result);
 }
@@ -377,7 +384,7 @@ TEST(Assembler_JumpTest, Jump_Call_Rel_GE)
 {
     std::stringstream    result;
     std::istringstream   input(R"(
-CMD NoOp                // TODO Remove once we have CMD Init
+CMD Init 5 10
 Dest: JUMP Call GE Rel Dest
 )");
 
@@ -389,11 +396,11 @@ Dest: JUMP Call GE Rel Dest
     assembler.assemble(input, codeBlock);
     bool bad = false;
     EXPECT_EQ_OR_LOG(bad, assembler.isOK(), true, result);
-    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 3, result);
-    if (codeBlock.size() == 3)
+    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 4, result);
+    if (codeBlock.size() == 4)
     {
-        EXPECT_EQ_OR_LOG(bad, codeBlock[1], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Rel | Assembler::Jump_Condition_GE, result);
-        EXPECT_EQ_OR_LOG(bad, codeBlock[2], static_cast<Instruction>(-2), result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Rel | Assembler::Jump_Condition_GE, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[3], static_cast<Instruction>(-2), result);
     }
     EXPECT_FALSE_OR_DEBUG(bad, result);
 }
@@ -402,7 +409,7 @@ TEST(Assembler_JumpTest, Jump_Call_Abs_AL)
 {
     std::stringstream    result;
     std::istringstream   input(R"(
-CMD NoOp                // TODO Remove once we have CMD Init
+CMD Init 5 10
 Dest: CMD NoOp
 JUMP Call AL Abs Dest
 )");
@@ -415,12 +422,12 @@ JUMP Call AL Abs Dest
     assembler.assemble(input, codeBlock);
     bool bad = false;
     EXPECT_EQ_OR_LOG(bad, assembler.isOK(), true, result);
-    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 5, result);
-    if (codeBlock.size() == 5)
+    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 6, result);
+    if (codeBlock.size() == 6)
     {
-        EXPECT_EQ_OR_LOG(bad, codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Abs | Assembler::Jump_Condition_AL, result);
-        EXPECT_EQ_OR_LOG(bad, codeBlock[3], 0, result);
-        EXPECT_EQ_OR_LOG(bad, codeBlock[4], 1, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[3], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Abs | Assembler::Jump_Condition_AL, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[4], 0, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[5], 2, result);
     }
     EXPECT_FALSE_OR_DEBUG(bad, result);
 }
@@ -429,7 +436,7 @@ TEST(Assembler_JumpTest, Jump_Call_Abs_EQ)
 {
     std::stringstream    result;
     std::istringstream   input(R"(
-CMD NoOp                // TODO Remove once we have CMD Init
+CMD Init 5 10
 JUMP Call EQ Abs Dest
 CMD NoOp
 Dest: CMD NoOp
@@ -444,12 +451,12 @@ Dest: CMD NoOp
     assembler.assemble(input, codeBlock);
     bool bad = false;
     EXPECT_EQ_OR_LOG(bad, assembler.isOK(), true, result);
-    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 6, result);
-    if (codeBlock.size() == 6)
+    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 7, result);
+    if (codeBlock.size() == 7)
     {
-        EXPECT_EQ_OR_LOG(bad, codeBlock[1], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Abs | Assembler::Jump_Condition_EQ, result);
-        EXPECT_EQ_OR_LOG(bad, codeBlock[2], 0, result);
-        EXPECT_EQ_OR_LOG(bad, codeBlock[3], 5, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Abs | Assembler::Jump_Condition_EQ, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[3], 0, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[4], 6, result);
     }
     EXPECT_FALSE_OR_DEBUG(bad, result);
 }
@@ -458,7 +465,7 @@ TEST(Assembler_JumpTest, Jump_Call_Abs_NE)
 {
     std::stringstream    result;
     std::istringstream   input(R"(
-CMD NoOp                // TODO Remove once we have CMD Init
+CMD Init 5 10
 JUMP Call NE Abs Dest
 Dest: CMD NoOp
 )");
@@ -471,12 +478,12 @@ Dest: CMD NoOp
     assembler.assemble(input, codeBlock);
     bool bad = false;
     EXPECT_EQ_OR_LOG(bad, assembler.isOK(), true, result);
-    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 5, result);
-    if (codeBlock.size() == 5)
+    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 6, result);
+    if (codeBlock.size() == 6)
     {
-        EXPECT_EQ_OR_LOG(bad, codeBlock[1], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Abs | Assembler::Jump_Condition_NE, result);
-        EXPECT_EQ_OR_LOG(bad, codeBlock[2], 0, result);
-        EXPECT_EQ_OR_LOG(bad, codeBlock[3], 4, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Abs | Assembler::Jump_Condition_NE, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[3], 0, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[4], 5, result);
     }
     EXPECT_FALSE_OR_DEBUG(bad, result);
 }
@@ -485,7 +492,7 @@ TEST(Assembler_JumpTest, Jump_Call_Abs_LT)
 {
     std::stringstream    result;
     std::istringstream   input(R"(
-CMD NoOp                // TODO Remove once we have CMD Init
+CMD Init 5 10
 Dest: CMD NoOp
 CMD NoOp
 JUMP Call LT Abs Dest
@@ -499,12 +506,12 @@ JUMP Call LT Abs Dest
     assembler.assemble(input, codeBlock);
     bool bad = false;
     EXPECT_EQ_OR_LOG(bad, assembler.isOK(), true, result);
-    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 6, result);
-    if (codeBlock.size() == 6)
+    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 7, result);
+    if (codeBlock.size() == 7)
     {
-        EXPECT_EQ_OR_LOG(bad, codeBlock[3], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Abs | Assembler::Jump_Condition_LT, result);
-        EXPECT_EQ_OR_LOG(bad, codeBlock[4], 0, result);
-        EXPECT_EQ_OR_LOG(bad, codeBlock[5], 1, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[4], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Abs | Assembler::Jump_Condition_LT, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[5], 0, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[6], 2, result);
     }
     EXPECT_FALSE_OR_DEBUG(bad, result);
 }
@@ -513,7 +520,7 @@ TEST(Assembler_JumpTest, Jump_Call_Abs_LE)
 {
     std::stringstream    result;
     std::istringstream   input(R"(
-CMD NoOp                // TODO Remove once we have CMD Init
+CMD Init 5 10
 JUMP Call LE Abs Dest
 Dest: CMD NoOp
 )");
@@ -526,12 +533,12 @@ Dest: CMD NoOp
     assembler.assemble(input, codeBlock);
     bool bad = false;
     EXPECT_EQ_OR_LOG(bad, assembler.isOK(), true, result);
-    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 5, result);
-    if (codeBlock.size() == 5)
+    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 6, result);
+    if (codeBlock.size() == 6)
     {
-        EXPECT_EQ_OR_LOG(bad, codeBlock[1], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Abs | Assembler::Jump_Condition_LE, result);
-        EXPECT_EQ_OR_LOG(bad, codeBlock[2], 0, result);
-        EXPECT_EQ_OR_LOG(bad, codeBlock[3], 4, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Abs | Assembler::Jump_Condition_LE, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[3], 0, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[4], 5, result);
     }
     EXPECT_FALSE_OR_DEBUG(bad, result);
 }
@@ -540,7 +547,7 @@ TEST(Assembler_JumpTest, Jump_Call_Abs_GT)
 {
     std::stringstream    result;
     std::istringstream   input(R"(
-CMD NoOp                // TODO Remove once we have CMD Init
+CMD Init 5 10
 Dest:
 CMD NoOp
 JUMP Call GT Abs Dest
@@ -554,12 +561,12 @@ JUMP Call GT Abs Dest
     assembler.assemble(input, codeBlock);
     bool bad = false;
     EXPECT_EQ_OR_LOG(bad, assembler.isOK(), true, result);
-    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 5, result);
-    if (codeBlock.size() == 5)
+    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 6, result);
+    if (codeBlock.size() == 6)
     {
-        EXPECT_EQ_OR_LOG(bad, codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Abs | Assembler::Jump_Condition_GT, result);
-        EXPECT_EQ_OR_LOG(bad, codeBlock[3], 0, result);
-        EXPECT_EQ_OR_LOG(bad, codeBlock[4], 1, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[3], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Abs | Assembler::Jump_Condition_GT, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[4], 0, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[5], 2, result);
     }
     EXPECT_FALSE_OR_DEBUG(bad, result);
 }
@@ -568,8 +575,35 @@ TEST(Assembler_JumpTest, Jump_Call_Abs_GE)
 {
     std::stringstream    result;
     std::istringstream   input(R"(
-CMD NoOp                // TODO Remove once we have CMD Init
+CMD Init 5 10
 Dest: JUMP Call GE Abs Dest
+)");
+
+    SymbolTable         stable;
+    CodeBlock           codeBlock;
+
+    Assembler           assembler(result, stable);
+
+    assembler.assemble(input, codeBlock);
+    bool bad = false;
+    EXPECT_EQ_OR_LOG(bad, assembler.isOK(), true, result);
+    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 5, result);
+    if (codeBlock.size() == 5)
+    {
+        EXPECT_EQ_OR_LOG(bad, codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Abs | Assembler::Jump_Condition_GE, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[3], 0, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[4], 2, result);
+    }
+    EXPECT_FALSE_OR_DEBUG(bad, result);
+}
+
+TEST(Assembler_JumpTest, Jump_Call_Mem_AL)
+{
+    std::stringstream    result;
+    std::istringstream   input(R"(
+CMD Init 5 10
+Dest: CMD NoOp
+JUMP Call AL Mem Global
 )");
 
     SymbolTable         stable;
@@ -583,34 +617,7 @@ Dest: JUMP Call GE Abs Dest
     EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 4, result);
     if (codeBlock.size() == 4)
     {
-        EXPECT_EQ_OR_LOG(bad, codeBlock[1], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Abs | Assembler::Jump_Condition_GE, result);
-        EXPECT_EQ_OR_LOG(bad, codeBlock[2], 0, result);
-        EXPECT_EQ_OR_LOG(bad, codeBlock[3], 1, result);
-    }
-    EXPECT_FALSE_OR_DEBUG(bad, result);
-}
-
-TEST(Assembler_JumpTest, Jump_Call_Mem_AL)
-{
-    std::stringstream    result;
-    std::istringstream   input(R"(
-CMD NoOp                // TODO Remove once we have CMD Init
-Dest: CMD NoOp
-JUMP Call AL Mem Global
-)");
-
-    SymbolTable         stable;
-    CodeBlock           codeBlock;
-
-    Assembler           assembler(result, stable);
-
-    assembler.assemble(input, codeBlock);
-    bool bad = false;
-    EXPECT_EQ_OR_LOG(bad, assembler.isOK(), true, result);
-    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 3, result);
-    if (codeBlock.size() == 3)
-    {
-        EXPECT_EQ_OR_LOG(bad, codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Mem | Assembler::Jump_Reg_Global | Assembler::Jump_Condition_AL, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[3], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Mem | Assembler::Jump_Reg_Global | Assembler::Jump_Condition_AL, result);
     }
     EXPECT_FALSE_OR_DEBUG(bad, result);
 }
@@ -619,7 +626,7 @@ TEST(Assembler_JumpTest, Jump_Call_Mem_EQ)
 {
     std::stringstream    result;
     std::istringstream   input(R"(
-CMD NoOp                // TODO Remove once we have CMD Init
+CMD Init 5 10
 JUMP Call EQ Mem FramePointer
 CMD NoOp
 Dest: CMD NoOp
@@ -634,10 +641,10 @@ Dest: CMD NoOp
     assembler.assemble(input, codeBlock);
     bool bad = false;
     EXPECT_EQ_OR_LOG(bad, assembler.isOK(), true, result);
-    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 4, result);
-    if (codeBlock.size() == 4)
+    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 5, result);
+    if (codeBlock.size() == 5)
     {
-        EXPECT_EQ_OR_LOG(bad, codeBlock[1], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Mem | Assembler::Jump_Reg_FramePointer | Assembler::Jump_Condition_EQ, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Mem | Assembler::Jump_Reg_FramePointer | Assembler::Jump_Condition_EQ, result);
     }
     EXPECT_FALSE_OR_DEBUG(bad, result);
 }
@@ -646,7 +653,7 @@ TEST(Assembler_JumpTest, Jump_Call_Mem_NE)
 {
     std::stringstream    result;
     std::istringstream   input(R"(
-CMD NoOp                // TODO Remove once we have CMD Init
+CMD Init 5 10
 JUMP Call NE Mem This
 Dest: CMD NoOp
 )");
@@ -659,10 +666,10 @@ Dest: CMD NoOp
     assembler.assemble(input, codeBlock);
     bool bad = false;
     EXPECT_EQ_OR_LOG(bad, assembler.isOK(), true, result);
-    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 3, result);
-    if (codeBlock.size() == 3)
+    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 4, result);
+    if (codeBlock.size() == 4)
     {
-        EXPECT_EQ_OR_LOG(bad, codeBlock[1], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Mem | Assembler::Jump_Reg_This | Assembler::Jump_Condition_NE, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Mem | Assembler::Jump_Reg_This | Assembler::Jump_Condition_NE, result);
     }
     EXPECT_FALSE_OR_DEBUG(bad, result);
 }
@@ -671,7 +678,7 @@ TEST(Assembler_JumpTest, Jump_Call_Mem_LT)
 {
     std::stringstream    result;
     std::istringstream   input(R"(
-CMD NoOp                // TODO Remove once we have CMD Init
+CMD Init 5 10
 Dest: CMD NoOp
 CMD NoOp
 JUMP Call LT Mem Extra
@@ -685,10 +692,10 @@ JUMP Call LT Mem Extra
     assembler.assemble(input, codeBlock);
     bool bad = false;
     EXPECT_EQ_OR_LOG(bad, assembler.isOK(), true, result);
-    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 4, result);
-    if (codeBlock.size() == 4)
+    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 5, result);
+    if (codeBlock.size() == 5)
     {
-        EXPECT_EQ_OR_LOG(bad, codeBlock[3], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Mem | Assembler::Jump_Reg_Extra | Assembler::Jump_Condition_LT, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[4], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Mem | Assembler::Jump_Reg_Extra | Assembler::Jump_Condition_LT, result);
     }
     EXPECT_FALSE_OR_DEBUG(bad, result);
 }
@@ -697,7 +704,7 @@ TEST(Assembler_JumpTest, Jump_Call_Mem_LE)
 {
     std::stringstream    result;
     std::istringstream   input(R"(
-CMD NoOp                // TODO Remove once we have CMD Init
+CMD Init 5 10
 JUMP Call LE Mem StackPointer
 Dest: CMD NoOp
 )");
@@ -710,10 +717,10 @@ Dest: CMD NoOp
     assembler.assemble(input, codeBlock);
     bool bad = false;
     EXPECT_EQ_OR_LOG(bad, assembler.isOK(), true, result);
-    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 3, result);
-    if (codeBlock.size() == 3)
+    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 4, result);
+    if (codeBlock.size() == 4)
     {
-        EXPECT_EQ_OR_LOG(bad, codeBlock[1], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Mem | Assembler::Jump_Reg_StackPointer | Assembler::Jump_Condition_LE, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Mem | Assembler::Jump_Reg_StackPointer | Assembler::Jump_Condition_LE, result);
     }
     EXPECT_FALSE_OR_DEBUG(bad, result);
 }
@@ -722,7 +729,7 @@ TEST(Assembler_JumpTest, Jump_Call_Mem_GT)
 {
     std::stringstream    result;
     std::istringstream   input(R"(
-CMD NoOp                // TODO Remove once we have CMD Init
+CMD Init 5 10
 Dest:
 CMD NoOp
 JUMP Call GT Mem Expr-1
@@ -736,10 +743,10 @@ JUMP Call GT Mem Expr-1
     assembler.assemble(input, codeBlock);
     bool bad = false;
     EXPECT_EQ_OR_LOG(bad, assembler.isOK(), true, result);
-    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 3, result);
-    if (codeBlock.size() == 3)
+    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 4, result);
+    if (codeBlock.size() == 4)
     {
-        EXPECT_EQ_OR_LOG(bad, codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Mem | Assembler::Jump_Reg_Expr_1 | Assembler::Jump_Condition_GT, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[3], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Mem | Assembler::Jump_Reg_Expr_1 | Assembler::Jump_Condition_GT, result);
     }
     EXPECT_FALSE_OR_DEBUG(bad, result);
 }
@@ -748,7 +755,7 @@ TEST(Assembler_JumpTest, Jump_Call_Mem_GE)
 {
     std::stringstream    result;
     std::istringstream   input(R"(
-CMD NoOp                // TODO Remove once we have CMD Init
+CMD Init 5 10
 Dest: JUMP Call GE Mem Expr-2
 )");
 
@@ -760,10 +767,10 @@ Dest: JUMP Call GE Mem Expr-2
     assembler.assemble(input, codeBlock);
     bool bad = false;
     EXPECT_EQ_OR_LOG(bad, assembler.isOK(), true, result);
-    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 2, result);
-    if (codeBlock.size() == 2)
+    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 3, result);
+    if (codeBlock.size() == 3)
     {
-        EXPECT_EQ_OR_LOG(bad, codeBlock[1], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Mem | Assembler::Jump_Reg_Expr_2 | Assembler::Jump_Condition_GE, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Mem | Assembler::Jump_Reg_Expr_2 | Assembler::Jump_Condition_GE, result);
     }
     EXPECT_FALSE_OR_DEBUG(bad, result);
 }
@@ -772,7 +779,7 @@ TEST(Assembler_JumpTest, Jump_Call_Mem_Expr3)
 {
     std::stringstream    result;
     std::istringstream   input(R"(
-CMD NoOp                // TODO Remove once we have CMD Init
+CMD Init 5 10
 Dest: JUMP Call GE Mem Expr-3
 )");
 
@@ -784,10 +791,10 @@ Dest: JUMP Call GE Mem Expr-3
     assembler.assemble(input, codeBlock);
     bool bad = false;
     EXPECT_EQ_OR_LOG(bad, assembler.isOK(), true, result);
-    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 2, result);
-    if (codeBlock.size() == 2)
+    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 3, result);
+    if (codeBlock.size() == 3)
     {
-        EXPECT_EQ_OR_LOG(bad, codeBlock[1], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Mem | Assembler::Jump_Reg_Expr_3 | Assembler::Jump_Condition_GE, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Mem | Assembler::Jump_Reg_Expr_3 | Assembler::Jump_Condition_GE, result);
     }
     EXPECT_FALSE_OR_DEBUG(bad, result);
 }
@@ -799,7 +806,6 @@ TEST(Assembler_JumpTest, Jump_Invalid)
 {
     std::stringstream    result;
     std::istringstream   input(R"(
-CMD NoOp                // TODO Remove once we have CMD Init
 Dest: JUMP ZZ AL Dest
 )");
 
@@ -816,7 +822,6 @@ TEST(Assembler_JumpTest, Jump_Invalid_Call_Condition)
 {
     std::stringstream    result;
     std::istringstream   input(R"(
-CMD NoOp                // TODO Remove once we have CMD Init
 Dest: JUMP Call XX Dest
 )");
 
@@ -833,7 +838,6 @@ TEST(Assembler_JumpTest, Jump_Invalid_Return_Condition)
 {
     std::stringstream    result;
     std::istringstream   input(R"(
-CMD NoOp                // TODO Remove once we have CMD Init
 Dest: JUMP Return XX
 )");
 
@@ -850,7 +854,6 @@ TEST(Assembler_JumpTest, Jump_Return_Extra)
 {
     std::stringstream    result;
     std::istringstream   input(R"(
-CMD NoOp                // TODO Remove once we have CMD Init
 Dest: JUMP Return AL Dest
 )");
 
@@ -867,7 +870,6 @@ TEST(Assembler_JumpTest, Jump_Call_Extra)
 {
     std::stringstream    result;
     std::istringstream   input(R"(
-CMD NoOp                // TODO Remove once we have CMD Init
 Dest: JUMP Call AL Rel Dest XX
 )");
 
@@ -900,7 +902,6 @@ TEST(Assembler_JumpTest, Jump_Call_NoDestiantion)
 {
     std::stringstream    result;
     std::istringstream   input(R"(
-CMD NoOp                // TODO Remove once we have CMD Init
 Dest: JUMP Call GE Abs
 )");
 
@@ -917,7 +918,6 @@ TEST(Assembler_JumpTest, Jump_Call_BadLabel)
 {
     std::stringstream    result;
     std::istringstream   input(R"(
-CMD NoOp                // TODO Remove once we have CMD Init
 Dest: JUMP Call GE Abs LabelThatDoesNotExist
 )");
 
@@ -934,7 +934,6 @@ TEST(Assembler_JumpTest, Jump_Call_BadJump)
 {
     std::stringstream    result;
     std::istringstream   input(R"(
-CMD NoOp                // TODO Remove once we have CMD Init
 Dest: JUMP Spoon
 )");
 
@@ -951,7 +950,6 @@ TEST(Assembler_JumpTest, Jump_Call_BadLength)
 {
     std::stringstream    result;
     std::istringstream   input(R"(
-CMD NoOp                // TODO Remove once we have CMD Init
 Dest: JUMP Call GE Ping
 )");
 
@@ -968,7 +966,6 @@ TEST(Assembler_JumpTest, Jump_Call_BadRegister)
 {
     std::stringstream    result;
     std::istringstream   input(R"(
-CMD NoOp                // TODO Remove once we have CMD Init
 Dest: JUMP Call GE Mem Plop
 )");
 
@@ -985,7 +982,6 @@ TEST(Assembler_JumpTest, Jump_Call_BadRelative)
 {
     std::stringstream    result;
     std::istringstream   input(R"(
-CMD NoOp                // TODO Remove once we have CMD Init
 JUMP Call AL Rel Dest
 )");
 

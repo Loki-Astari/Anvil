@@ -34,6 +34,7 @@ class Assembler
         void secondPass(std::istream& input, std::ostream& output);
 
         void doPass(std::istream& input, std::function<void(Instruction)>&& action, bool buildSymbols);
+        void doLine(int count, std::function<void(Instruction)>&& action);
 
         int assemble(std::string& line, bool buildSymbols);
             int assemble_Cmd(std::istream& lineStream);

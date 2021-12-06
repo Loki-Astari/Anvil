@@ -39,10 +39,11 @@ CMD NoOp
     bool bad = false;
     EXPECT_EQ_OR_LOG(bad, assembler.isOK(), true, result);
 
-    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 1, result);
-    if (codeBlock.size() == 1)
+    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 3, result);
+    if (codeBlock.size() == 3)
     {
-        EXPECT_EQ_OR_LOG(bad, codeBlock[0], Assembler::Act_CMD | Assembler::Cmd_NoOp, result);
+        // NOTE: Assembler added CMD Init 0xFF 0xFFFF
+        EXPECT_EQ_OR_LOG(bad, codeBlock[2], Assembler::Act_CMD | Assembler::Cmd_NoOp, result);
     }
     EXPECT_FALSE_OR_DEBUG(bad, result);
 }
@@ -62,10 +63,11 @@ CMD Kill 128
     bool bad = false;
     EXPECT_EQ_OR_LOG(bad, assembler.isOK(), true, result);
 
-    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 1, result);
-    if (codeBlock.size() == 1)
+    EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 3, result);
+    if (codeBlock.size() == 3)
     {
-        EXPECT_EQ_OR_LOG(bad, codeBlock[0], Assembler::Act_CMD | Assembler::Cmd_Kill | 128, result);
+        // NOTE: Assembler added CMD Init 0xFF 0xFFFF
+        EXPECT_EQ_OR_LOG(bad, codeBlock[2], Assembler::Act_CMD | Assembler::Cmd_Kill | 128, result);
     }
     EXPECT_FALSE_OR_DEBUG(bad, result);
 }
@@ -279,7 +281,6 @@ CMD Init -255 255
     Assembler           assembler(result, stable);
     assembler.assemble(input, codeBlock);
     EXPECT_FALSE_OR_DEBUG(assembler.isOK(), result);
-    std::cerr << "Result:\n=============\n" << result.rdbuf() << "\n==============\n";
 }
 
 TEST(Assembler_CmdTest, Cmd_Init_NegativeStack)
@@ -295,7 +296,6 @@ CMD Init 255 -255
     Assembler           assembler(result, stable);
     assembler.assemble(input, codeBlock);
     EXPECT_FALSE_OR_DEBUG(assembler.isOK(), result);
-    std::cerr << "Result:\n=============\n" << result.rdbuf() << "\n==============\n";
 }
 
 

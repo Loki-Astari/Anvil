@@ -44,7 +44,16 @@ void FireVM::runActionCMDInit(Instruction instruction)
         ++state.programCounter;
         stackSize = (stackSize << 16) | memory[state.programCounter];
     }
+    globalSize = std::max(static_cast<std::uint32_t>(1), globalSize);
+    stackSize  = std::max(static_cast<std::uint32_t>(1), stackSize);
 
     state.global.resize(globalSize);
     state.stack.resize(stackSize);
+
+    std::uint32_t oldSize = state.addressRegister[StackP] -  state.addressRegister[FrameP];
+    oldSize = std::min(oldSize, stackSize);
+
+    state.addressRegister[Global] = &state.global[0];
+    state.addressRegister[FrameP] = &state.stack[oldSize];
+    state.addressRegister[StackP] = &state.stack[0];
 }

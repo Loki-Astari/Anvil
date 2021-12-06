@@ -45,15 +45,48 @@ bool Assembler::isOK() const
 void Assembler::doPass(std::istream& input, std::function<void(Instruction)>&& action, bool buildSymbols)
 {
     std::string     line;
+    int             count = 0;
     addr = 0;
+
+    // Find the first non empty line.
+    while (count == 0 && std::getline(input, line))
+    {
+        // We save a copy of the line as assemble mutates the input line.
+        std::string testLine = line;
+        count = assemble(testLine, buildSymbols);
+    }
+
+    // If the first command is not: CMD Init X Y
+    // Then insert this at the beginning of the application
+    // This is needed to set up the VM.
+    if ((count == 0) || ((instructions[0] & (Action_Mask | Action_CMD_Mask)) != (Act_CMD | Cmd_Init)))
+    {
+        std::string initCommand = "CMD Init 255 65535";
+        count = assemble(initCommand, buildSymbols);
+        doLine(count, std::move(action));
+
+        // Now we must redo the assembly of the first line.
+        // It may have had symbols on and this need to be re-calculated
+        // now that we have inserted the CMD Init in-front of it.
+        count = assemble(line, buildSymbols);
+    }
+    // Finally generate the code for the first line.
+    doLine(count, std::move(action));
+
+    // Now processes all the other lines.
     while (std::getline(input, line))
     {
-        auto count = assemble(line, buildSymbols);
-        for (int loop = 0; loop < count; ++loop)
-        {
-            action(instructions[loop]);
-            ++addr;
-        }
+        count = assemble(line, buildSymbols);
+        doLine(count, std::move(action));
+    }
+}
+
+void Assembler::doLine(int count, std::function<void(Instruction)>&& action)
+{
+    for (int loop = 0; loop < count; ++loop)
+    {
+        action(instructions[loop]);
+        ++addr;
     }
 }
 
