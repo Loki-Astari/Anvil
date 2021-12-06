@@ -75,7 +75,7 @@ CMD Kill 1023
 
     EXPECT_EQ_OR_LOG(bad, vm.machineState.global.size(), 255, result);
     EXPECT_EQ_OR_LOG(bad, vm.machineState.stack.size(), 256, result);
-    EXPECT_EQ_OR_LOG(bad, vm.codeBlock.size(), 3, result);
+    EXPECT_EQ_OR_LOG(bad, vm.codeBlock.size(), 5, result);
     EXPECT_EQ_OR_LOG(bad, output, 1023, result);
     EXPECT_FALSE_OR_DEBUG(bad, result);
 }
@@ -93,7 +93,7 @@ CMD Kill 1023
 
     EXPECT_EQ_OR_LOG(bad, vm.machineState.global.size(), 256, result);
     EXPECT_EQ_OR_LOG(bad, vm.machineState.stack.size(), 256, result);
-    EXPECT_EQ_OR_LOG(bad, vm.codeBlock.size(), 4, result);
+    EXPECT_EQ_OR_LOG(bad, vm.codeBlock.size(), 6, result);
     EXPECT_EQ_OR_LOG(bad, output, 1023, result);
     EXPECT_FALSE_OR_DEBUG(bad, result);
 }
@@ -110,7 +110,7 @@ CMD Kill 1023
 
     EXPECT_EQ_OR_LOG(bad, vm.machineState.global.size(), 255, result);
     EXPECT_EQ_OR_LOG(bad, vm.machineState.stack.size(), 65536, result);
-    EXPECT_EQ_OR_LOG(bad, vm.codeBlock.size(), 4, result);
+    EXPECT_EQ_OR_LOG(bad, vm.codeBlock.size(), 6, result);
     EXPECT_EQ_OR_LOG(bad, output, 1023, result);
     EXPECT_FALSE_OR_DEBUG(bad, result);
 }
@@ -127,7 +127,7 @@ CMD Kill 1023
 
     EXPECT_EQ_OR_LOG(bad, vm.machineState.global.size(), 256, result);
     EXPECT_EQ_OR_LOG(bad, vm.machineState.stack.size(), 65536, result);
-    EXPECT_EQ_OR_LOG(bad, vm.codeBlock.size(), 5, result);
+    EXPECT_EQ_OR_LOG(bad, vm.codeBlock.size(), 7, result);
     EXPECT_EQ_OR_LOG(bad, output, 1023, result);
     EXPECT_FALSE_OR_DEBUG(bad, result);
 }

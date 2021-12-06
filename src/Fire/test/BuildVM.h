@@ -38,7 +38,15 @@ struct BuildVM
         machineState.global.resize(100);
         machineState.stack.resize(100);
 
-        std::istringstream                      inputStream(std::move(input));
+        // Technicall we don't need this as the assembler will
+        // auto add CMD Init if not included.
+        // BUT: we set the size to 100 with the resizes above.
+        //      we using the same size here in the init no
+        //      sub sequent resize will be done and we can get
+        //      get the address of global and stack locations
+        //      before we call run() to help set up the tests.
+        std::string                             init = "CMD Init 100 100\n";
+        std::istringstream                      inputStream(init + input);
         ThorsAnvil::Anvil::Fire::Assembler      assembler(result, stable);
 
         assembler.assemble(inputStream, codeBlock);
