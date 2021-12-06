@@ -2,7 +2,7 @@
 
 #include "FireVM.h"
 #include "Assembler.h"
-#include "../Ice/test/Utility.h"
+#include "test/BuildVM.h"
 
 #include <sstream>
 

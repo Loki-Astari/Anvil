@@ -2,7 +2,6 @@
 
 #include "Assembler.h"
 #include "test/BuildVM.h"
-#include "../Ice/test/Utility.h"
 
 #include <sstream>
 
@@ -54,14 +53,13 @@ using namespace ThorsAnvil::Anvil::Fire;
 
 TEST(Assembler_JumpTest, Jump_Return_AL)
 {
-    std::stringstream    result;
-    BuildAssembler       as(result, R"(
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(result, bad, R"(
 CMD Init 5 10
 JUMP Return AL
 )");
 
-    bool bad = false;
-    EXPECT_EQ_OR_LOG(bad, as.assembler.isOK(), true, result);
     EXPECT_EQ_OR_LOG(bad, as.codeBlock.size(), 3, result);
     if (as.codeBlock.size() == 3)
     {
@@ -72,14 +70,13 @@ JUMP Return AL
 
 TEST(Assembler_JumpTest, Jump_Return_EQ)
 {
-    std::stringstream    result;
-    BuildAssembler       as(result, R"(
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(result, bad, R"(
 CMD Init 5 10
 JUMP Return EQ
 )");
 
-    bool bad = false;
-    EXPECT_EQ_OR_LOG(bad, as.assembler.isOK(), true, result);
     EXPECT_EQ_OR_LOG(bad, as.codeBlock.size(), 3, result);
     if (as.codeBlock.size() == 3)
     {
@@ -90,14 +87,13 @@ JUMP Return EQ
 
 TEST(Assembler_JumpTest, Jump_Return_NE)
 {
-    std::stringstream    result;
-    BuildAssembler       as(result, R"(
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(result, bad, R"(
 CMD Init 5 10
 JUMP Return NE
 )");
 
-    bool bad = false;
-    EXPECT_EQ_OR_LOG(bad, as.assembler.isOK(), true, result);
     EXPECT_EQ_OR_LOG(bad, as.codeBlock.size(), 3, result);
     if (as.codeBlock.size() == 3)
     {
@@ -108,14 +104,13 @@ JUMP Return NE
 
 TEST(Assembler_JumpTest, Jump_Return_LT)
 {
-    std::stringstream    result;
-    BuildAssembler       as(result, R"(
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(result, bad, R"(
 CMD Init 5 10
 JUMP Return LT
 )");
 
-    bool bad = false;
-    EXPECT_EQ_OR_LOG(bad, as.assembler.isOK(), true, result);
     EXPECT_EQ_OR_LOG(bad, as.codeBlock.size(), 3, result);
     if (as.codeBlock.size() == 3)
     {
@@ -126,14 +121,13 @@ JUMP Return LT
 
 TEST(Assembler_JumpTest, Jump_Return_LE)
 {
-    std::stringstream    result;
-    BuildAssembler       as(result, R"(
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(result, bad, R"(
 CMD Init 5 10
 JUMP Return LE
 )");
 
-    bool bad = false;
-    EXPECT_EQ_OR_LOG(bad, as.assembler.isOK(), true, result);
     EXPECT_EQ_OR_LOG(bad, as.codeBlock.size(), 3, result);
     if (as.codeBlock.size() == 3)
     {
@@ -144,14 +138,13 @@ JUMP Return LE
 
 TEST(Assembler_JumpTest, Jump_Return_GT)
 {
-    std::stringstream    result;
-    BuildAssembler       as(result, R"(
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(result, bad, R"(
 CMD Init 5 10
 JUMP Return GT
 )");
 
-    bool bad = false;
-    EXPECT_EQ_OR_LOG(bad, as.assembler.isOK(), true, result);
     EXPECT_EQ_OR_LOG(bad, as.codeBlock.size(), 3, result);
     if (as.codeBlock.size() == 3)
     {
@@ -162,14 +155,13 @@ JUMP Return GT
 
 TEST(Assembler_JumpTest, Jump_Return_GE)
 {
-    std::stringstream    result;
-    BuildAssembler       as(result, R"(
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(result, bad, R"(
 CMD Init 5 10
 JUMP Return GE
 )");
 
-    bool bad = false;
-    EXPECT_EQ_OR_LOG(bad, as.assembler.isOK(), true, result);
     EXPECT_EQ_OR_LOG(bad, as.codeBlock.size(), 3, result);
     if (as.codeBlock.size() == 3)
     {
@@ -181,15 +173,14 @@ JUMP Return GE
 
 TEST(Assembler_JumpTest, Jump_Call_Rel_AL)
 {
-    std::stringstream    result;
-    BuildAssembler       as(result, R"(
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(result, bad, R"(
 CMD Init 5 10
 Dest: CMD NoOp
 JUMP Call AL Rel Dest
 )");
 
-    bool bad = false;
-    EXPECT_EQ_OR_LOG(bad, as.assembler.isOK(), true, result);
     EXPECT_EQ_OR_LOG(bad, as.codeBlock.size(), 5, result);
     if (as.codeBlock.size() == 5)
     {
@@ -201,8 +192,9 @@ JUMP Call AL Rel Dest
 
 TEST(Assembler_JumpTest, Jump_Call_Rel_EQ)
 {
-    std::stringstream    result;
-    BuildAssembler       as(result, R"(
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(result, bad, R"(
 CMD Init 5 10
 JUMP Call EQ Rel Dest
 CMD NoOp
@@ -210,8 +202,6 @@ Dest: CMD NoOp
 
 )");
 
-    bool bad = false;
-    EXPECT_EQ_OR_LOG(bad, as.assembler.isOK(), true, result);
     EXPECT_EQ_OR_LOG(bad, as.codeBlock.size(), 6, result);
     if (as.codeBlock.size() == 6)
     {
@@ -223,15 +213,14 @@ Dest: CMD NoOp
 
 TEST(Assembler_JumpTest, Jump_Call_Rel_NE)
 {
-    std::stringstream    result;
-    BuildAssembler       as(result, R"(
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(result, bad, R"(
 CMD Init 5 10
 JUMP Call NE Rel Dest
 Dest: CMD NoOp
 )");
 
-    bool bad = false;
-    EXPECT_EQ_OR_LOG(bad, as.assembler.isOK(), true, result);
     EXPECT_EQ_OR_LOG(bad, as.codeBlock.size(), 5, result);
     if (as.codeBlock.size() == 5)
     {
@@ -243,16 +232,15 @@ Dest: CMD NoOp
 
 TEST(Assembler_JumpTest, Jump_Call_Rel_LT)
 {
-    std::stringstream    result;
-    BuildAssembler       as(result, R"(
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(result, bad, R"(
 CMD Init 5 10
 Dest: CMD NoOp
 CMD NoOp
 JUMP Call LT Rel Dest
 )");
 
-    bool bad = false;
-    EXPECT_EQ_OR_LOG(bad, as.assembler.isOK(), true, result);
     EXPECT_EQ_OR_LOG(bad, as.codeBlock.size(), 6, result);
     if (as.codeBlock.size() == 6)
     {
@@ -264,15 +252,14 @@ JUMP Call LT Rel Dest
 
 TEST(Assembler_JumpTest, Jump_Call_Rel_LE)
 {
-    std::stringstream    result;
-    BuildAssembler       as(result, R"(
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(result, bad, R"(
 CMD Init 5 10
 JUMP Call LE Rel Dest
 Dest: CMD NoOp
 )");
 
-    bool bad = false;
-    EXPECT_EQ_OR_LOG(bad, as.assembler.isOK(), true, result);
     EXPECT_EQ_OR_LOG(bad, as.codeBlock.size(), 5, result);
     if (as.codeBlock.size() == 5)
     {
@@ -284,16 +271,15 @@ Dest: CMD NoOp
 
 TEST(Assembler_JumpTest, Jump_Call_Rel_GT)
 {
-    std::stringstream    result;
-    BuildAssembler       as(result, R"(
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(result, bad, R"(
 CMD Init 5 10
 Dest:
 CMD NoOp
 JUMP Call GT Rel Dest
 )");
 
-    bool bad = false;
-    EXPECT_EQ_OR_LOG(bad, as.assembler.isOK(), true, result);
     EXPECT_EQ_OR_LOG(bad, as.codeBlock.size(), 5, result);
     if (as.codeBlock.size() == 5)
     {
@@ -305,14 +291,13 @@ JUMP Call GT Rel Dest
 
 TEST(Assembler_JumpTest, Jump_Call_Rel_GE)
 {
-    std::stringstream    result;
-    BuildAssembler       as(result, R"(
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(result, bad, R"(
 CMD Init 5 10
 Dest: JUMP Call GE Rel Dest
 )");
 
-    bool bad = false;
-    EXPECT_EQ_OR_LOG(bad, as.assembler.isOK(), true, result);
     EXPECT_EQ_OR_LOG(bad, as.codeBlock.size(), 4, result);
     if (as.codeBlock.size() == 4)
     {
@@ -324,15 +309,14 @@ Dest: JUMP Call GE Rel Dest
 
 TEST(Assembler_JumpTest, Jump_Call_Abs_AL)
 {
-    std::stringstream    result;
-    BuildAssembler       as(result, R"(
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(result, bad, R"(
 CMD Init 5 10
 Dest: CMD NoOp
 JUMP Call AL Abs Dest
 )");
 
-    bool bad = false;
-    EXPECT_EQ_OR_LOG(bad, as.assembler.isOK(), true, result);
     EXPECT_EQ_OR_LOG(bad, as.codeBlock.size(), 6, result);
     if (as.codeBlock.size() == 6)
     {
@@ -345,8 +329,9 @@ JUMP Call AL Abs Dest
 
 TEST(Assembler_JumpTest, Jump_Call_Abs_EQ)
 {
-    std::stringstream    result;
-    BuildAssembler       as(result, R"(
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(result, bad, R"(
 CMD Init 5 10
 JUMP Call EQ Abs Dest
 CMD NoOp
@@ -354,8 +339,6 @@ Dest: CMD NoOp
 
 )");
 
-    bool bad = false;
-    EXPECT_EQ_OR_LOG(bad, as.assembler.isOK(), true, result);
     EXPECT_EQ_OR_LOG(bad, as.codeBlock.size(), 7, result);
     if (as.codeBlock.size() == 7)
     {
@@ -368,15 +351,14 @@ Dest: CMD NoOp
 
 TEST(Assembler_JumpTest, Jump_Call_Abs_NE)
 {
-    std::stringstream    result;
-    BuildAssembler       as(result, R"(
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(result, bad, R"(
 CMD Init 5 10
 JUMP Call NE Abs Dest
 Dest: CMD NoOp
 )");
 
-    bool bad = false;
-    EXPECT_EQ_OR_LOG(bad, as.assembler.isOK(), true, result);
     EXPECT_EQ_OR_LOG(bad, as.codeBlock.size(), 6, result);
     if (as.codeBlock.size() == 6)
     {
@@ -389,16 +371,15 @@ Dest: CMD NoOp
 
 TEST(Assembler_JumpTest, Jump_Call_Abs_LT)
 {
-    std::stringstream    result;
-    BuildAssembler       as(result, R"(
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(result, bad, R"(
 CMD Init 5 10
 Dest: CMD NoOp
 CMD NoOp
 JUMP Call LT Abs Dest
 )");
 
-    bool bad = false;
-    EXPECT_EQ_OR_LOG(bad, as.assembler.isOK(), true, result);
     EXPECT_EQ_OR_LOG(bad, as.codeBlock.size(), 7, result);
     if (as.codeBlock.size() == 7)
     {
@@ -411,15 +392,14 @@ JUMP Call LT Abs Dest
 
 TEST(Assembler_JumpTest, Jump_Call_Abs_LE)
 {
-    std::stringstream    result;
-    BuildAssembler       as(result, R"(
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(result, bad, R"(
 CMD Init 5 10
 JUMP Call LE Abs Dest
 Dest: CMD NoOp
 )");
 
-    bool bad = false;
-    EXPECT_EQ_OR_LOG(bad, as.assembler.isOK(), true, result);
     EXPECT_EQ_OR_LOG(bad, as.codeBlock.size(), 6, result);
     if (as.codeBlock.size() == 6)
     {
@@ -432,16 +412,15 @@ Dest: CMD NoOp
 
 TEST(Assembler_JumpTest, Jump_Call_Abs_GT)
 {
-    std::stringstream    result;
-    BuildAssembler       as(result, R"(
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(result, bad, R"(
 CMD Init 5 10
 Dest:
 CMD NoOp
 JUMP Call GT Abs Dest
 )");
 
-    bool bad = false;
-    EXPECT_EQ_OR_LOG(bad, as.assembler.isOK(), true, result);
     EXPECT_EQ_OR_LOG(bad, as.codeBlock.size(), 6, result);
     if (as.codeBlock.size() == 6)
     {
@@ -454,14 +433,13 @@ JUMP Call GT Abs Dest
 
 TEST(Assembler_JumpTest, Jump_Call_Abs_GE)
 {
-    std::stringstream    result;
-    BuildAssembler       as(result, R"(
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(result, bad, R"(
 CMD Init 5 10
 Dest: JUMP Call GE Abs Dest
 )");
 
-    bool bad = false;
-    EXPECT_EQ_OR_LOG(bad, as.assembler.isOK(), true, result);
     EXPECT_EQ_OR_LOG(bad, as.codeBlock.size(), 5, result);
     if (as.codeBlock.size() == 5)
     {
@@ -474,15 +452,14 @@ Dest: JUMP Call GE Abs Dest
 
 TEST(Assembler_JumpTest, Jump_Call_Mem_AL)
 {
-    std::stringstream    result;
-    BuildAssembler       as(result, R"(
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(result, bad, R"(
 CMD Init 5 10
 Dest: CMD NoOp
 JUMP Call AL Mem Global
 )");
 
-    bool bad = false;
-    EXPECT_EQ_OR_LOG(bad, as.assembler.isOK(), true, result);
     EXPECT_EQ_OR_LOG(bad, as.codeBlock.size(), 4, result);
     if (as.codeBlock.size() == 4)
     {
@@ -493,8 +470,9 @@ JUMP Call AL Mem Global
 
 TEST(Assembler_JumpTest, Jump_Call_Mem_EQ)
 {
-    std::stringstream    result;
-    BuildAssembler       as(result, R"(
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(result, bad, R"(
 CMD Init 5 10
 JUMP Call EQ Mem FramePointer
 CMD NoOp
@@ -502,8 +480,6 @@ Dest: CMD NoOp
 
 )");
 
-    bool bad = false;
-    EXPECT_EQ_OR_LOG(bad, as.assembler.isOK(), true, result);
     EXPECT_EQ_OR_LOG(bad, as.codeBlock.size(), 5, result);
     if (as.codeBlock.size() == 5)
     {
@@ -514,15 +490,14 @@ Dest: CMD NoOp
 
 TEST(Assembler_JumpTest, Jump_Call_Mem_NE)
 {
-    std::stringstream    result;
-    BuildAssembler       as(result, R"(
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(result, bad, R"(
 CMD Init 5 10
 JUMP Call NE Mem This
 Dest: CMD NoOp
 )");
 
-    bool bad = false;
-    EXPECT_EQ_OR_LOG(bad, as.assembler.isOK(), true, result);
     EXPECT_EQ_OR_LOG(bad, as.codeBlock.size(), 4, result);
     if (as.codeBlock.size() == 4)
     {
@@ -533,16 +508,15 @@ Dest: CMD NoOp
 
 TEST(Assembler_JumpTest, Jump_Call_Mem_LT)
 {
-    std::stringstream    result;
-    BuildAssembler       as(result, R"(
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(result, bad, R"(
 CMD Init 5 10
 Dest: CMD NoOp
 CMD NoOp
 JUMP Call LT Mem Extra
 )");
 
-    bool bad = false;
-    EXPECT_EQ_OR_LOG(bad, as.assembler.isOK(), true, result);
     EXPECT_EQ_OR_LOG(bad, as.codeBlock.size(), 5, result);
     if (as.codeBlock.size() == 5)
     {
@@ -553,15 +527,14 @@ JUMP Call LT Mem Extra
 
 TEST(Assembler_JumpTest, Jump_Call_Mem_LE)
 {
-    std::stringstream    result;
-    BuildAssembler       as(result, R"(
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(result, bad, R"(
 CMD Init 5 10
 JUMP Call LE Mem StackPointer
 Dest: CMD NoOp
 )");
 
-    bool bad = false;
-    EXPECT_EQ_OR_LOG(bad, as.assembler.isOK(), true, result);
     EXPECT_EQ_OR_LOG(bad, as.codeBlock.size(), 4, result);
     if (as.codeBlock.size() == 4)
     {
@@ -572,16 +545,15 @@ Dest: CMD NoOp
 
 TEST(Assembler_JumpTest, Jump_Call_Mem_GT)
 {
-    std::stringstream    result;
-    BuildAssembler       as(result, R"(
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(result, bad, R"(
 CMD Init 5 10
 Dest:
 CMD NoOp
 JUMP Call GT Mem Expr-1
 )");
 
-    bool bad = false;
-    EXPECT_EQ_OR_LOG(bad, as.assembler.isOK(), true, result);
     EXPECT_EQ_OR_LOG(bad, as.codeBlock.size(), 4, result);
     if (as.codeBlock.size() == 4)
     {
@@ -592,14 +564,13 @@ JUMP Call GT Mem Expr-1
 
 TEST(Assembler_JumpTest, Jump_Call_Mem_GE)
 {
-    std::stringstream    result;
-    BuildAssembler       as(result, R"(
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(result, bad, R"(
 CMD Init 5 10
 Dest: JUMP Call GE Mem Expr-2
 )");
 
-    bool bad = false;
-    EXPECT_EQ_OR_LOG(bad, as.assembler.isOK(), true, result);
     EXPECT_EQ_OR_LOG(bad, as.codeBlock.size(), 3, result);
     if (as.codeBlock.size() == 3)
     {
@@ -610,14 +581,13 @@ Dest: JUMP Call GE Mem Expr-2
 
 TEST(Assembler_JumpTest, Jump_Call_Mem_Expr3)
 {
-    std::stringstream    result;
-    BuildAssembler       as(result, R"(
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(result, bad, R"(
 CMD Init 5 10
 Dest: JUMP Call GE Mem Expr-3
 )");
 
-    bool bad = false;
-    EXPECT_EQ_OR_LOG(bad, as.assembler.isOK(), true, result);
     EXPECT_EQ_OR_LOG(bad, as.codeBlock.size(), 3, result);
     if (as.codeBlock.size() == 3)
     {
@@ -631,123 +601,135 @@ Dest: JUMP Call GE Mem Expr-3
 
 TEST(Assembler_JumpTest, Jump_Invalid)
 {
-    std::stringstream    result;
-    BuildAssembler       as(result, R"(
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(false, result, bad, R"(
 Dest: JUMP ZZ AL Dest
 )");
 
-    EXPECT_FALSE_OR_DEBUG(as.assembler.isOK(), result);
+    EXPECT_FALSE_OR_DEBUG(bad, result);
 }
 
 TEST(Assembler_JumpTest, Jump_Invalid_Call_Condition)
 {
-    std::stringstream    result;
-    BuildAssembler       as(result, R"(
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(false, result, bad, R"(
 Dest: JUMP Call XX Dest
 )");
 
-    EXPECT_FALSE_OR_DEBUG(as.assembler.isOK(), result);
+    EXPECT_FALSE_OR_DEBUG(bad, result);
 }
 
 TEST(Assembler_JumpTest, Jump_Invalid_Return_Condition)
 {
-    std::stringstream    result;
-    BuildAssembler       as(result, R"(
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(false, result, bad, R"(
 Dest: JUMP Return XX
 )");
 
-    EXPECT_FALSE_OR_DEBUG(as.assembler.isOK(), result);
+    EXPECT_FALSE_OR_DEBUG(bad, result);
 }
 
 TEST(Assembler_JumpTest, Jump_Return_Extra)
 {
-    std::stringstream    result;
-    BuildAssembler       as(result, R"(
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(false, result, bad, R"(
 Dest: JUMP Return AL Dest
 )");
 
-    EXPECT_FALSE_OR_DEBUG(as.assembler.isOK(), result);
+    EXPECT_FALSE_OR_DEBUG(bad, result);
 }
 
 TEST(Assembler_JumpTest, Jump_Call_Extra)
 {
-    std::stringstream    result;
-    BuildAssembler       as(result, R"(
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(false, result, bad, R"(
 Dest: JUMP Call AL Rel Dest XX
 )");
 
-    EXPECT_FALSE_OR_DEBUG(as.assembler.isOK(), result);
+    EXPECT_FALSE_OR_DEBUG(bad, result);
 }
 
 TEST(Assembler_JumpTest, Invalid_Jump)
 {
-    std::stringstream    result;
-    BuildAssembler       as(result, R"(
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(false, result, bad, R"(
 JUMP XX AL Dest
 )");
 
-    EXPECT_FALSE_OR_DEBUG(as.assembler.isOK(), result);
+    EXPECT_FALSE_OR_DEBUG(bad, result);
 }
 
 TEST(Assembler_JumpTest, Jump_Call_NoDestiantion)
 {
-    std::stringstream    result;
-    BuildAssembler       as(result, R"(
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(false, result, bad, R"(
 Dest: JUMP Call GE Abs
 )");
 
-    EXPECT_FALSE_OR_DEBUG(as.assembler.isOK(), result);
+    EXPECT_FALSE_OR_DEBUG(bad, result);
 }
 
 TEST(Assembler_JumpTest, Jump_Call_BadLabel)
 {
-    std::stringstream    result;
-    BuildAssembler       as(result, R"(
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(false, result, bad, R"(
 Dest: JUMP Call GE Abs LabelThatDoesNotExist
 )");
 
-    EXPECT_FALSE_OR_DEBUG(as.assembler.isOK(), result);
+    EXPECT_FALSE_OR_DEBUG(bad, result);
 }
 
 TEST(Assembler_JumpTest, Jump_Call_BadJump)
 {
-    std::stringstream    result;
-    BuildAssembler       as(result, R"(
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(false, result, bad, R"(
 Dest: JUMP Spoon
 )");
 
-    EXPECT_FALSE_OR_DEBUG(as.assembler.isOK(), result);
+    EXPECT_FALSE_OR_DEBUG(bad, result);
 }
 
 TEST(Assembler_JumpTest, Jump_Call_BadLength)
 {
-    std::stringstream    result;
-    BuildAssembler       as(result, R"(
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(false, result, bad, R"(
 Dest: JUMP Call GE Ping
 )");
 
-    EXPECT_FALSE_OR_DEBUG(as.assembler.isOK(), result);
+    EXPECT_FALSE_OR_DEBUG(bad, result);
 }
 
 TEST(Assembler_JumpTest, Jump_Call_BadRegister)
 {
-    std::stringstream    result;
-    BuildAssembler       as(result, R"(
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(false, result, bad, R"(
 Dest: JUMP Call GE Mem Plop
 )");
 
-    EXPECT_FALSE_OR_DEBUG(as.assembler.isOK(), result);
+    EXPECT_FALSE_OR_DEBUG(bad, result);
 }
 
 TEST(Assembler_JumpTest, Jump_Call_BadRelative)
 {
-    std::stringstream    result;
-    BuildAssembler       as(result, R"(
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(false, result, bad, R"(
 JUMP Call AL Rel Dest
 )");
 
     as.stable["Dest"] = 0x00FFFFFF;
 
-    EXPECT_FALSE_OR_DEBUG(as.assembler.isOK(), result);
+    EXPECT_FALSE_OR_DEBUG(bad, result);
 }
 

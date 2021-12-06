@@ -2,7 +2,6 @@
 
 #include "Assembler.h"
 #include "test/BuildVM.h"
-#include "../Ice/test/Utility.h"
 
 #include <sstream>
 
@@ -18,10 +17,8 @@ TEST(AssemblerTest, Construct)
 TEST(AssemblerTest, AssembleEmptyFile)
 {
     std::stringstream   result;
-    BuildAssembler       as(result, R"()");
-
-    bool bad = false;
-    EXPECT_EQ_OR_LOG(bad, as.assembler.isOK(), true, result);
+    bool                bad = false;
+    BuildAssembler      as(result, bad, R"()");
 
     EXPECT_EQ_OR_LOG(bad, as.codeBlock.size(), 2, result);
     EXPECT_EQ_OR_LOG(bad, as.stable.size(), 0, result);
@@ -30,16 +27,14 @@ TEST(AssemblerTest, AssembleEmptyFile)
 
 TEST(AssemblerTest, CheckLabelsWork)
 {
-    std::stringstream    result;
-    BuildAssembler       as(result, R"(
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(result, bad, R"(
 L1:L2: L3: CMD NoOp
 L4:  L5:L6: CMD NoOp
 
         L7:L8: L9:
 		LA:)");
-
-    bool bad = false;
-    EXPECT_TRUE(as.assembler.isOK());
 
     EXPECT_EQ_OR_LOG(bad, as.codeBlock.size(), 4, result);
     EXPECT_EQ_OR_LOG(bad, as.stable.size(), 10, result);
@@ -61,18 +56,20 @@ L4:  L5:L6: CMD NoOp
 
 TEST(AssemblerTest, CheckEmptyLabelIsInvalid)
 {
-    std::stringstream    result;
-    BuildAssembler       as(result, R"(
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(false, result, bad, R"(
     :
 )");
 
-    EXPECT_FALSE_OR_DEBUG(as.assembler.isOK(), result);
+    EXPECT_FALSE_OR_DEBUG(bad, result);
 }
 
 TEST(AssemblerTest, CheckCommentsAreIgnored)
 {
-    std::stringstream    result;
-    BuildAssembler       as(result, R"(
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(result, bad, R"(
 // Code startup
 L1: CMD NoOp
 L4:CMD NoOp
@@ -80,9 +77,6 @@ L4:CMD NoOp
 // Now We are finished.
 CMD NoOp
 )");
-
-    bool bad = false;
-    EXPECT_EQ_OR_LOG(bad, as.assembler.isOK(), true, result);
 
     EXPECT_EQ_OR_LOG(bad, as.codeBlock.size(), 5, result);
 
@@ -98,15 +92,13 @@ CMD NoOp
 
 TEST(AssemblerTest, CheckCommandBlock)
 {
-    std::stringstream    result;
-    BuildAssembler       as(result, R"(
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(result, bad, R"(
 CMD NoOp
 CMD NoOp
 CMD NoOp
 )");
-
-    bool bad = false;
-    EXPECT_EQ_OR_LOG(bad, as.assembler.isOK(), true, result);
 
     EXPECT_EQ_OR_LOG(bad, as.codeBlock.size(), 5, result);
     if (as.codeBlock.size() == 5)
@@ -123,15 +115,13 @@ CMD NoOp
 
 TEST(AssemblerTest, CheckOutputStream)
 {
-    std::stringstream    result;
-    BuildAssembler<std::stringstream> as(result, R"(
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler<std::stringstream> as(result, bad, R"(
 CMD NoOp
 CMD NoOp
 CMD NoOp
 )");
-
-    bool bad = false;
-    EXPECT_EQ_OR_LOG(bad, as.assembler.isOK(), true, result);
 
     std::string         output = as.codeBlock.str();
     EXPECT_EQ_OR_LOG(bad, output.size(), 10, result);    // 6 bytes
@@ -153,12 +143,13 @@ CMD NoOp
 
 TEST(AssemblerTest, InvalidCommand)
 {
-    std::stringstream    result;
-    BuildAssembler       as(result, R"(
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(false, result, bad, R"(
 Cmd NoOp
 )");
 
-    EXPECT_FALSE_OR_DEBUG(as.assembler.isOK(), result);
+    EXPECT_FALSE_OR_DEBUG(bad, result);
 }
 
 

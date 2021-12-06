@@ -2,7 +2,6 @@
 
 #include "Assembler.h"
 #include "test/BuildVM.h"
-#include "../Ice/test/Utility.h"
 
 #include <sstream>
 
@@ -26,13 +25,11 @@ using namespace ThorsAnvil::Anvil::Fire;
 
 TEST(Assembler_CmdTest, Cmd_NoOp)
 {
-    std::stringstream    result;
-    BuildAssembler       as(result, R"(
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(result, bad, R"(
 CMD NoOp
 )");
-
-    bool bad = false;
-    EXPECT_EQ_OR_LOG(bad, as.assembler.isOK(), true, result);
 
     EXPECT_EQ_OR_LOG(bad, as.codeBlock.size(), 3, result);
     if (as.codeBlock.size() == 3)
@@ -45,13 +42,11 @@ CMD NoOp
 
 TEST(Assembler_CmdTest, Cmd_Kill_128)
 {
-    std::stringstream    result;
-    BuildAssembler       as(result, R"(
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(result, bad, R"(
 CMD Kill 128
 )");
-
-    bool bad = false;
-    EXPECT_EQ_OR_LOG(bad, as.assembler.isOK(), true, result);
 
     EXPECT_EQ_OR_LOG(bad, as.codeBlock.size(), 3, result);
     if (as.codeBlock.size() == 3)
@@ -65,12 +60,10 @@ CMD Kill 128
 TEST(Assembler_CmdTest, Cmd_Init_8_16)
 {
     std::stringstream    result;
-    BuildAssembler       as(result, R"(
+    bool                bad = false;
+    BuildAssembler      as(result, bad, R"(
 CMD Init 255 65535
 )");
-
-    bool bad = false;
-    EXPECT_EQ_OR_LOG(bad, as.assembler.isOK(), true, result);
 
     EXPECT_EQ_OR_LOG(bad, as.codeBlock.size(), 2, result);
     if (as.codeBlock.size() == 2)
@@ -83,13 +76,11 @@ CMD Init 255 65535
 
 TEST(Assembler_CmdTest, Cmd_Init_16_16)
 {
-    std::stringstream    result;
-    BuildAssembler       as(result, R"(
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(result, bad, R"(
 CMD Init 256 65535
 )");
-
-    bool bad = false;
-    EXPECT_EQ_OR_LOG(bad, as.assembler.isOK(), true, result);
 
     EXPECT_EQ_OR_LOG(bad, as.codeBlock.size(), 3, result);
     if (as.codeBlock.size() == 3)
@@ -104,13 +95,11 @@ CMD Init 256 65535
 
 TEST(Assembler_CmdTest, Cmd_Init_8_32)
 {
-    std::stringstream    result;
-    BuildAssembler       as(result, R"(
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(result, bad, R"(
 CMD Init 255 65536
 )");
-
-    bool bad = false;
-    EXPECT_EQ_OR_LOG(bad, as.assembler.isOK(), true, result);
 
     EXPECT_EQ_OR_LOG(bad, as.codeBlock.size(), 3, result);
     if (as.codeBlock.size() == 3)
@@ -124,13 +113,11 @@ CMD Init 255 65536
 
 TEST(Assembler_CmdTest, Cmd_Init_16_32)
 {
-    std::stringstream    result;
-    BuildAssembler       as(result, R"(
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(result, bad, R"(
 CMD Init 256 65536
 )");
-
-    bool bad = false;
-    EXPECT_EQ_OR_LOG(bad, as.assembler.isOK(), true, result);
 
     EXPECT_EQ_OR_LOG(bad, as.codeBlock.size(), 4, result);
     if (as.codeBlock.size() == 4)
@@ -148,82 +135,89 @@ CMD Init 256 65536
 
 TEST(Assembler_CmdTest, Cmd_Invalid)
 {
-    std::stringstream    result;
-    BuildAssembler       as(result, R"(
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(false, result, bad, R"(
 CMD ZZZ
 )");
-
-    EXPECT_FALSE_OR_DEBUG(as.assembler.isOK(), result);
+    EXPECT_FALSE_OR_DEBUG(bad, result);
 }
 
 TEST(Assembler_CmdTest, Cmd_NoOp_BadOperands)
 {
-    std::stringstream    result;
-    BuildAssembler       as(result, R"(
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(false, result, bad, R"(
 CMD NoOp Invalid
 )");
 
-    EXPECT_FALSE_OR_DEBUG(as.assembler.isOK(), result);
+    EXPECT_FALSE_OR_DEBUG(bad, result);
 }
 
 TEST(Assembler_CmdTest, Cmd_Kill_NegativeValue)
 {
-    std::stringstream    result;
-    BuildAssembler       as(result, R"(
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(false, result, bad, R"(
 CMD Kill -10
 )");
 
-    EXPECT_FALSE_OR_DEBUG(as.assembler.isOK(), result);
+    EXPECT_FALSE_OR_DEBUG(bad, result);
 }
 
 TEST(Assembler_CmdTest, Cmd_Kill_OutOfBounds)
 {
-    std::stringstream    result;
-    BuildAssembler       as(result, R"(
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(false, result, bad, R"(
 CMD Kill 1024
 )");
 
-    EXPECT_FALSE_OR_DEBUG(as.assembler.isOK(), result);
+    EXPECT_FALSE_OR_DEBUG(bad, result);
 }
 
 TEST(Assembler_CmdTest, Cmd_Init_GlobalOverSize)
 {
-    std::stringstream    result;
-    BuildAssembler       as(result, R"(
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(false, result, bad, R"(
 CMD Init 65536 65536
 )");
 
-    EXPECT_FALSE_OR_DEBUG(as.assembler.isOK(), result);
+    EXPECT_FALSE_OR_DEBUG(bad, result);
 }
 
 TEST(Assembler_CmdTest, Cmd_Init_StackOverSize)
 {
-    std::stringstream    result;
-    BuildAssembler       as(result, R"(
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(false, result, bad, R"(
 CMD Init 255 4294967296
 )");
 
-    EXPECT_FALSE_OR_DEBUG(as.assembler.isOK(), result);
+    EXPECT_FALSE_OR_DEBUG(bad, result);
 }
 
 TEST(Assembler_CmdTest, Cmd_Init_NegativeGlobal)
 {
-    std::stringstream    result;
-    BuildAssembler       as(result, R"(
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(false, result, bad, R"(
 CMD Init -255 255
 )");
 
-    EXPECT_FALSE_OR_DEBUG(as.assembler.isOK(), result);
+    EXPECT_FALSE_OR_DEBUG(bad, result);
 }
 
 TEST(Assembler_CmdTest, Cmd_Init_NegativeStack)
 {
-    std::stringstream    result;
-    BuildAssembler       as(result, R"(
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(false, result, bad, R"(
 CMD Init 255 -255
 )");
 
-    EXPECT_FALSE_OR_DEBUG(as.assembler.isOK(), result);
+    EXPECT_FALSE_OR_DEBUG(bad, result);
 }
 
 
