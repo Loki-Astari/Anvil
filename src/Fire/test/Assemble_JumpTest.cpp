@@ -69,7 +69,7 @@ JUMP Return AL
     EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 1, result);
     if (codeBlock.size() == 1)
     {
-        EXPECT_EQ_OR_LOG(bad, codeBlock[0], Assembler::Act_Jump | Assembler::JumpType_Return | Assembler::Jump_Condition_AL, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[0], Assembler::Act_Jump | Assembler::Jump_Return | Assembler::Jump_Condition_AL, result);
     }
     EXPECT_FALSE_OR_DEBUG(bad, result);
 }
@@ -92,7 +92,7 @@ JUMP Return EQ
     EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 1, result);
     if (codeBlock.size() == 1)
     {
-        EXPECT_EQ_OR_LOG(bad, codeBlock[0], Assembler::Act_Jump | Assembler::JumpType_Return | Assembler::Jump_Condition_EQ, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[0], Assembler::Act_Jump | Assembler::Jump_Return | Assembler::Jump_Condition_EQ, result);
     }
     EXPECT_FALSE_OR_DEBUG(bad, result);
 }
@@ -115,7 +115,7 @@ JUMP Return NE
     EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 1, result);
     if (codeBlock.size() == 1)
     {
-        EXPECT_EQ_OR_LOG(bad, codeBlock[0], Assembler::Act_Jump | Assembler::JumpType_Return | Assembler::Jump_Condition_NE, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[0], Assembler::Act_Jump | Assembler::Jump_Return | Assembler::Jump_Condition_NE, result);
     }
     EXPECT_FALSE_OR_DEBUG(bad, result);
 }
@@ -138,7 +138,7 @@ JUMP Return LT
     EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 1, result);
     if (codeBlock.size() == 1)
     {
-        EXPECT_EQ_OR_LOG(bad, codeBlock[0], Assembler::Act_Jump | Assembler::JumpType_Return | Assembler::Jump_Condition_LT, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[0], Assembler::Act_Jump | Assembler::Jump_Return | Assembler::Jump_Condition_LT, result);
     }
     EXPECT_FALSE_OR_DEBUG(bad, result);
 }
@@ -161,7 +161,7 @@ JUMP Return LE
     EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 1, result);
     if (codeBlock.size() == 1)
     {
-        EXPECT_EQ_OR_LOG(bad, codeBlock[0], Assembler::Act_Jump | Assembler::JumpType_Return | Assembler::Jump_Condition_LE, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[0], Assembler::Act_Jump | Assembler::Jump_Return | Assembler::Jump_Condition_LE, result);
     }
     EXPECT_FALSE_OR_DEBUG(bad, result);
 }
@@ -184,7 +184,7 @@ JUMP Return GT
     EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 1, result);
     if (codeBlock.size() == 1)
     {
-        EXPECT_EQ_OR_LOG(bad, codeBlock[0], Assembler::Act_Jump | Assembler::JumpType_Return | Assembler::Jump_Condition_GT, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[0], Assembler::Act_Jump | Assembler::Jump_Return | Assembler::Jump_Condition_GT, result);
     }
     EXPECT_FALSE_OR_DEBUG(bad, result);
 }
@@ -207,7 +207,7 @@ JUMP Return GE
     EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 1, result);
     if (codeBlock.size() == 1)
     {
-        EXPECT_EQ_OR_LOG(bad, codeBlock[0], Assembler::Act_Jump | Assembler::JumpType_Return | Assembler::Jump_Condition_GE, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[0], Assembler::Act_Jump | Assembler::Jump_Return | Assembler::Jump_Condition_GE, result);
     }
     EXPECT_FALSE_OR_DEBUG(bad, result);
 }
@@ -233,7 +233,7 @@ JUMP Call AL Rel Dest
     EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 4, result);
     if (codeBlock.size() == 4)
     {
-        EXPECT_EQ_OR_LOG(bad, codeBlock[2], Assembler::Act_Jump | Assembler::JumpType_Call | Assembler::JumpSize_Rel | Assembler::Jump_Condition_AL, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Rel | Assembler::Jump_Condition_AL, result);
         EXPECT_EQ_OR_LOG(bad, codeBlock[3], static_cast<Instruction>(-3), result);
     }
     EXPECT_FALSE_OR_DEBUG(bad, result);
@@ -261,7 +261,7 @@ Dest: CMD NoOp
     EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 5, result);
     if (codeBlock.size() == 5)
     {
-        EXPECT_EQ_OR_LOG(bad, codeBlock[1], Assembler::Act_Jump | Assembler::JumpType_Call | Assembler::JumpSize_Rel | Assembler::Jump_Condition_EQ, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[1], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Rel | Assembler::Jump_Condition_EQ, result);
         EXPECT_EQ_OR_LOG(bad, codeBlock[2], 1, result);
     }
     EXPECT_FALSE_OR_DEBUG(bad, result);
@@ -287,7 +287,7 @@ Dest: CMD NoOp
     EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 4, result);
     if (codeBlock.size() == 4)
     {
-        EXPECT_EQ_OR_LOG(bad, codeBlock[1], Assembler::Act_Jump | Assembler::JumpType_Call | Assembler::JumpSize_Rel | Assembler::Jump_Condition_NE, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[1], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Rel | Assembler::Jump_Condition_NE, result);
         EXPECT_EQ_OR_LOG(bad, codeBlock[2], 0, result);
     }
     EXPECT_FALSE_OR_DEBUG(bad, result);
@@ -314,7 +314,7 @@ JUMP Call LT Rel Dest
     EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 5, result);
     if (codeBlock.size() == 5)
     {
-        EXPECT_EQ_OR_LOG(bad, codeBlock[3], Assembler::Act_Jump | Assembler::JumpType_Call | Assembler::JumpSize_Rel | Assembler::Jump_Condition_LT, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[3], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Rel | Assembler::Jump_Condition_LT, result);
         EXPECT_EQ_OR_LOG(bad, codeBlock[4], static_cast<Instruction>(-4), result);
     }
     EXPECT_FALSE_OR_DEBUG(bad, result);
@@ -340,7 +340,7 @@ Dest: CMD NoOp
     EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 4, result);
     if (codeBlock.size() == 4)
     {
-        EXPECT_EQ_OR_LOG(bad, codeBlock[1], Assembler::Act_Jump | Assembler::JumpType_Call | Assembler::JumpSize_Rel | Assembler::Jump_Condition_LE, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[1], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Rel | Assembler::Jump_Condition_LE, result);
         EXPECT_EQ_OR_LOG(bad, codeBlock[2], 0, result);
     }
     EXPECT_FALSE_OR_DEBUG(bad, result);
@@ -367,7 +367,7 @@ JUMP Call GT Rel Dest
     EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 4, result);
     if (codeBlock.size() == 4)
     {
-        EXPECT_EQ_OR_LOG(bad, codeBlock[2], Assembler::Act_Jump | Assembler::JumpType_Call | Assembler::JumpSize_Rel | Assembler::Jump_Condition_GT, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Rel | Assembler::Jump_Condition_GT, result);
         EXPECT_EQ_OR_LOG(bad, codeBlock[3], static_cast<Instruction>(-3), result);
     }
     EXPECT_FALSE_OR_DEBUG(bad, result);
@@ -392,7 +392,7 @@ Dest: JUMP Call GE Rel Dest
     EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 3, result);
     if (codeBlock.size() == 3)
     {
-        EXPECT_EQ_OR_LOG(bad, codeBlock[1], Assembler::Act_Jump | Assembler::JumpType_Call | Assembler::JumpSize_Rel | Assembler::Jump_Condition_GE, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[1], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Rel | Assembler::Jump_Condition_GE, result);
         EXPECT_EQ_OR_LOG(bad, codeBlock[2], static_cast<Instruction>(-2), result);
     }
     EXPECT_FALSE_OR_DEBUG(bad, result);
@@ -418,7 +418,7 @@ JUMP Call AL Abs Dest
     EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 5, result);
     if (codeBlock.size() == 5)
     {
-        EXPECT_EQ_OR_LOG(bad, codeBlock[2], Assembler::Act_Jump | Assembler::JumpType_Call | Assembler::JumpSize_Abs | Assembler::Jump_Condition_AL, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Abs | Assembler::Jump_Condition_AL, result);
         EXPECT_EQ_OR_LOG(bad, codeBlock[3], 0, result);
         EXPECT_EQ_OR_LOG(bad, codeBlock[4], 1, result);
     }
@@ -447,7 +447,7 @@ Dest: CMD NoOp
     EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 6, result);
     if (codeBlock.size() == 6)
     {
-        EXPECT_EQ_OR_LOG(bad, codeBlock[1], Assembler::Act_Jump | Assembler::JumpType_Call | Assembler::JumpSize_Abs | Assembler::Jump_Condition_EQ, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[1], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Abs | Assembler::Jump_Condition_EQ, result);
         EXPECT_EQ_OR_LOG(bad, codeBlock[2], 0, result);
         EXPECT_EQ_OR_LOG(bad, codeBlock[3], 5, result);
     }
@@ -474,7 +474,7 @@ Dest: CMD NoOp
     EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 5, result);
     if (codeBlock.size() == 5)
     {
-        EXPECT_EQ_OR_LOG(bad, codeBlock[1], Assembler::Act_Jump | Assembler::JumpType_Call | Assembler::JumpSize_Abs | Assembler::Jump_Condition_NE, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[1], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Abs | Assembler::Jump_Condition_NE, result);
         EXPECT_EQ_OR_LOG(bad, codeBlock[2], 0, result);
         EXPECT_EQ_OR_LOG(bad, codeBlock[3], 4, result);
     }
@@ -502,7 +502,7 @@ JUMP Call LT Abs Dest
     EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 6, result);
     if (codeBlock.size() == 6)
     {
-        EXPECT_EQ_OR_LOG(bad, codeBlock[3], Assembler::Act_Jump | Assembler::JumpType_Call | Assembler::JumpSize_Abs | Assembler::Jump_Condition_LT, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[3], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Abs | Assembler::Jump_Condition_LT, result);
         EXPECT_EQ_OR_LOG(bad, codeBlock[4], 0, result);
         EXPECT_EQ_OR_LOG(bad, codeBlock[5], 1, result);
     }
@@ -529,7 +529,7 @@ Dest: CMD NoOp
     EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 5, result);
     if (codeBlock.size() == 5)
     {
-        EXPECT_EQ_OR_LOG(bad, codeBlock[1], Assembler::Act_Jump | Assembler::JumpType_Call | Assembler::JumpSize_Abs | Assembler::Jump_Condition_LE, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[1], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Abs | Assembler::Jump_Condition_LE, result);
         EXPECT_EQ_OR_LOG(bad, codeBlock[2], 0, result);
         EXPECT_EQ_OR_LOG(bad, codeBlock[3], 4, result);
     }
@@ -557,7 +557,7 @@ JUMP Call GT Abs Dest
     EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 5, result);
     if (codeBlock.size() == 5)
     {
-        EXPECT_EQ_OR_LOG(bad, codeBlock[2], Assembler::Act_Jump | Assembler::JumpType_Call | Assembler::JumpSize_Abs | Assembler::Jump_Condition_GT, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Abs | Assembler::Jump_Condition_GT, result);
         EXPECT_EQ_OR_LOG(bad, codeBlock[3], 0, result);
         EXPECT_EQ_OR_LOG(bad, codeBlock[4], 1, result);
     }
@@ -583,7 +583,7 @@ Dest: JUMP Call GE Abs Dest
     EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 4, result);
     if (codeBlock.size() == 4)
     {
-        EXPECT_EQ_OR_LOG(bad, codeBlock[1], Assembler::Act_Jump | Assembler::JumpType_Call | Assembler::JumpSize_Abs | Assembler::Jump_Condition_GE, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[1], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Abs | Assembler::Jump_Condition_GE, result);
         EXPECT_EQ_OR_LOG(bad, codeBlock[2], 0, result);
         EXPECT_EQ_OR_LOG(bad, codeBlock[3], 1, result);
     }
@@ -610,7 +610,7 @@ JUMP Call AL Mem Global
     EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 3, result);
     if (codeBlock.size() == 3)
     {
-        EXPECT_EQ_OR_LOG(bad, codeBlock[2], Assembler::Act_Jump | Assembler::JumpType_Call | Assembler::JumpSize_Mem | Assembler::Jump_Reg_Global | Assembler::Jump_Condition_AL, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Mem | Assembler::Jump_Reg_Global | Assembler::Jump_Condition_AL, result);
     }
     EXPECT_FALSE_OR_DEBUG(bad, result);
 }
@@ -637,7 +637,7 @@ Dest: CMD NoOp
     EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 4, result);
     if (codeBlock.size() == 4)
     {
-        EXPECT_EQ_OR_LOG(bad, codeBlock[1], Assembler::Act_Jump | Assembler::JumpType_Call | Assembler::JumpSize_Mem | Assembler::Jump_Reg_FramePointer | Assembler::Jump_Condition_EQ, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[1], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Mem | Assembler::Jump_Reg_FramePointer | Assembler::Jump_Condition_EQ, result);
     }
     EXPECT_FALSE_OR_DEBUG(bad, result);
 }
@@ -662,7 +662,7 @@ Dest: CMD NoOp
     EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 3, result);
     if (codeBlock.size() == 3)
     {
-        EXPECT_EQ_OR_LOG(bad, codeBlock[1], Assembler::Act_Jump | Assembler::JumpType_Call | Assembler::JumpSize_Mem | Assembler::Jump_Reg_This | Assembler::Jump_Condition_NE, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[1], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Mem | Assembler::Jump_Reg_This | Assembler::Jump_Condition_NE, result);
     }
     EXPECT_FALSE_OR_DEBUG(bad, result);
 }
@@ -688,7 +688,7 @@ JUMP Call LT Mem Extra
     EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 4, result);
     if (codeBlock.size() == 4)
     {
-        EXPECT_EQ_OR_LOG(bad, codeBlock[3], Assembler::Act_Jump | Assembler::JumpType_Call | Assembler::JumpSize_Mem | Assembler::Jump_Reg_Extra | Assembler::Jump_Condition_LT, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[3], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Mem | Assembler::Jump_Reg_Extra | Assembler::Jump_Condition_LT, result);
     }
     EXPECT_FALSE_OR_DEBUG(bad, result);
 }
@@ -713,7 +713,7 @@ Dest: CMD NoOp
     EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 3, result);
     if (codeBlock.size() == 3)
     {
-        EXPECT_EQ_OR_LOG(bad, codeBlock[1], Assembler::Act_Jump | Assembler::JumpType_Call | Assembler::JumpSize_Mem | Assembler::Jump_Reg_StackPointer | Assembler::Jump_Condition_LE, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[1], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Mem | Assembler::Jump_Reg_StackPointer | Assembler::Jump_Condition_LE, result);
     }
     EXPECT_FALSE_OR_DEBUG(bad, result);
 }
@@ -739,7 +739,7 @@ JUMP Call GT Mem Expr-1
     EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 3, result);
     if (codeBlock.size() == 3)
     {
-        EXPECT_EQ_OR_LOG(bad, codeBlock[2], Assembler::Act_Jump | Assembler::JumpType_Call | Assembler::JumpSize_Mem | Assembler::Jump_Reg_Expr_1 | Assembler::Jump_Condition_GT, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Mem | Assembler::Jump_Reg_Expr_1 | Assembler::Jump_Condition_GT, result);
     }
     EXPECT_FALSE_OR_DEBUG(bad, result);
 }
@@ -763,7 +763,7 @@ Dest: JUMP Call GE Mem Expr-2
     EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 2, result);
     if (codeBlock.size() == 2)
     {
-        EXPECT_EQ_OR_LOG(bad, codeBlock[1], Assembler::Act_Jump | Assembler::JumpType_Call | Assembler::JumpSize_Mem | Assembler::Jump_Reg_Expr_2 | Assembler::Jump_Condition_GE, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[1], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Mem | Assembler::Jump_Reg_Expr_2 | Assembler::Jump_Condition_GE, result);
     }
     EXPECT_FALSE_OR_DEBUG(bad, result);
 }
@@ -787,7 +787,7 @@ Dest: JUMP Call GE Mem Expr-3
     EXPECT_EQ_OR_LOG(bad, codeBlock.size(), 2, result);
     if (codeBlock.size() == 2)
     {
-        EXPECT_EQ_OR_LOG(bad, codeBlock[1], Assembler::Act_Jump | Assembler::JumpType_Call | Assembler::JumpSize_Mem | Assembler::Jump_Reg_Expr_3 | Assembler::Jump_Condition_GE, result);
+        EXPECT_EQ_OR_LOG(bad, codeBlock[1], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::JumpSize_Mem | Assembler::Jump_Reg_Expr_3 | Assembler::Jump_Condition_GE, result);
     }
     EXPECT_FALSE_OR_DEBUG(bad, result);
 }

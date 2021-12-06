@@ -145,7 +145,7 @@ Invalid:
 
                             11XX ---- ----       ????
 
-        ff      AL          Always          0000
+        ff      AL          Always          1000
                 EQ          Equal           0001
                 NE          Not Equal       1001
                 LT          Less            0100
@@ -174,9 +174,13 @@ Invalid:
                 Increment the "Stack Pointer"
                 Write Current "Frame Pointer" to the memory location pointed at by the "Stack Pointer"
                 Increment the "Stack Pointer"
+                Write Current "This Pointer" to the memory location pointed at by the "Stack Pointer"
+                Increment the "Stack Pointer"
                 Set the "Frame Pointer" equal to the "Stack Pointer"
 
         Return: If the "Frame Pointer" and "Stack Pointer" are not equal "Halt"
+                Decrement the "Stack Pointer"
+                Read the memory location pointed at by "Stack Pointer" assign it to "This"
                 Decrement the "Stack Pointer"
                 Read the memory location pointed at by "Stack Pointer" assign it to "Frame Pointer"
                 Note: must be "Data Address Location" or "Halt"

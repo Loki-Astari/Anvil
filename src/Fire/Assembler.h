@@ -77,15 +77,17 @@ class Assembler
 
 
         // Action Jump Type
-        static constexpr Instruction Action_JumpType_Mask   = 0x0C00;
-        static constexpr Instruction JumpType_Return        = 0x0000;
-        static constexpr Instruction JumpType_Call          = 0x0400;
-        static constexpr Instruction JumpType_JP            = 0x0800;
+        static constexpr Instruction Action_Jump_Mask       = 0x0C00;
+        static constexpr Instruction Jump_Return            = 0x0000;
+        static constexpr Instruction Jump_Call              = 0x0400;
+        static constexpr Instruction Jump_JP                = 0x0800;
 
-        // Action Jump Masks
+        // Action Jump Masks/Shift
         static constexpr Instruction Action_JumpSize_Mask   = 0x0300;
-        static constexpr Instruction Action_JumpFlag_Mask   = 0x00F0;
+        static constexpr Instruction Action_JumpFlag_Mask   = 0x0070;
+        static constexpr Instruction Action_JumpFNot_Mask   = 0x0080;
         static constexpr Instruction Action_JumpReg_Mask    = 0x000F;
+        static constexpr int         Action_JumpFlag_Shift  = 4;
 
         // Action Jump Length
         static constexpr Instruction JumpSize_Rel           = 0x0100;
@@ -93,7 +95,7 @@ class Assembler
         static constexpr Instruction JumpSize_Mem           = 0x0300;
 
         // Action Jump Condition Flag
-        static constexpr Instruction Jump_Condition_AL      = 0x0000;
+        static constexpr Instruction Jump_Condition_AL      = 0x0080;
         static constexpr Instruction Jump_Condition_EQ      = 0x0010;
         static constexpr Instruction Jump_Condition_NE      = 0x0090;
         static constexpr Instruction Jump_Condition_LT      = 0x0040;

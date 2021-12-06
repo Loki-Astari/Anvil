@@ -137,7 +137,7 @@ int Assembler::assemble_JumpReturn(std::istream& lineStream)
         return 0;
     }
 
-    instructions[0] |= JumpType_Return;
+    instructions[0] |= Jump_Return;
     return 1;
 }
 
@@ -153,6 +153,6 @@ int Assembler::assemble_JumpCall(std::istream& lineStream, bool buildSymbols)
         return 0;
     }
 
-    instructions[0] |= JumpType_Call;
+    instructions[0] |= Jump_Call;
     return assemble_JumpLength("Call", flagValue, lineStream, buildSymbols);
 }

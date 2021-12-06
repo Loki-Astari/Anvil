@@ -66,7 +66,19 @@ class MemoryLocation
         template<typename T>
         void init(T initValue)
         {
-            value = initValue;
+            value = std::move(initValue);
+        }
+
+        template<typename Type>
+        Type& getValue(std::function<void()>&& action = [](){})
+        {
+            static Type defaultValue{};
+            Type* check = std::get_if<Type>(&value);
+            if (!check)
+            {
+                action();
+            }
+            return check ? *check : defaultValue;
         }
 };
 

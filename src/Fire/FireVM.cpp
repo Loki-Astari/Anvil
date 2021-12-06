@@ -22,7 +22,8 @@ Result FireVM::run()
 
         switch (instruction & Assembler::Action_Mask)
         {
-            case Assembler::Act_CMD: { runActionCMD(instruction);   break;}
+            case Assembler::Act_CMD:    { runActionCMD(instruction);   break;}
+            case Assembler::Act_Jump:   { runActionJump(instruction);   break;}
             default:
             {
                 running = false;
