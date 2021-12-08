@@ -14,7 +14,7 @@ struct VMState
     VMState()
         : programCounter(0)
         , addressRegister{nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr}
-        , flagRegister(std::byte{0})
+        , flagRegister(0)
     {}
     // Note: Instruction.help
     //       Data space is not required to be contagious.
@@ -24,7 +24,7 @@ struct VMState
     // Registers.
     std::size_t     programCounter;
     MemoryLocation* addressRegister[MaxAddressRegister];
-    std::byte       flagRegister;
+    std::uint16_t   flagRegister;
 };
 
 using Result = std::uint32_t;
@@ -47,7 +47,10 @@ class FireVM
         void runActionJump(Instruction instruction);
             void runActionJumpReturn(Instruction instruction);
             void runActionJumpCall(Instruction instruction);
-            bool checkInstructionFlagWithRegister(Instruction instruction);
+            void runActionJumpJp(Instruction instruction);
+            void runActionJumpMethod(Instruction instruction);
+                bool checkInstructionFlagWithRegister(Instruction instruction);
+                void runActionJumpDoCall(Instruction instruction, std::uint32_t position);
 
     public:
         static constexpr Result     haltRanOutOfProgramMemory       = 0xFFFF0000;
@@ -55,7 +58,7 @@ class FireVM
         static constexpr Result     haltInvalidCmd                  = 0xFFFF0002;
         static constexpr Result     haltInvalidJump                 = 0xFFFF0003;
         static constexpr Result     haltInvalidReturnState          = 0xFFFF0004;
-        static constexpr Result     haltInvalidCallState            = 0xFFFF0005;
+        static constexpr Result     haltInvalidMethod               = 0xFFFF0005;
 };
 
 }

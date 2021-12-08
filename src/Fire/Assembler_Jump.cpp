@@ -59,101 +59,117 @@ bool Assembler::assemble_JumpConditionFlag(std::string const& flagValue)
     return true;
 }
 
-int Assembler::assemble_JumpLength(std::string const& cmd, std::string const& flagValue, std::istream& lineStream, bool buildSymbols)
-{
-    std::string regValue;
-    std::string jumpDestination;
-
-    lineStream >> regValue >> jumpDestination;
-
-    if (regValue == "Rel")
-    {
-        std::uint32_t destination = getAddress(jumpDestination, buildSymbols);
-        std::int32_t  relative = destination - (addr + 2);
-
-        if (destination != 0 && ((relative & 0xFFFF0000) == 0xFFFF0000 || (relative & 0xFFFF0000) == 0x00000000))
-        {
-            instructions[0] |= JumpSize_Rel;
-            instructions[1] = static_cast<Instruction>(relative);
-            return 2;
-        }
-    }
-    else if (regValue == "Abs")
-    {
-        std::uint32_t destination = getAddress(jumpDestination, buildSymbols);
-
-        if (destination != 0)
-        {
-            instructions[0] |= JumpSize_Abs;
-            instructions[1] = (destination >> 16) & 0xFFFF;
-            instructions[2] = (destination >> 0)  & 0xFFFF;
-            return 3;
-        }
-    }
-    else if (regValue == "Mem")
-    {
-        if (getRegister(jumpDestination))
-        {
-            instructions[0] |= JumpSize_Mem;
-            return 1;
-        }
-    }
-    else
-    {
-        errorStream << "Invalid Input: JUMP " << cmd << " " << flagValue << " >" << regValue << "< " << jumpDestination << " " << lineStream.rdbuf() << "\n";
-        error = true;
-        return 0;
-    }
-    errorStream << "Invalid Input: JUMP " << cmd << " " << flagValue << " " << regValue << " >" << jumpDestination << "< " << lineStream.rdbuf() << "\n";
-    error = true;
-    return 0;
-}
-
 int Assembler::assemble_Jump(std::istream& lineStream, bool buildSymbols)
 {
     instructions[0] = Act_Jump;
 
-    std::string     cmd;
-    lineStream >> cmd;
+    std::string action;
+    lineStream >> action;
 
-    if (cmd == "Return")        {return assemble_JumpReturn(lineStream);}
-    else if (cmd == "Call")     {return assemble_JumpCall(lineStream, buildSymbols);}
-    else
-    {
-        // Unknown command report an error.
-        errorStream << "Invalid Input: JUMP >" << cmd << "< " << lineStream.rdbuf() << "\n";
-        error = true;
-        return 0;
-    }
+    if (action == "Return")         {return assemble_JumpReturn(lineStream);}
+    else if (action == "Jp")        {return assemble_JumpJp(lineStream, buildSymbols);}
+    else if (action == "Call")      {return assemble_JumpCall(lineStream, buildSymbols);}
+    else if (action == "Method")    {return assemble_JumpMethod(lineStream);}
+
+    errorStream << "Invalid Input: Jump >" << action << "< " << lineStream.rdbuf() << "\n";
+    error = true;
+    return 0;
 }
 int Assembler::assemble_JumpReturn(std::istream& lineStream)
 {
-    std::string     flagValue;
+    std::string flagValue;
     lineStream >> flagValue;
-
     if (!assemble_JumpConditionFlag(flagValue))
     {
-        errorStream << "Invalid Input: JUMP Return >" << flagValue << "< " << lineStream.rdbuf() << "\n";
+        errorStream << "Invalid Input: Jump Ret >" << flagValue << "< " << lineStream.rdbuf() << "\n";
         error = true;
         return 0;
     }
-
     instructions[0] |= Jump_Return;
     return 1;
 }
 
-int Assembler::assemble_JumpCall(std::istream& lineStream, bool buildSymbols)
+int Assembler::assemble_JumpJp(std::istream& lineStream, bool buildSymbols)
 {
-    std::string     flagValue;
+    std::string flagValue;
     lineStream >> flagValue;
-
     if (!assemble_JumpConditionFlag(flagValue))
     {
-        errorStream << "Invalid Input: JUMP Call >" << flagValue << "< " << lineStream.rdbuf() << "\n";
+        errorStream << "Invalid Input: Jump Jp >" << flagValue << "< " << lineStream.rdbuf() << "\n";
+        error = true;
+        return 0;
+    }
+    std::string destination;
+    lineStream >> destination;
+    std::uint32_t dest = getAddress(destination, buildSymbols);
+    if (dest == 0)
+    {
+        errorStream << "Invalid Input: Jump Jp " << flagValue << " >" << destination << "< " << lineStream.rdbuf() << "\n";
+        error = true;
+        return 0;
+    }
+    std::uint32_t addFrom  = addr + 2;
+    std::uint32_t relative = dest > addFrom ? dest - addFrom : addFrom - dest;
+    if (relative > 0x1F'FFFF)
+    {
+        errorStream << "Invalid Input: Jump Jp " << flagValue << " >" << destination << "< " << lineStream.rdbuf() << "\n";
+        error = true;
+        return 0;
+    }
+
+    std::int32_t offset = relative;
+    std::int32_t jump = (dest > addr ? offset : -offset);
+
+    instructions[0] |= Jump_Jp | ((jump >> 16) & 0x3F);
+    instructions[1] = jump & 0xFFFF;
+    return 2;
+}
+
+int Assembler::assemble_JumpCall(std::istream& lineStream, bool buildSymbols)
+{
+    std::string regValue;
+    lineStream >> regValue;
+    if (!getRegister(regValue))
+    {
+        errorStream << "Invalid Input: Jump Call >" << regValue << "< " << lineStream.rdbuf() << "\n";
+        error = true;
+        return 0;
+    }
+    std::string destination;
+    lineStream >> destination;
+    std::uint32_t dest = getAddress(destination, buildSymbols);
+    if (dest == 0)
+    {
+        errorStream << "Invalid Input: Jump Call " << regValue << " >" << destination << "< " << lineStream.rdbuf() << "\n";
         error = true;
         return 0;
     }
 
     instructions[0] |= Jump_Call;
-    return assemble_JumpLength("Call", flagValue, lineStream, buildSymbols);
+    instructions[1] = (dest >> 16) & 0xFFFF;
+    instructions[2] = dest & 0xFFFF;
+    return 3;
+}
+
+int Assembler::assemble_JumpMethod(std::istream& lineStream)
+{
+    std::string regValue;
+    lineStream >> regValue;
+    if (!getRegister(regValue))
+    {
+        errorStream << "Invalid Input: Jump Method >" << regValue << "< " << lineStream.rdbuf() << "\n";
+        error = true;
+        return 0;
+    }
+    std::uint16_t offset = 0x0FFFF;
+    lineStream >> offset;
+    if (offset > 0x003F)
+    {
+        errorStream << "Invalid Input: Jump Method " << regValue << " >" << offset << "< " << lineStream.rdbuf() << ": Out of range\n";
+        error = true;
+        return 0;
+    }
+
+    instructions[0] |= Jump_Method | (offset & 0x3F);
+    return 1;
 }

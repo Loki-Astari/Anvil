@@ -23,6 +23,16 @@ struct BuildAssembler
 
         EXPECT_EQ_OR_LOG(bad, assembler.isOK(), good, result);
     }
+    BuildAssembler(std::ostream& result)
+        : assembler(result, stable)
+    {}
+    void run(bool good, std::ostream& result, bool& bad, std::string&& input)
+    {
+        std::istringstream      inputStream(std::move(input));
+        assembler.assemble(inputStream, codeBlock);
+
+        EXPECT_EQ_OR_LOG(bad, assembler.isOK(), good, result);
+    }
 };
 
 struct BuildVM

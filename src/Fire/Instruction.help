@@ -132,8 +132,29 @@ Invalid:
     0001 = JUMP
         Change the address of the PC.
 
-        JUMP Type<2bit> Length<2> Flags<4> Reg<4> || Value
+        JUMP Type<3> Flag<3> Offset<6>
 
+        Type:   000         Ret             0001 000F FF?? ????
+                001         Method          0001 111R RROO OOOO     6 bit
+                011         Jp              0001 101F FFOO OOOO     22 bit      unsigned 22
+                101         Call            0001 110R RR?? ????     32 bit
+
+        Flags:  000        Always              AL
+                001        Equal               EQ
+                010        Greater             GT
+                011        Greater or Equal    GE
+                100        Less                LT
+                101        Less or Equal       LE
+                110        Less or Greater     NE
+                111        Equal Less Greater  XX
+
+                        X       Y           L G E
+                CMP     5       5           0 0 1
+                CMP     5       3           0 1 0
+                CMP     5       8           1 0 0
+
+---------
+        JUMP Type<1bit> Length<2> Flags<4> Reg<4> || Value
         JUMP Return ff      0000 FFFF ----
         JUMP Call ff Rel    0101 FFFF ----
         JUMP Call ff Abs    0110 FFFF ----
@@ -143,15 +164,26 @@ Invalid:
         JUMP Jp Abs   ff    1010 FFFF ----
         JUMP Jp Mem   ff    1011 FFFF -RRR
 
-                            11XX ---- ----       ????
+        Length: 00          Ret
+                01          Rel
+                10          Abs
+                11          Mem
 
-        ff      AL          Always          1000
-                EQ          Equal           0001
-                NE          Not Equal       1001
-                LT          Less            0100
-                GT          Greater         0010
-                LE          Less Equal      0101
-                GE          Greater Equal   0011
+        Flags:  0000        Never               ????
+                0001        Equal               EQ
+                0010        Greater             GT
+                0011        Greater or Equal    GE
+                0100        Less                LT
+                0101        Less or Equal       LE
+                0110        Less or Greater     ?????
+                0111        Equal Less Greater  ?????
+                1000        Always              AL
+                1001        Not Equal           NE
+                1010        Not Greater                 => Less or Equal
+                1011        Not Greater or Equal        => Less
+                1100        Not Less                    => Greater or Equal
+                1110        Not Less or Greater         => !?????
+                1111        Not Equal Less or Greater   => !?????
 
         FFFF    Flags to check. Jump if ((FFFF & Flag Register) == 0)
         Rel:    Read the next 16 byte value (interpret it as signed integer) add to pc.
@@ -162,7 +194,7 @@ Invalid:
                         000         Global
                         001         Frame Pointer
                         010         This
-                        011         ???
+                        011         Extra
 
                         100         Stack Pointer
                         1nn         Expr-nn

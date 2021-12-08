@@ -43,7 +43,9 @@ class Assembler
                 int assemble_CmdInit(std::istream& lineStream);
             int assemble_Jump(std::istream& lineStream, bool BuildSymbols);
                 int assemble_JumpReturn(std::istream& lineStream);
+                int assemble_JumpJp(std::istream& lineStream, bool buildSymbols);
                 int assemble_JumpCall(std::istream& lineStream, bool buildSymbols);
+                int assemble_JumpMethod(std::istream& lineStream);
 
         std::uint32_t getAddress(std::string const& lineStream, bool buildSymbols);
         bool          getRegister(std::string const& addressRegValue);
@@ -78,42 +80,41 @@ class Assembler
 
 
         // Action Jump Type
-        static constexpr Instruction Action_Jump_Mask       = 0x0C00;
+        static constexpr Instruction Action_Jump_Mask       = 0x0E00;
         static constexpr Instruction Jump_Return            = 0x0000;
-        static constexpr Instruction Jump_Call              = 0x0400;
-        static constexpr Instruction Jump_JP                = 0x0800;
+        static constexpr Instruction Jump_Method            = 0x0200;
+        static constexpr Instruction Jump_Jp                = 0x0600;
+        static constexpr Instruction Jump_Call              = 0x0A00;
 
         // Action Jump Masks/Shift
-        static constexpr Instruction Action_JumpSize_Mask   = 0x0300;
-        static constexpr Instruction Action_JumpFlag_Mask   = 0x0070;
-        static constexpr Instruction Action_JumpFNot_Mask   = 0x0080;
-        static constexpr Instruction Action_JumpReg_Mask    = 0x000F;
-        static constexpr int         Action_JumpFlag_Shift  = 4;
-
-        // Action Jump Length
-        static constexpr Instruction JumpSize_Rel           = 0x0100;
-        static constexpr Instruction JumpSize_Abs           = 0x0200;
-        static constexpr Instruction JumpSize_Mem           = 0x0300;
+        static constexpr Instruction Action_JumpFlag_Mask   = 0x01C0;
+        static constexpr Instruction Action_JumpReg_Mask    = 0x01C0;
+        static constexpr int         Action_JumpFlag_Shift  = 6;
+        static constexpr int         Action_JumpReg_Shift   = 6;
 
         // Action Jump Condition Flag
-        static constexpr Instruction Jump_Condition_AL      = 0x0080;
-        static constexpr Instruction Jump_Condition_EQ      = 0x0010;
-        static constexpr Instruction Jump_Condition_NE      = 0x0090;
-        static constexpr Instruction Jump_Condition_LT      = 0x0040;
-        static constexpr Instruction Jump_Condition_GT      = 0x0020;
-        static constexpr Instruction Jump_Condition_LE      = 0x0050;
-        static constexpr Instruction Jump_Condition_GE      = 0x0030;
+        static constexpr Instruction Jump_Condition_AL      = 0x0000;
+        static constexpr Instruction Jump_Condition_EQ      = 0x0040;
+        static constexpr Instruction Jump_Condition_GT      = 0x0080;
+        static constexpr Instruction Jump_Condition_GE      = 0x00C0;
+        static constexpr Instruction Jump_Condition_LT      = 0x0100;
+        static constexpr Instruction Jump_Condition_LE      = 0x0140;
+        static constexpr Instruction Jump_Condition_NE      = 0x0180;
+        static constexpr Instruction Jump_Condition_XX      = 0x01C0;
 
         // Action Jump Register
         static constexpr Instruction Jump_Reg_Global        = 0x0000;
-        static constexpr Instruction Jump_Reg_FramePointer  = 0x0001;
-        static constexpr Instruction Jump_Reg_This          = 0x0002;
-        static constexpr Instruction Jump_Reg_Extra         = 0x0003;
+        static constexpr Instruction Jump_Reg_FramePointer  = 0x0040;
+        static constexpr Instruction Jump_Reg_This          = 0x0080;
+        static constexpr Instruction Jump_Reg_Extra         = 0x00C0;
 
-        static constexpr Instruction Jump_Reg_StackPointer  = 0x0004;
-        static constexpr Instruction Jump_Reg_Expr_1        = 0x0005;
-        static constexpr Instruction Jump_Reg_Expr_2        = 0x0006;
-        static constexpr Instruction Jump_Reg_Expr_3        = 0x0007;
+        static constexpr Instruction Jump_Reg_StackPointer  = 0x0100;
+        static constexpr Instruction Jump_Reg_Expr_1        = 0x0140;
+        static constexpr Instruction Jump_Reg_Expr_2        = 0x0180;
+        static constexpr Instruction Jump_Reg_Expr_3        = 0x01C0;
+
+        // Action Jump Offset
+        static constexpr Instruction Jump_Offset_Mask       = 0x003F;
 
         // Invalid Instructions
         static constexpr Instruction InvalidAction          = 0xFFFF;
