@@ -59,7 +59,8 @@ void Assembler::doPass(std::istream& input, std::function<void(Instruction)>&& a
     // If the first command is not: CMD Init X Y
     // Then insert this at the beginning of the application
     // This is needed to set up the VM.
-    if ((count == 0) || ((instructions[0] & (Action_Mask | Action_CMD_Mask)) != (Act_CMD | Cmd_Init)))
+    std::int16_t command = instructions[0] & (Action_Mask | Action_CMD_Mask);
+    if ((count == 0) || ((command != (Act_CMD | Cmd_InitShort)) && (command != (Act_CMD | Cmd_InitLarge))))
     {
         std::string initCommand = "CMD Init 255 65535";
         count = assemble(initCommand, buildSymbols);

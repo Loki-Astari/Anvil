@@ -114,17 +114,18 @@ Invalid:
 
     0000 = CMD
 
-        CMD Action<2bit>
+        CMD Action<3bit>
 
-        CMD NoOp            0000 0000 0000
-        CMD Kill            01xx xxxx xxxx     10 bit result code
-        CMD Init            10SS xxxx xxxx     S Size Info
-                                                00:     8 bit global size 16 bit stack size.
-                                                01:     8 bit global size 32 bit stack size.
-                                                10:     8 bit ignored. 16 bit global size 16 bit stack size.
-                                                11:     8 bit ignored. 16 bit global size 32 bit stack size.
-        CMD Import          11SS SSSS SSSS     S Size Info.
-                                                S 10 bit size info: Number of bytes (8 bit)  following this
+        CMD NoOp            00000 0000 0000
+        CMD Kill            001x xxxx xxxx     9 bit result code
+        CMD Init            010S xxxx xxxx     S Size Info
+                                                0:     8 bit global size 16 bit stack size.
+                                                1:     8 bit global size 32 bit stack size.
+        CMD Init            011S xxxx xxxx     S Size Info
+                                                0:     8 bit ignored. 16 bit global size 16 bit stack size.
+                                                1:     8 bit ignored. 16 bit global size 32 bit stack size.
+        CMD Import          100S SSSS SSSS     S Size Info.
+                                                S 9 bit size info: Number of bytes (8 bit)  following this
                                                 instruction are used to encode UTF-8 file name.
 
         Note: We can add some instruction where the prefix is: 0000 00 As long as 1 of the following bits is set.
@@ -288,8 +289,7 @@ Invalid:
             
 
 
-    0001 = Load
-        Load the expression register.
+    0002 = LOAD
 
 
 

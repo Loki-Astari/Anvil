@@ -62,13 +62,16 @@ class Assembler
 
 
         // Action CMD
-        static constexpr Instruction Action_CMD_Mask        = 0x0C00;
+        static constexpr Instruction Action_CMD_Mask        = 0x0E00;
         static constexpr Instruction Cmd_NoOp               = 0x0000;
-        static constexpr Instruction Cmd_Kill               = 0x0400;
-        static constexpr Instruction Cmd_Init               = 0x0800;
+        static constexpr Instruction Cmd_Kill               = 0x0200;
+        static constexpr Instruction Cmd_Init               = 0x0400;
+        static constexpr Instruction Cmd_InitShort          = 0x0400;
+        static constexpr Instruction Cmd_InitLarge          = 0x0600;
+        static constexpr Instruction Cmd_Import             = 0x0800;
 
         // Action CMD Kill
-        static constexpr Instruction Cmd_Kill_Result_Mask   = 0x03FF;
+        static constexpr Instruction Cmd_Kill_Result_Mask   = 0x01FF;
 
         // Action CMD Init
         static constexpr Instruction Cmd_Init_GlobalMask    = 0x0200;

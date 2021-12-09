@@ -12,7 +12,8 @@ void FireVM::runActionCMD(Instruction instruction)
     {
         case Assembler::Cmd_NoOp:       {return; /*Do Nothing*/}
         case Assembler::Cmd_Kill:       {return runActionCMDKill(instruction);}
-        case Assembler::Cmd_Init:       {return runActionCMDInit(instruction);}
+        case Assembler::Cmd_InitShort:  {return runActionCMDInit(instruction);}
+        case Assembler::Cmd_InitLarge:  {return runActionCMDInit(instruction);}
         default:
         {
             running = false;
