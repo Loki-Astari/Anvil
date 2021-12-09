@@ -31,7 +31,7 @@ CMD Kill 0
 
     Result      output = vm.run();
     EXPECT_EQ_OR_LOG(bad, output, 0, result);
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(FireVM_CmdTest, Cmd_Kill_10)
@@ -45,7 +45,7 @@ CMD Kill 10
 
     Result      output = vm.run();
     EXPECT_EQ_OR_LOG(bad, output, 10, result);
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(FireVM_CmdTest, Cmd_Kill_Max)
@@ -59,7 +59,7 @@ CMD Kill 1023
 
     Result      output = vm.run();
     EXPECT_EQ_OR_LOG(bad, output, 1023, result);
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(FireVM_CmdTest, Cmd_Init_8_16)
@@ -77,7 +77,7 @@ CMD Kill 1023
     EXPECT_EQ_OR_LOG(bad, vm.machineState.stack.size(), 256, result);
     EXPECT_EQ_OR_LOG(bad, vm.codeBlock.size(), 5, result);
     EXPECT_EQ_OR_LOG(bad, output, 1023, result);
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(FireVM_CmdTest, Cmd_Init_16_16)
@@ -95,7 +95,7 @@ CMD Kill 1023
     EXPECT_EQ_OR_LOG(bad, vm.machineState.stack.size(), 256, result);
     EXPECT_EQ_OR_LOG(bad, vm.codeBlock.size(), 6, result);
     EXPECT_EQ_OR_LOG(bad, output, 1023, result);
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 TEST(FireVM_CmdTest, Cmd_Init_8_32)
 {
@@ -112,7 +112,7 @@ CMD Kill 1023
     EXPECT_EQ_OR_LOG(bad, vm.machineState.stack.size(), 65536, result);
     EXPECT_EQ_OR_LOG(bad, vm.codeBlock.size(), 6, result);
     EXPECT_EQ_OR_LOG(bad, output, 1023, result);
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 TEST(FireVM_CmdTest, Cmd_Init_16_32)
 {
@@ -129,7 +129,7 @@ CMD Kill 1023
     EXPECT_EQ_OR_LOG(bad, vm.machineState.stack.size(), 65536, result);
     EXPECT_EQ_OR_LOG(bad, vm.codeBlock.size(), 7, result);
     EXPECT_EQ_OR_LOG(bad, output, 1023, result);
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 

@@ -66,7 +66,7 @@ JUMP Return AL
     {
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Return | Assembler::Jump_Condition_AL, result);
     }
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(Assembler_JumpTest, Jump_Return_EQ)
@@ -83,7 +83,7 @@ JUMP Return EQ
     {
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Return | Assembler::Jump_Condition_EQ, result);
     }
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(Assembler_JumpTest, Jump_Return_NE)
@@ -100,7 +100,7 @@ JUMP Return NE
     {
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Return | Assembler::Jump_Condition_NE, result);
     }
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(Assembler_JumpTest, Jump_Return_LT)
@@ -117,7 +117,7 @@ JUMP Return LT
     {
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Return | Assembler::Jump_Condition_LT, result);
     }
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(Assembler_JumpTest, Jump_Return_LE)
@@ -134,7 +134,7 @@ JUMP Return LE
     {
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Return | Assembler::Jump_Condition_LE, result);
     }
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(Assembler_JumpTest, Jump_Return_GT)
@@ -151,7 +151,7 @@ JUMP Return GT
     {
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Return | Assembler::Jump_Condition_GT, result);
     }
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(Assembler_JumpTest, Jump_Return_GE)
@@ -168,7 +168,7 @@ JUMP Return GE
     {
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Return | Assembler::Jump_Condition_GE, result);
     }
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 
@@ -191,7 +191,7 @@ JUMP Jp AL Dest
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[3], Assembler::Act_Jump | Assembler::Jump_Jp | Assembler::Jump_Condition_AL | jumpHi, result);
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[4], jumpLo, result);
     }
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(Assembler_JumpTest, Jump_Jp_EQ)
@@ -215,7 +215,7 @@ Dest: CMD NoOp
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Jp | Assembler::Jump_Condition_EQ | jumpHi, result);
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[3], jumpLo, result);
     }
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(Assembler_JumpTest, Jump_Jp_NE)
@@ -237,7 +237,7 @@ Dest: CMD NoOp
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Jp | Assembler::Jump_Condition_NE | jumpHi, result);
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[3], jumpLo, result);
     }
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(Assembler_JumpTest, Jump_Jp_LT)
@@ -260,8 +260,7 @@ JUMP Jp LT Dest
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[4], Assembler::Act_Jump | Assembler::Jump_Jp | Assembler::Jump_Condition_LT | jumpHi, result);
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[5], jumpLo, result);
     }
-    EXPECT_FALSE_OR_DEBUG(bad, result);
-    //0x1B3F    0x1B00
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(Assembler_JumpTest, Jump_Jp_LE)
@@ -283,7 +282,7 @@ Dest: CMD NoOp
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Jp | Assembler::Jump_Condition_LE | jumpHi, result);
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[3], jumpLo, result);
     }
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(Assembler_JumpTest, Jump_Jp_GT)
@@ -306,7 +305,7 @@ JUMP Jp GT Dest
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[3], Assembler::Act_Jump | Assembler::Jump_Jp | Assembler::Jump_Condition_GT | jumpHi, result);
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[4], jumpLo, result);
     }
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(Assembler_JumpTest, Jump_Jp_GE)
@@ -327,7 +326,7 @@ Dest: JUMP Jp GE Dest
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Jp | Assembler::Jump_Condition_GE | jumpHi, result);
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[3], jumpLo, result);
     }
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(Assembler_JumpTest, Jump_Call_Global)
@@ -347,7 +346,7 @@ JUMP Call Global Dest
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[4], 0, result);
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[5], 2, result);
     }
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(Assembler_JumpTest, Jump_Call_FrameP)
@@ -369,7 +368,7 @@ Dest: CMD NoOp
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[3], 0, result);
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[4], 6, result);
     }
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(Assembler_JumpTest, Jump_Call_This)
@@ -389,7 +388,7 @@ Dest: CMD NoOp
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[3], 0, result);
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[4], 5, result);
     }
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(Assembler_JumpTest, Jump_Call_Extra)
@@ -410,7 +409,7 @@ JUMP Call Extra Dest
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[5], 0, result);
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[6], 2, result);
     }
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(Assembler_JumpTest, Jump_Call_StackP)
@@ -430,7 +429,7 @@ Dest: CMD NoOp
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[3], 0, result);
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[4], 5, result);
     }
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(Assembler_JumpTest, Jump_Call_Expr1)
@@ -451,7 +450,7 @@ JUMP Call Expr-1 Dest
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[4], 0, result);
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[5], 2, result);
     }
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(Assembler_JumpTest, Jump_Call_Expr2)
@@ -470,7 +469,7 @@ Dest: JUMP Call Expr-2 Dest
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[3], 0, result);
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[4], 2, result);
     }
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(Assembler_JumpTest, Jump_Call_Expr3)
@@ -490,7 +489,7 @@ JUMP Call Expr-3 Dest
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[4], 0, result);
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[5], 2, result);
     }
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(Assembler_JumpTest, Jump_Method_Global)
@@ -506,7 +505,7 @@ JUMP Method Global 3
     {
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Method | Assembler::Jump_Reg_Global | 3, result);
     }
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(Assembler_JumpTest, Jump_Method_FrameP)
@@ -523,7 +522,7 @@ JUMP Method FramePointer 8
     {
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Method | Assembler::Jump_Reg_FramePointer | 8, result);
     }
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(Assembler_JumpTest, Jump_Method_This)
@@ -539,7 +538,7 @@ JUMP Method This 16
     {
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Method | Assembler::Jump_Reg_This | 16, result);
     }
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(Assembler_JumpTest, Jump_Method_Extra)
@@ -555,7 +554,7 @@ JUMP Method Extra 18
     {
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Method | Assembler::Jump_Reg_Extra | 18, result);
     }
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(Assembler_JumpTest, Jump_Method_StackP)
@@ -571,7 +570,7 @@ JUMP Method StackPointer 56
     {
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Method | Assembler::Jump_Reg_StackPointer | 56, result);
     }
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(Assembler_JumpTest, Jump_Method_Expr1)
@@ -587,7 +586,7 @@ JUMP Method Expr-1 63
     {
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Method | Assembler::Jump_Reg_Expr_1 | 63, result);
     }
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(Assembler_JumpTest, Jump_Method_Expr2)
@@ -603,7 +602,7 @@ JUMP Method Expr-2 62
     {
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Method | Assembler::Jump_Reg_Expr_2 | 62, result);
     }
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(Assembler_JumpTest, Jump_Method_Expr3)
@@ -619,7 +618,7 @@ JUMP Method Expr-3 61
     {
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Method | Assembler::Jump_Reg_Expr_3 | 61, result);
     }
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 
@@ -630,22 +629,22 @@ TEST(Assembler_JumpTest, Jump_Ret_Invalid)
 {
     std::stringstream   result;
     bool                bad = false;
-    BuildAssembler      as(false, result, bad, R"(
+    BuildAssembler      as(result, bad, R"(
 Dest: JUMP Return XX
 )");
 
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_FAIL(bad, "Invalid Input: JUMP Return >", result);
 }
 
 TEST(Assembler_JumpTest, Jump_JP_Invalid_Dest)
 {
     std::stringstream   result;
     bool                bad = false;
-    BuildAssembler      as(false, result, bad, R"(
+    BuildAssembler      as(result, bad, R"(
 Dest: JUMP Jp AL
 )");
 
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_FAIL(bad, "Invalid Input: JUMP Jp AL >", result);
 }
 
 TEST(Assembler_JumpTest, Jump_JP_Invalid_Label)
@@ -655,11 +654,11 @@ TEST(Assembler_JumpTest, Jump_JP_Invalid_Label)
     BuildAssembler      as(result);
 
     as.stable["Dest"] = 0x20'0002;
-    as.run(false, result, bad, R"(
+    as.run(result, bad, R"(
 JUMP Jp AL Dest
 )");
 
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_FAIL(bad, "Invalid Input: JUMP Jp AL >", result);
 }
 
 TEST(Assembler_JumpTest, Jump_JP_Valid_Label_Max)
@@ -669,76 +668,76 @@ TEST(Assembler_JumpTest, Jump_JP_Valid_Label_Max)
     BuildAssembler      as(result);
 
     as.stable["Dest"] = 0x20'0001;
-    as.run(true, result, bad, R"(
+    as.run(result, bad, R"(
 JUMP Jp AL Dest
 )");
 
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(Assembler_JumpTest, Jump_JP_Invalid_Flag)
 {
     std::stringstream   result;
     bool                bad = false;
-    BuildAssembler      as(false, result, bad, R"(
+    BuildAssembler      as(result, bad, R"(
 Dest: JUMP Jp XX Dest
 )");
 
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_FAIL(bad, "Invalid Input: JUMP Jp >", result);
 }
 
 TEST(Assembler_JumpTest, Jump_Call_Invalid)
 {
     std::stringstream   result;
     bool                bad = false;
-    BuildAssembler      as(false, result, bad, R"(
+    BuildAssembler      as(result, bad, R"(
 Dest: JUMP Call StackPointer
 )");
 
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_FAIL(bad, "Invalid Input: JUMP Call StackPointer >", result);
 }
 
 TEST(Assembler_JumpTest, Jump_Method_Invalid_Reg)
 {
     std::stringstream   result;
     bool                bad = false;
-    BuildAssembler      as(false, result, bad, R"(
+    BuildAssembler      as(result, bad, R"(
 Dest: JUMP Method XX 12
 )");
 
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_FAIL(bad, "Invalid Input: JUMP Method >", result);
 }
 
 TEST(Assembler_JumpTest, Jump_Method_Invalid_Dest)
 {
     std::stringstream   result;
     bool                bad = false;
-    BuildAssembler      as(false, result, bad, R"(
+    BuildAssembler      as(result, bad, R"(
 Dest: JUMP Method StackPointer
 )");
 
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_FAIL(bad, "Invalid Input: JUMP Method StackPointer >", result);
 }
 
 TEST(Assembler_JumpTest, Invalid_Jump)
 {
     std::stringstream   result;
     bool                bad = false;
-    BuildAssembler      as(false, result, bad, R"(
+    BuildAssembler      as(result, bad, R"(
 JUMP XX AL Dest
 )");
 
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_FAIL(bad, "Invalid Input: JUMP >", result);
 }
 
 TEST(Assembler_JumpTest, Jump_Call_BadLabel)
 {
     std::stringstream   result;
     bool                bad = false;
-    BuildAssembler      as(false, result, bad, R"(
-Dest: JUMP Call GE LabelThatDoesNotExist
+    BuildAssembler      as(result, bad, R"(
+Dest: JUMP Call LabelThatDoesNotExist
 )");
 
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_FAIL(bad, "Invalid Input: JUMP Call >", result);
 }
 

@@ -137,6 +137,12 @@ int Assembler::assemble(std::string& line, bool buildSymbols)
         {
             find = lastFind;
         }
+        do
+        {
+            --find;
+        }
+        while (std::isspace(line[find]));
+        ++find;
 
         errorStream << "Invalid Input: " << line.substr(0, find) << " >" << badInput << "<\n";
         error = true;

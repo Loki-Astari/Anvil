@@ -72,17 +72,17 @@ CMD Init 1000 1000
 
 // Initialize All Namespaces
 LOAD LRR Expr-1 Global + 0
-JUMP Call AL Abs Expr-1 NS_Std_$Constructor
+JUMP Call Expr-1 NS_Std_$Constructor
 
 LOAD LRR Expr-1 Global + 0
-JUMP Call AL Abs Expr-1 NS_Sys_$Constructor
+JUMP Call Expr-1 NS_Sys_$Constructor
 
 LOAD LRR Expr-1 Global + 2
-JUMP Call AL Abs Expr-1 NS_MyApp_$Constructor
+JUMP Call Expr-1 NS_MyApp_$Constructor
 
 // Run the applicaiton:
 REG  Inc  StackP 1                          // Make Space for the return parameter
-JUMP Call AL Abs null NS_MyApp_Func_main
+JUMP Call Expr-1 NS_MyApp_Func_main
 LOAD LRP  Expr-1 = StackP + 0
 REG  POP StackP
 CMD Kill Reg Expr-1
@@ -100,7 +100,7 @@ NS_Sys_$Costructor:
     LOAD LRP Expr-1 = Expr-1 + 0
     // Call the Console constructor
     // Setting the This register to the value of Expr-1
-    JUMP Call AL Abs Expr-1 NS_Sys_Class_Console_$Constructor
+    JUMP Call Expr-1 NS_Sys_Class_Console_$Constructor
 
     CMD Import Load $dll Anvil.System
 JUMP Return AL
@@ -127,10 +127,9 @@ NS_MyApp_Func_main:
 
 // Sys::console.print("Hello World");
 LOAD LRR Expr-1 = Global + 0                // Expr-1 points at Sys::console
-LOAD LRP Expr-2 = Expr-1 + 0                // Expr-2 points at print method in object
 REG  Inc  StackP 1                          // Make Space for the return parameter
 REG  Push StackP String("Hello World")      // Push the only parameter.
-JUMP Call AL Mem Expr-1 Expr-2              // Expr-1 becomes this. Mem Expr-2 points at function
+JUMP Method Expr-1 0                        // Expr-1 becomes this. Mem Expr-2 points at function
 REG  POP StackP                             // Pop Param-0
 REG  POP StackP                             // Pop the result
 
@@ -145,6 +144,6 @@ JUMP Return AL
     // Result      output = vm.run();
 
     // EXPECT_EQ_OR_LOG(bad, output, 255, result);
-    // EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_FALSE_OR_DEBUG(bad, result);
 }
 

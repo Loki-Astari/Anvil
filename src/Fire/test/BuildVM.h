@@ -12,26 +12,22 @@ struct BuildAssembler
     bool                                        bad;
 
     BuildAssembler(std::ostream& result, bool& bad, std::string&& input)
-        : BuildAssembler(true, result, bad, std::move(input))
-    {}
-
-    BuildAssembler(bool good, std::ostream& result, bool& bad, std::string&& input)
         : assembler(result, stable)
     {
         std::istringstream      inputStream(std::move(input));
         assembler.assemble(inputStream, codeBlock);
 
-        EXPECT_EQ_OR_LOG(bad, assembler.isOK(), good, result);
+        EXPECT_EQ_OR_LOG(bad, assembler.isOK(), true, result);
     }
     BuildAssembler(std::ostream& result)
         : assembler(result, stable)
     {}
-    void run(bool good, std::ostream& result, bool& bad, std::string&& input)
+    void run(std::ostream& result, bool& bad, std::string&& input)
     {
         std::istringstream      inputStream(std::move(input));
         assembler.assemble(inputStream, codeBlock);
 
-        EXPECT_EQ_OR_LOG(bad, assembler.isOK(), good, result);
+        EXPECT_EQ_OR_LOG(bad, assembler.isOK(), true, result);
     }
 };
 

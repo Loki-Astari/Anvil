@@ -71,7 +71,7 @@ int Assembler::assemble_Jump(std::istream& lineStream, bool buildSymbols)
     else if (action == "Call")      {return assemble_JumpCall(lineStream, buildSymbols);}
     else if (action == "Method")    {return assemble_JumpMethod(lineStream);}
 
-    errorStream << "Invalid Input: Jump >" << action << "< " << lineStream.rdbuf() << "\n";
+    errorStream << "Invalid Input: JUMP >" << action << "< " << lineStream.rdbuf() << "\n";
     error = true;
     return 0;
 }
@@ -81,7 +81,7 @@ int Assembler::assemble_JumpReturn(std::istream& lineStream)
     lineStream >> flagValue;
     if (!assemble_JumpConditionFlag(flagValue))
     {
-        errorStream << "Invalid Input: Jump Ret >" << flagValue << "< " << lineStream.rdbuf() << "\n";
+        errorStream << "Invalid Input: JUMP Return >" << flagValue << "< " << lineStream.rdbuf() << "\n";
         error = true;
         return 0;
     }
@@ -95,7 +95,7 @@ int Assembler::assemble_JumpJp(std::istream& lineStream, bool buildSymbols)
     lineStream >> flagValue;
     if (!assemble_JumpConditionFlag(flagValue))
     {
-        errorStream << "Invalid Input: Jump Jp >" << flagValue << "< " << lineStream.rdbuf() << "\n";
+        errorStream << "Invalid Input: JUMP Jp >" << flagValue << "< " << lineStream.rdbuf() << "\n";
         error = true;
         return 0;
     }
@@ -104,7 +104,7 @@ int Assembler::assemble_JumpJp(std::istream& lineStream, bool buildSymbols)
     std::uint32_t dest = getAddress(destination, buildSymbols);
     if (dest == 0)
     {
-        errorStream << "Invalid Input: Jump Jp " << flagValue << " >" << destination << "< " << lineStream.rdbuf() << "\n";
+        errorStream << "Invalid Input: JUMP Jp " << flagValue << " >" << destination << "< " << lineStream.rdbuf() << "\n";
         error = true;
         return 0;
     }
@@ -112,7 +112,7 @@ int Assembler::assemble_JumpJp(std::istream& lineStream, bool buildSymbols)
     std::uint32_t relative = dest > addFrom ? dest - addFrom : addFrom - dest;
     if (relative > 0x1F'FFFF)
     {
-        errorStream << "Invalid Input: Jump Jp " << flagValue << " >" << destination << "< " << lineStream.rdbuf() << "\n";
+        errorStream << "Invalid Input: JUMP Jp " << flagValue << " >" << destination << "< " << lineStream.rdbuf() << "\n";
         error = true;
         return 0;
     }
@@ -131,7 +131,7 @@ int Assembler::assemble_JumpCall(std::istream& lineStream, bool buildSymbols)
     lineStream >> regValue;
     if (!getRegister(regValue))
     {
-        errorStream << "Invalid Input: Jump Call >" << regValue << "< " << lineStream.rdbuf() << "\n";
+        errorStream << "Invalid Input: JUMP Call >" << regValue << "< " << lineStream.rdbuf() << "\n";
         error = true;
         return 0;
     }
@@ -140,7 +140,7 @@ int Assembler::assemble_JumpCall(std::istream& lineStream, bool buildSymbols)
     std::uint32_t dest = getAddress(destination, buildSymbols);
     if (dest == 0)
     {
-        errorStream << "Invalid Input: Jump Call " << regValue << " >" << destination << "< " << lineStream.rdbuf() << "\n";
+        errorStream << "Invalid Input: JUMP Call " << regValue << " >" << destination << "< " << lineStream.rdbuf() << "\n";
         error = true;
         return 0;
     }
@@ -157,7 +157,7 @@ int Assembler::assemble_JumpMethod(std::istream& lineStream)
     lineStream >> regValue;
     if (!getRegister(regValue))
     {
-        errorStream << "Invalid Input: Jump Method >" << regValue << "< " << lineStream.rdbuf() << "\n";
+        errorStream << "Invalid Input: JUMP Method >" << regValue << "< " << lineStream.rdbuf() << "\n";
         error = true;
         return 0;
     }
@@ -165,7 +165,7 @@ int Assembler::assemble_JumpMethod(std::istream& lineStream)
     lineStream >> offset;
     if (offset > 0x003F)
     {
-        errorStream << "Invalid Input: Jump Method " << regValue << " >" << offset << "< " << lineStream.rdbuf() << ": Out of range\n";
+        errorStream << "Invalid Input: JUMP Method " << regValue << " >" << offset << "< " << lineStream.rdbuf() << ": Out of range\n";
         error = true;
         return 0;
     }

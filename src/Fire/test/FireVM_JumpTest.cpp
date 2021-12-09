@@ -62,7 +62,7 @@ CMD Kill 255
     Result      output = vm.run();
 
     EXPECT_EQ_OR_LOG(bad, output, 255, result);
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(FireVM_JumpTest, Jump_Jp_EQ_NotJump)
@@ -80,7 +80,7 @@ CMD Kill 255
     Result      output = vm.run();
 
     EXPECT_EQ_OR_LOG(bad, output, 3, result);
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(FireVM_JumpTest, Jump_Jp_EQ_Jump)
@@ -99,7 +99,7 @@ CMD Kill 255
     Result      output = vm.run();
 
     EXPECT_EQ_OR_LOG(bad, output, 255, result);
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(FireVM_JumpTest, Jump_Jp_NE_NotJump)
@@ -117,7 +117,7 @@ CMD Kill 255
     Result      output = vm.run();
 
     EXPECT_EQ_OR_LOG(bad, output, 3, result);
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(FireVM_JumpTest, Jump_Jp_NE_WithLess_Jump)
@@ -136,7 +136,7 @@ CMD Kill 255
     Result      output = vm.run();
 
     EXPECT_EQ_OR_LOG(bad, output, 255, result);
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(FireVM_JumpTest, Jump_Jp_NE_WithGreat_Jump)
@@ -155,7 +155,7 @@ CMD Kill 255
     Result      output = vm.run();
 
     EXPECT_EQ_OR_LOG(bad, output, 255, result);
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(FireVM_JumpTest, Jump_Jp_LE_NotJump)
@@ -173,7 +173,7 @@ CMD Kill 255
     Result      output = vm.run();
 
     EXPECT_EQ_OR_LOG(bad, output, 3, result);
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(FireVM_JumpTest, Jump_Jp_LE_Jump)
@@ -192,7 +192,7 @@ CMD Kill 255
     Result      output = vm.run();
 
     EXPECT_EQ_OR_LOG(bad, output, 255, result);
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(FireVM_JumpTest, Jump_Jp_LE_Equal_Jump)
@@ -211,7 +211,7 @@ CMD Kill 255
     Result      output = vm.run();
 
     EXPECT_EQ_OR_LOG(bad, output, 255, result);
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(FireVM_JumpTest, Jump_Jp_GE_NotJump)
@@ -229,7 +229,7 @@ CMD Kill 255
     Result      output = vm.run();
 
     EXPECT_EQ_OR_LOG(bad, output, 3, result);
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(FireVM_JumpTest, Jump_Jp_GE_Jump)
@@ -248,7 +248,7 @@ CMD Kill 255
     Result      output = vm.run();
 
     EXPECT_EQ_OR_LOG(bad, output, 255, result);
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(FireVM_JumpTest, Jump_Jp_GE_Equal_Jump)
@@ -267,7 +267,7 @@ CMD Kill 255
     Result      output = vm.run();
 
     EXPECT_EQ_OR_LOG(bad, output, 255, result);
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(FireVM_JumpTest, Jump_Jp_LT_NotJump)
@@ -285,7 +285,7 @@ CMD Kill 255
     Result      output = vm.run();
 
     EXPECT_EQ_OR_LOG(bad, output, 3, result);
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(FireVM_JumpTest, Jump_Jp_LT_Jump)
@@ -304,7 +304,7 @@ CMD Kill 255
     Result      output = vm.run();
 
     EXPECT_EQ_OR_LOG(bad, output, 255, result);
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(FireVM_JumpTest, Jump_Jp_GT_NotJump)
@@ -322,7 +322,7 @@ CMD Kill 255
     Result      output = vm.run();
 
     EXPECT_EQ_OR_LOG(bad, output, 3, result);
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(FireVM_JumpTest, Jump_Jp_GT_Jump)
@@ -341,7 +341,7 @@ CMD Kill 255
     Result      output = vm.run();
 
     EXPECT_EQ_OR_LOG(bad, output, 255, result);
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 // ------
@@ -360,7 +360,7 @@ JUMP Return AL
     Result      output = vm.run();
 
     EXPECT_EQ_OR_LOG(bad, output, 255, result);
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(FireVM_JumpTest, Jump_CallRet_EQ_NotJump)
@@ -379,7 +379,7 @@ CMD Kill 3
     Result      output = vm.run();
 
     EXPECT_EQ_OR_LOG(bad, output, 3, result);
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(FireVM_JumpTest, Jump_CallRet_EQ_Jump)
@@ -399,7 +399,7 @@ CMD Kill 3
     Result      output = vm.run();
 
     EXPECT_EQ_OR_LOG(bad, output, 255, result);
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(FireVM_JumpTest, Jump_CallRet_NE_NotJump)
@@ -418,7 +418,7 @@ CMD Kill 3
     Result      output = vm.run();
 
     EXPECT_EQ_OR_LOG(bad, output, 3, result);
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(FireVM_JumpTest, Jump_CallRet_NELess_Jump)
@@ -438,7 +438,7 @@ CMD Kill 3
     Result      output = vm.run();
 
     EXPECT_EQ_OR_LOG(bad, output, 255, result);
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(FireVM_JumpTest, Jump_CallRet_NEGreat_Jump)
@@ -458,7 +458,7 @@ CMD Kill 3
     Result      output = vm.run();
 
     EXPECT_EQ_OR_LOG(bad, output, 255, result);
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(FireVM_JumpTest, Jump_CallRet_LE_NotJump)
@@ -477,7 +477,7 @@ CMD Kill 3
     Result      output = vm.run();
 
     EXPECT_EQ_OR_LOG(bad, output, 3, result);
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(FireVM_JumpTest, Jump_CallRet_LE_Jump)
@@ -497,7 +497,7 @@ CMD Kill 3
     Result      output = vm.run();
 
     EXPECT_EQ_OR_LOG(bad, output, 255, result);
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(FireVM_JumpTest, Jump_CallRet_LE_Equal_Jump)
@@ -517,7 +517,7 @@ CMD Kill 3
     Result      output = vm.run();
 
     EXPECT_EQ_OR_LOG(bad, output, 255, result);
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(FireVM_JumpTest, Jump_CallRet_GE_NotJump)
@@ -536,7 +536,7 @@ CMD Kill 3
     Result      output = vm.run();
 
     EXPECT_EQ_OR_LOG(bad, output, 3, result);
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(FireVM_JumpTest, Jump_CallRet_GE_Jump)
@@ -556,7 +556,7 @@ CMD Kill 3
     Result      output = vm.run();
 
     EXPECT_EQ_OR_LOG(bad, output, 255, result);
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(FireVM_JumpTest, Jump_CallRet_GE_Equal_Jump)
@@ -576,7 +576,7 @@ CMD Kill 3
     Result      output = vm.run();
 
     EXPECT_EQ_OR_LOG(bad, output, 255, result);
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(FireVM_JumpTest, Jump_CallRet_LT_NotJump)
@@ -595,7 +595,7 @@ CMD Kill 3
     Result      output = vm.run();
 
     EXPECT_EQ_OR_LOG(bad, output, 3, result);
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(FireVM_JumpTest, Jump_CallRet_LT_Jump)
@@ -615,7 +615,7 @@ CMD Kill 3
     Result      output = vm.run();
 
     EXPECT_EQ_OR_LOG(bad, output, 255, result);
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(FireVM_JumpTest, Jump_CallRet_GT_NotJump)
@@ -634,7 +634,7 @@ CMD Kill 3
     Result      output = vm.run();
 
     EXPECT_EQ_OR_LOG(bad, output, 3, result);
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(FireVM_JumpTest, Jump_CallRet_GT_Jump)
@@ -654,7 +654,7 @@ CMD Kill 3
     Result      output = vm.run();
 
     EXPECT_EQ_OR_LOG(bad, output, 255, result);
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(FireVM_JumpTest, Jump_CallRet_Via_Reg)
@@ -676,7 +676,7 @@ CMD Kill 3
     Result      output = vm.run();
 
     EXPECT_EQ_OR_LOG(bad, output, 3, result);
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 
@@ -705,7 +705,7 @@ JUMP Return AL
     Result      output = vm.run();
 
     EXPECT_EQ_OR_LOG(bad, output, FireVM::haltInvalidReturnState, result);
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(FireVM_JumpTest, Jump_InvalidCall)
@@ -721,6 +721,6 @@ CMD Kill 8
     Result      output = vm.run();
 
     EXPECT_EQ_OR_LOG(bad, output, FireVM::haltInvalidMethod, result);
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 

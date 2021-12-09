@@ -37,7 +37,7 @@ CMD NoOp
         // NOTE: Assembler added CMD Init 0xFF 0xFFFF
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[2], Assembler::Act_CMD | Assembler::Cmd_NoOp, result);
     }
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(Assembler_CmdTest, Cmd_Kill_128)
@@ -54,7 +54,7 @@ CMD Kill 128
         // NOTE: Assembler added CMD Init 0xFF 0xFFFF
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[2], Assembler::Act_CMD | Assembler::Cmd_Kill | 128, result);
     }
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(Assembler_CmdTest, Cmd_Init_8_16)
@@ -71,7 +71,7 @@ CMD Init 255 65535
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[0], Assembler::Act_CMD | Assembler::Cmd_Init | Assembler::Cmd_Init_Size_8_16 | 255, result);
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[1], 65535, result);
     }
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(Assembler_CmdTest, Cmd_Init_16_16)
@@ -89,7 +89,7 @@ CMD Init 256 65535
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[1], 256, result);
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[2], 65535, result);
     }
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 
@@ -108,7 +108,7 @@ CMD Init 255 65536
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[1], 1, result);
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[2], 0, result);
     }
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(Assembler_CmdTest, Cmd_Init_16_32)
@@ -127,7 +127,7 @@ CMD Init 256 65536
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[2], 1, result);
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[3], 0, result);
     }
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 
@@ -137,87 +137,87 @@ TEST(Assembler_CmdTest, Cmd_Invalid)
 {
     std::stringstream   result;
     bool                bad = false;
-    BuildAssembler      as(false, result, bad, R"(
+    BuildAssembler      as(result, bad, R"(
 CMD ZZZ
 )");
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_FAIL(bad, "Invalid Input: CMD >", result);
 }
 
 TEST(Assembler_CmdTest, Cmd_NoOp_BadOperands)
 {
     std::stringstream   result;
     bool                bad = false;
-    BuildAssembler      as(false, result, bad, R"(
+    BuildAssembler      as(result, bad, R"(
 CMD NoOp Invalid
 )");
 
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_FAIL(bad, "Invalid Input: CMD NoOp >", result);
 }
 
 TEST(Assembler_CmdTest, Cmd_Kill_NegativeValue)
 {
     std::stringstream   result;
     bool                bad = false;
-    BuildAssembler      as(false, result, bad, R"(
+    BuildAssembler      as(result, bad, R"(
 CMD Kill -10
 )");
 
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_FAIL(bad, "Invalid Input: CMD Kill >", result);
 }
 
 TEST(Assembler_CmdTest, Cmd_Kill_OutOfBounds)
 {
     std::stringstream   result;
     bool                bad = false;
-    BuildAssembler      as(false, result, bad, R"(
+    BuildAssembler      as(result, bad, R"(
 CMD Kill 1024
 )");
 
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_FAIL(bad, "Invalid Input: CMD Kill >", result);
 }
 
 TEST(Assembler_CmdTest, Cmd_Init_GlobalOverSize)
 {
     std::stringstream   result;
     bool                bad = false;
-    BuildAssembler      as(false, result, bad, R"(
+    BuildAssembler      as(result, bad, R"(
 CMD Init 65536 65536
 )");
 
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_FAIL(bad, "Invalid Input: CMD Init >", result);
 }
 
 TEST(Assembler_CmdTest, Cmd_Init_StackOverSize)
 {
     std::stringstream   result;
     bool                bad = false;
-    BuildAssembler      as(false, result, bad, R"(
+    BuildAssembler      as(result, bad, R"(
 CMD Init 255 4294967296
 )");
 
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_FAIL(bad, "Invalid Input: CMD Init >", result);
 }
 
 TEST(Assembler_CmdTest, Cmd_Init_NegativeGlobal)
 {
     std::stringstream   result;
     bool                bad = false;
-    BuildAssembler      as(false, result, bad, R"(
+    BuildAssembler      as(result, bad, R"(
 CMD Init -255 255
 )");
 
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_FAIL(bad, "Invalid Input: CMD Init >", result);
 }
 
 TEST(Assembler_CmdTest, Cmd_Init_NegativeStack)
 {
     std::stringstream   result;
     bool                bad = false;
-    BuildAssembler      as(false, result, bad, R"(
+    BuildAssembler      as(result, bad, R"(
 CMD Init 255 -255
 )");
 
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_FAIL(bad, "Invalid Input: CMD Init >", result);
 }
 
 

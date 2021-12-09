@@ -7,6 +7,18 @@
 
 using namespace ThorsAnvil::Anvil::Fire;
 
+/*
+ * Construct
+ * AssembleEmptyFile
+ * CheckLabelsWork
+ * CheckCommentsAreIgnored
+ * CheckCommandBlock
+ * CheckOutputStream
+ * ------
+ * CheckEmptyLabelIsInvalid
+ * InvalidCommand
+ */
+
 TEST(AssemblerTest, Construct)
 {
     SymbolTable         stable;
@@ -22,7 +34,7 @@ TEST(AssemblerTest, AssembleEmptyFile)
 
     EXPECT_EQ_OR_LOG(bad, as.codeBlock.size(), 2, result);
     EXPECT_EQ_OR_LOG(bad, as.stable.size(), 0, result);
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(AssemblerTest, CheckLabelsWork)
@@ -51,18 +63,7 @@ L4:  L5:L6: CMD NoOp
         EXPECT_EQ_OR_LOG(bad, as.stable["L9"], 4, result);
         EXPECT_EQ_OR_LOG(bad, as.stable["LA"], 4, result);
     }
-    EXPECT_FALSE_OR_DEBUG(bad, result);
-}
-
-TEST(AssemblerTest, CheckEmptyLabelIsInvalid)
-{
-    std::stringstream   result;
-    bool                bad = false;
-    BuildAssembler      as(false, result, bad, R"(
-    :
-)");
-
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(AssemblerTest, CheckCommentsAreIgnored)
@@ -86,7 +87,7 @@ CMD NoOp
         EXPECT_EQ_OR_LOG(bad, as.stable["L1"], 2, result);
         EXPECT_EQ_OR_LOG(bad, as.stable["L4"], 3, result);
     }
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 
@@ -110,7 +111,7 @@ CMD NoOp
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[3], 0, result);
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[4], 0, result);
     }
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
 }
 
 TEST(AssemblerTest, CheckOutputStream)
@@ -138,18 +139,31 @@ CMD NoOp
         EXPECT_EQ_OR_LOG(bad, output[8], 0, result);
         EXPECT_EQ_OR_LOG(bad, output[9], 0, result);
     }
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_SUCC(bad, result);
+}
+
+// --------------
+
+TEST(AssemblerTest, CheckEmptyLabelIsInvalid)
+{
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(result, bad, R"(
+    :
+)");
+
+    EXPECT_FAIL(bad, "Invalid Input: Bad Label", result);
 }
 
 TEST(AssemblerTest, InvalidCommand)
 {
     std::stringstream   result;
     bool                bad = false;
-    BuildAssembler      as(false, result, bad, R"(
+    BuildAssembler      as(result, bad, R"(
 Cmd NoOp
 )");
 
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    EXPECT_FAIL(bad, "Invalid Input: >Cmd<  NoOp", result);
 }
 
 
