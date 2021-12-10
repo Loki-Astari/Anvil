@@ -19,7 +19,7 @@ class Assembler
     std::size_t     addr;
     std::ostream&   errorStream;
     SymbolTable&    stable;
-    Instruction     instructions[5];
+    std::vector<Instruction>     instructions;
 
     public:
         Assembler(std::ostream& errorStream, SymbolTable& stable);
@@ -119,11 +119,6 @@ class Assembler
         // Action Jump Offset
         static constexpr Instruction Jump_Offset_Mask       = 0x003F;
 
-        // Invalid Instructions
-        static constexpr Instruction InvalidAction          = 0xFFFF;
-        static constexpr Instruction InvalidCmd             = 0x0FFF;
-        static constexpr Instruction InvalidJump            = 0x1FFF;
-
         // Action Addr Type
         static constexpr Instruction Action_Addr_Mask       = 0x0E00;
         static constexpr Instruction Addr_LRR               = 0x0000;
@@ -152,6 +147,10 @@ class Assembler
         static constexpr Instruction Addr_Literal_Int       = 0x0010;
         static constexpr Instruction Addr_Literal_String    = 0x0018;
 
+        // Action Addr Inc/Dec Offset
+        static constexpr Instruction Addr_Increment_Mask    = 0x003F;
+
+
         // Register ID
         static constexpr Instruction Reg_Global             = 0x0000;
         static constexpr Instruction Reg_FramePointer       = 0x0001;
@@ -162,6 +161,12 @@ class Assembler
         static constexpr Instruction Reg_Expr_1             = 0x0005;
         static constexpr Instruction Reg_Expr_2             = 0x0006;
         static constexpr Instruction Reg_Expr_3             = 0x0007;
+
+        // Invalid Instructions
+        static constexpr Instruction InvalidAction          = 0xFFFF;
+        static constexpr Instruction InvalidCmd             = 0x0FFF;
+        static constexpr Instruction InvalidJump            = 0x1FFF;
+        static constexpr Instruction InvalidAddr            = 0x2FFF;
 };
 
 }

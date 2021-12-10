@@ -80,6 +80,22 @@ class MemoryLocation
             }
             return check ? *check : defaultValue;
         }
+        MemoryLocation* getAddress(std::function<void()>&& action = [](){})
+        {
+            MemoryLocation** memory = std::get_if<DataAddress>(&value);
+            if (memory != nullptr)
+            {
+                return *memory;
+            }
+
+            DataFrame* frame = std::get_if<DataFrame>(&value);
+            if (frame != nullptr)
+            {
+                return &(*frame)[0];
+            }
+            action();
+            return nullptr;
+        }
 };
 
 }

@@ -9,6 +9,7 @@ Assembler::Assembler(std::ostream& errorStream, SymbolTable& stable)
     , addr(0)
     , errorStream(errorStream)
     , stable(stable)
+    , instructions(5)
 {}
 
 void Assembler::assemble(std::istream& input, CodeBlock& output)

@@ -115,7 +115,15 @@ int Assembler::assemble_AddrLiteral(std::istream& lineStream, Instruction flag, 
             std::string line;
             std::getline(lineStream, line);
             instructions[1] = static_cast<Instruction>(line.size());
-            return 2;
+            // Get the string size.
+            std::size_t offset = line.size();
+            // Make it even (As we are coying into space that is blocks of 16bits.
+            offset = offset + ((offset % 2) == 1 ? 1 : 0);
+            // Total size: Instruction + Size + String length
+            offset = 2 + (offset / 2);
+            instructions.resize(offset);
+            std::copy(std::begin(line), std::end(line), reinterpret_cast<char*>(&instructions[2]));
+            return offset;
         }
     }
     return 0;

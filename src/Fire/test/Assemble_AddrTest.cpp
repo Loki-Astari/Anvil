@@ -995,12 +995,13 @@ TEST(Assembler_AddrTest, LML_Gloabl_String)
 ADDR LML Global = String Stuff Is Good
 )");
 
-    EXPECT_EQ_OR_LOG(bad, as.codeBlock.size(), 4, result);
-    if (as.codeBlock.size() == 4)
+    EXPECT_EQ_OR_LOG(bad, as.codeBlock.size(), 11, result);
+    if (as.codeBlock.size() == 11)
     {
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[2], Assembler::Act_Addr | Assembler::Addr_LML | Assembler::Addr_Literal_String
                                                 | (Assembler::Reg_Global << Assembler::Addr_Reg1_Shift), result);
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[3], 13, result);
+        EXPECT_EQ_OR_LOG(bad, std::string("Stuff Is Good"), std::string(reinterpret_cast<char const*>(&as.codeBlock[4]), 13), result);
     }
     EXPECT_SUCC(bad, result);
 }

@@ -2,12 +2,13 @@
 #define THORSANVIL_ANVIL_FIRE_FIREVM_H
 
 #include "Memory.h"
+#include <tuple>
 
 namespace ThorsAnvil::Anvil::Fire
 {
 
 // 8 named address registers.
-enum Register {Global, FrameP, This, Reserved1, StackP, Expr1, Expr2, Expr3, MaxAddressRegister};
+enum Register {Global, FrameP, This, Extra, StackP, Expr1, Expr2, Expr3, MaxAddressRegister};
 
 struct VMState
 {
@@ -51,14 +52,26 @@ class FireVM
             void runActionJumpMethod(Instruction instruction);
                 bool checkInstructionFlagWithRegister(Instruction instruction);
                 void runActionJumpDoCall(Instruction instruction, std::uint32_t position);
+        void runActionAddr(Instruction instruction);
+            void runActionAddrLRR(Instruction instruction);
+            void runActionAddrLRP(Instruction instruction);
+            void runActionAddrLMR(Instruction instruction);
+            void runActionAddrLMP(Instruction instruction);
+            void runActionAddrLML(Instruction instruction);
+            void runActionAddrInc(Instruction instruction, int sign);
+                std::tuple<int, int, Instruction> runActionAddrGetReg(Instruction instruction);
 
     public:
         static constexpr Result     haltRanOutOfProgramMemory       = 0xFFFF0000;
         static constexpr Result     haltInvalidAction               = 0xFFFF0001;
         static constexpr Result     haltInvalidCmd                  = 0xFFFF0002;
         static constexpr Result     haltInvalidJump                 = 0xFFFF0003;
-        static constexpr Result     haltInvalidReturnState          = 0xFFFF0004;
-        static constexpr Result     haltInvalidMethod               = 0xFFFF0005;
+        static constexpr Result     haltInvalidAddr                 = 0xFFFF0004;
+        static constexpr Result     haltInvalidReturnState          = 0xFFFF0005;
+        static constexpr Result     haltInvalidMethod               = 0xFFFF0006;
+        static constexpr Result     haltInvalidAddType              = 0xFFFF0007;
+        static constexpr Result     haltInvalidLiteralType          = 0xFFFF0008;
+        static constexpr Result     haltMemoryNotAddress            = 0xFFFF0009;
 };
 
 }
