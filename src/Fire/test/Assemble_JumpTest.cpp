@@ -342,7 +342,7 @@ JUMP Call Global Dest
     EXPECT_EQ_OR_LOG(bad, as.codeBlock.size(), 6, result);
     if (as.codeBlock.size() == 6)
     {
-        EXPECT_EQ_OR_LOG(bad, as.codeBlock[3], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::Jump_Reg_Global, result);
+        EXPECT_EQ_OR_LOG(bad, as.codeBlock[3], Assembler::Act_Jump | Assembler::Jump_Call | (Assembler::Reg_Global << Assembler::Jump_Reg_Shift), result);
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[4], 0, result);
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[5], 2, result);
     }
@@ -364,7 +364,7 @@ Dest: CMD NoOp
     EXPECT_EQ_OR_LOG(bad, as.codeBlock.size(), 7, result);
     if (as.codeBlock.size() == 7)
     {
-        EXPECT_EQ_OR_LOG(bad, as.codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::Jump_Reg_FramePointer, result);
+        EXPECT_EQ_OR_LOG(bad, as.codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Call | (Assembler::Reg_FramePointer << Assembler::Jump_Reg_Shift), result);
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[3], 0, result);
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[4], 6, result);
     }
@@ -384,7 +384,7 @@ Dest: CMD NoOp
     EXPECT_EQ_OR_LOG(bad, as.codeBlock.size(), 6, result);
     if (as.codeBlock.size() == 6)
     {
-        EXPECT_EQ_OR_LOG(bad, as.codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::Jump_Reg_This, result);
+        EXPECT_EQ_OR_LOG(bad, as.codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Call | (Assembler::Reg_This << Assembler::Jump_Reg_Shift), result);
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[3], 0, result);
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[4], 5, result);
     }
@@ -405,7 +405,7 @@ JUMP Call Extra Dest
     EXPECT_EQ_OR_LOG(bad, as.codeBlock.size(), 7, result);
     if (as.codeBlock.size() == 7)
     {
-        EXPECT_EQ_OR_LOG(bad, as.codeBlock[4], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::Jump_Reg_Extra, result);
+        EXPECT_EQ_OR_LOG(bad, as.codeBlock[4], Assembler::Act_Jump | Assembler::Jump_Call | (Assembler::Reg_Extra << Assembler::Jump_Reg_Shift), result);
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[5], 0, result);
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[6], 2, result);
     }
@@ -425,7 +425,7 @@ Dest: CMD NoOp
     EXPECT_EQ_OR_LOG(bad, as.codeBlock.size(), 6, result);
     if (as.codeBlock.size() == 6)
     {
-        EXPECT_EQ_OR_LOG(bad, as.codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::Jump_Reg_StackPointer, result);
+        EXPECT_EQ_OR_LOG(bad, as.codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Call | (Assembler::Reg_StackPointer << Assembler::Jump_Reg_Shift), result);
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[3], 0, result);
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[4], 5, result);
     }
@@ -446,7 +446,7 @@ JUMP Call Expr-1 Dest
     EXPECT_EQ_OR_LOG(bad, as.codeBlock.size(), 6, result);
     if (as.codeBlock.size() == 6)
     {
-        EXPECT_EQ_OR_LOG(bad, as.codeBlock[3], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::Jump_Reg_Expr_1, result);
+        EXPECT_EQ_OR_LOG(bad, as.codeBlock[3], Assembler::Act_Jump | Assembler::Jump_Call | (Assembler::Reg_Expr_1 << Assembler::Jump_Reg_Shift), result);
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[4], 0, result);
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[5], 2, result);
     }
@@ -465,7 +465,7 @@ Dest: JUMP Call Expr-2 Dest
     EXPECT_EQ_OR_LOG(bad, as.codeBlock.size(), 5, result);
     if (as.codeBlock.size() == 5)
     {
-        EXPECT_EQ_OR_LOG(bad, as.codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::Jump_Reg_Expr_2, result);
+        EXPECT_EQ_OR_LOG(bad, as.codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Call | (Assembler::Reg_Expr_2 << Assembler::Jump_Reg_Shift), result);
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[3], 0, result);
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[4], 2, result);
     }
@@ -485,7 +485,7 @@ JUMP Call Expr-3 Dest
     EXPECT_EQ_OR_LOG(bad, as.codeBlock.size(), 6, result);
     if (as.codeBlock.size() == 6)
     {
-        EXPECT_EQ_OR_LOG(bad, as.codeBlock[3], Assembler::Act_Jump | Assembler::Jump_Call | Assembler::Jump_Reg_Expr_3, result);
+        EXPECT_EQ_OR_LOG(bad, as.codeBlock[3], Assembler::Act_Jump | Assembler::Jump_Call | (Assembler::Reg_Expr_3 << Assembler::Jump_Reg_Shift), result);
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[4], 0, result);
         EXPECT_EQ_OR_LOG(bad, as.codeBlock[5], 2, result);
     }
@@ -503,7 +503,7 @@ JUMP Method Global 3
     EXPECT_EQ_OR_LOG(bad, as.codeBlock.size(), 3, result);
     if (as.codeBlock.size() == 3)
     {
-        EXPECT_EQ_OR_LOG(bad, as.codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Method | Assembler::Jump_Reg_Global | 3, result);
+        EXPECT_EQ_OR_LOG(bad, as.codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Method | (Assembler::Reg_Global  << Assembler::Jump_Reg_Shift)| 3, result);
     }
     EXPECT_SUCC(bad, result);
 }
@@ -520,7 +520,7 @@ JUMP Method FramePointer 8
     EXPECT_EQ_OR_LOG(bad, as.codeBlock.size(), 3, result);
     if (as.codeBlock.size() == 3)
     {
-        EXPECT_EQ_OR_LOG(bad, as.codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Method | Assembler::Jump_Reg_FramePointer | 8, result);
+        EXPECT_EQ_OR_LOG(bad, as.codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Method | (Assembler::Reg_FramePointer  << Assembler::Jump_Reg_Shift)| 8, result);
     }
     EXPECT_SUCC(bad, result);
 }
@@ -536,7 +536,7 @@ JUMP Method This 16
     EXPECT_EQ_OR_LOG(bad, as.codeBlock.size(), 3, result);
     if (as.codeBlock.size() == 3)
     {
-        EXPECT_EQ_OR_LOG(bad, as.codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Method | Assembler::Jump_Reg_This | 16, result);
+        EXPECT_EQ_OR_LOG(bad, as.codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Method | (Assembler::Reg_This  << Assembler::Jump_Reg_Shift)| 16, result);
     }
     EXPECT_SUCC(bad, result);
 }
@@ -552,7 +552,7 @@ JUMP Method Extra 18
     EXPECT_EQ_OR_LOG(bad, as.codeBlock.size(), 3, result);
     if (as.codeBlock.size() == 3)
     {
-        EXPECT_EQ_OR_LOG(bad, as.codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Method | Assembler::Jump_Reg_Extra | 18, result);
+        EXPECT_EQ_OR_LOG(bad, as.codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Method | (Assembler::Reg_Extra  << Assembler::Jump_Reg_Shift)| 18, result);
     }
     EXPECT_SUCC(bad, result);
 }
@@ -568,7 +568,7 @@ JUMP Method StackPointer 56
     EXPECT_EQ_OR_LOG(bad, as.codeBlock.size(), 3, result);
     if (as.codeBlock.size() == 3)
     {
-        EXPECT_EQ_OR_LOG(bad, as.codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Method | Assembler::Jump_Reg_StackPointer | 56, result);
+        EXPECT_EQ_OR_LOG(bad, as.codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Method | (Assembler::Reg_StackPointer  << Assembler::Jump_Reg_Shift)| 56, result);
     }
     EXPECT_SUCC(bad, result);
 }
@@ -584,7 +584,7 @@ JUMP Method Expr-1 63
     EXPECT_EQ_OR_LOG(bad, as.codeBlock.size(), 3, result);
     if (as.codeBlock.size() == 3)
     {
-        EXPECT_EQ_OR_LOG(bad, as.codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Method | Assembler::Jump_Reg_Expr_1 | 63, result);
+        EXPECT_EQ_OR_LOG(bad, as.codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Method | (Assembler::Reg_Expr_1  << Assembler::Jump_Reg_Shift)| 63, result);
     }
     EXPECT_SUCC(bad, result);
 }
@@ -600,7 +600,7 @@ JUMP Method Expr-2 62
     EXPECT_EQ_OR_LOG(bad, as.codeBlock.size(), 3, result);
     if (as.codeBlock.size() == 3)
     {
-        EXPECT_EQ_OR_LOG(bad, as.codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Method | Assembler::Jump_Reg_Expr_2 | 62, result);
+        EXPECT_EQ_OR_LOG(bad, as.codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Method | (Assembler::Reg_Expr_2  << Assembler::Jump_Reg_Shift)| 62, result);
     }
     EXPECT_SUCC(bad, result);
 }
@@ -616,7 +616,7 @@ JUMP Method Expr-3 61
     EXPECT_EQ_OR_LOG(bad, as.codeBlock.size(), 3, result);
     if (as.codeBlock.size() == 3)
     {
-        EXPECT_EQ_OR_LOG(bad, as.codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Method | Assembler::Jump_Reg_Expr_3 | 61, result);
+        EXPECT_EQ_OR_LOG(bad, as.codeBlock[2], Assembler::Act_Jump | Assembler::Jump_Method | (Assembler::Reg_Expr_3  << Assembler::Jump_Reg_Shift)| 61, result);
     }
     EXPECT_SUCC(bad, result);
 }

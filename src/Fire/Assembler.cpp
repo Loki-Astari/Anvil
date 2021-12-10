@@ -117,6 +117,10 @@ int Assembler::assemble(std::string& line, bool buildSymbols)
     {
         length = assemble_Jump(lineStream, buildSymbols);
     }
+    else if (action == "ADDR")
+    {
+        length = assemble_Addr(lineStream, buildSymbols);
+    }
     else
     {
         // Unknown command report an error.
@@ -199,3 +203,46 @@ std::string Assembler::getAction(std::stringstream& lineStream, bool buildSymbol
     // Valid commands are returned inside the loop.
     return "";
 }
+
+bool Assembler::getRegister(std::string const& addressRegValue, int registerShift)
+{
+    if (addressRegValue == "Global")            {instructions[0] |= (Reg_Global << registerShift);}
+    else if (addressRegValue == "FramePointer") {instructions[0] |= (Reg_FramePointer << registerShift);}
+    else if (addressRegValue == "This")         {instructions[0] |= (Reg_This << registerShift);}
+    else if (addressRegValue == "Extra")        {instructions[0] |= (Reg_Extra << registerShift);}
+    else if (addressRegValue == "StackPointer") {instructions[0] |= (Reg_StackPointer << registerShift);}
+    else if (addressRegValue == "Expr-1")       {instructions[0] |= (Reg_Expr_1 << registerShift);}
+    else if (addressRegValue == "Expr-2")       {instructions[0] |= (Reg_Expr_2 << registerShift);}
+    else if (addressRegValue == "Expr-3")       {instructions[0] |= (Reg_Expr_3 << registerShift);}
+    else
+    {
+        return false;
+    }
+    return true;
+}
+
+std::uint32_t Assembler::getAddress(std::string const& destination, bool buildSymbols)
+{
+    // If there is not a valid destination then return an invalid address.
+    if (destination == "")
+    {
+        return 0;
+    }
+    // If we are building symbols return the current address.
+    // This will make sure relative jumps are in range for the first pass.
+    if (buildSymbols)
+    {
+        // Can't have 0 as a value
+        return addr == 0 ? 1 : addr;
+    }
+
+    auto find = stable.find(destination);
+    if (find != stable.end())
+    {
+        return find->second;
+    }
+    // We did not find the symbol return invalid address.
+    return 0;
+}
+
+

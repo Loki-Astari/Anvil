@@ -71,21 +71,21 @@ anvil MyApp.ice
 CMD Init 1000 1000
 
 // Initialize All Namespaces
-LOAD LRR Expr-1 Global + 0
+ADDR LRR Expr-1 = Global + 0
 JUMP Call Expr-1 NS_Std_$Constructor
 
-LOAD LRR Expr-1 Global + 0
+ADDR LRR Expr-1 = Global + 0
 JUMP Call Expr-1 NS_Sys_$Constructor
 
-LOAD LRR Expr-1 Global + 2
+ADDR LRR Expr-1 = Global + 2
 JUMP Call Expr-1 NS_MyApp_$Constructor
 
 // Run the applicaiton:
-REG  Inc  StackP 1                          // Make Space for the return parameter
+ADDR INC  StackPointer 1                          // Make Space for the return parameter
 JUMP Call Expr-1 NS_MyApp_Func_main
-LOAD LRP  Expr-1 = StackP + 0
-REG  POP StackP
-CMD Kill Reg Expr-1
+ADDR LRP  Expr-1 = StackPointer + 0
+ADDR DEC  StackPointer 1
+CMD Kill 0                                          // Need to support extract result from register or memory
 
 NS_Std_$Constructor:
 // No Objects.
@@ -95,9 +95,9 @@ JUMP Return AL
 NS_Sys_$Costructor:
 // Initialize the 'console' object
     // Set the location pointed at by Expr-1 (console) to a Frame (size 1 method print)
-    LOAD LRR Expr-1 = This + 0
-    LOAD LMV Expr-1 = Frame(1)
-    LOAD LRP Expr-1 = Expr-1 + 0
+    ADDR LRR Expr-1 = This + 0
+    ADDR LML Expr-1 = DataFrame 1
+    ADDR LRP Expr-1 = Expr-1 + 0
     // Call the Console constructor
     // Setting the This register to the value of Expr-1
     JUMP Call Expr-1 NS_Sys_Class_Console_$Constructor
@@ -108,12 +108,13 @@ JUMP Return AL
 
 NS_Sys_Class_Console_$Constructor:
 // Construct an object of type Console
-    LOAD LMV THIS + 0 = CodeAddress(NS_Sys_Class_Console_Func_print)
+    ADDR LML This = CodeAddress NS_Sys_Class_Console_Func_print
 JUMP Return AL
 
 NS_Sys_Class_Console_Func_print:
-    LOAD LRR Expr-1 = StackP - 5
-    LOAD LRV Expr-2 = 5
+    ADDR LRR Expr-1 = StackPointer + 0
+    ADDR DEC Expr-1 5
+    ADDR LML Expr-2 = Int 5                             // STILL Need some thought here.
     CMD Import Call $dll SymbolForDll Expr-1 Expr-2
 JUMP Return AL
 
@@ -126,16 +127,16 @@ JUMP Return AL
 NS_MyApp_Func_main:
 
 // Sys::console.print("Hello World");
-LOAD LRR Expr-1 = Global + 0                // Expr-1 points at Sys::console
-REG  Inc  StackP 1                          // Make Space for the return parameter
-REG  Push StackP String("Hello World")      // Push the only parameter.
-JUMP Method Expr-1 0                        // Expr-1 becomes this. Mem Expr-2 points at function
-REG  POP StackP                             // Pop Param-0
-REG  POP StackP                             // Pop the result
+ADDR LRR  Expr-1 = Global + 0                   // Expr-1 points at Sys::console
+ADDR INC  StackPointer 1                        // Make Space for the return parameter
+ADDR LML  StackPointer = String  Hello World    // Push the only parameter.
+JUMP Method Expr-1 0                            // Expr-1 becomes this. Mem Expr-2 points at function
+ADDR DEC StackPointer 2                         // Pop Param-0 and result
 
 // return 3;
-LOAD LRR Expr-1 = FrameP - 5                // Point at the result location.
-LOAD LMV Expr-1 = Int(3)                    // Set the return value
+ADDR LRR Expr-1 = FramePointer + 0
+ADDR DEC Expr-1 5                               // Point at the result location.
+ADDR LML Expr-1 = Int 3                         // Set the return value
 JUMP Return AL
 
 

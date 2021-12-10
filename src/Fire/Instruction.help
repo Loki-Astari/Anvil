@@ -130,6 +130,7 @@ Invalid:
 
         Note: We can add some instruction where the prefix is: 0000 00 As long as 1 of the following bits is set.
 
+--------------------------------------------------------------------------------------------------
     0001 = JUMP
         Change the address of the PC.
 
@@ -153,38 +154,6 @@ Invalid:
                 CMP     5       5           0 0 1
                 CMP     5       3           0 1 0
                 CMP     5       8           1 0 0
-
----------
-        JUMP Type<1bit> Length<2> Flags<4> Reg<4> || Value
-        JUMP Return ff      0000 FFFF ----
-        JUMP Call ff Rel    0101 FFFF ----
-        JUMP Call ff Abs    0110 FFFF ----
-        JUMP Call ff Mem    0111 FFFF -RRR
-
-        JUMP Jp Rel   ff    1001 FFFF ----
-        JUMP Jp Abs   ff    1010 FFFF ----
-        JUMP Jp Mem   ff    1011 FFFF -RRR
-
-        Length: 00          Ret
-                01          Rel
-                10          Abs
-                11          Mem
-
-        Flags:  0000        Never               ????
-                0001        Equal               EQ
-                0010        Greater             GT
-                0011        Greater or Equal    GE
-                0100        Less                LT
-                0101        Less or Equal       LE
-                0110        Less or Greater     ?????
-                0111        Equal Less Greater  ?????
-                1000        Always              AL
-                1001        Not Equal           NE
-                1010        Not Greater                 => Less or Equal
-                1011        Not Greater or Equal        => Less
-                1100        Not Less                    => Greater or Equal
-                1110        Not Less or Greater         => !?????
-                1111        Not Equal Less or Greater   => !?????
 
         FFFF    Flags to check. Jump if ((FFFF & Flag Register) == 0)
         Rel:    Read the next 16 byte value (interpret it as signed integer) add to pc.
@@ -286,17 +255,74 @@ Invalid:
 
         Load RRR 
 
-            
+--------------------------------------------------------------------------------------------------
+    0002 = ADDR
+        Change the address of the PC.
+
+        ADDR Type<3>
+            000     LRR
+            001     LRP
+            010     INC
+            011     DEC
+            100     LMR
+            101     LMP
+            110     LML
 
 
-    0002 = LOAD
+            Type:
+                ADDR<4> LRR<3> R1<3> R2<3> addType<3>
+                    LRR             Load register from register
+                                        Ass:        ADDR LRR Expr-1 = Expr-2 + 1
+                                        Meaning:    Expr-1 = (Expr-2 + Offset)
 
+                ADDR<4> LRP<3> R1<3> R2<3> addType<3>
+                    LRP             Load register from memory pointed at by register.
+                                        Ass:        ADDR LRP Expr-1 = Expr-2 + 1
+                                        Meaning:    Expr-1 = *(Expr-2 + Offset)
+                                        Value in location must be a DataAddress or DataFrame (gets the address of the DataFrame)
+                                        Inverse of LMP!
 
+                ADDR<4> INC<3> R1<3> Value<6>
+                    INC             Increment register. Add 6 byte to R1:
+                                        Ass:        ADDR INC Expr-1 12
+                                        Meaning:    Expr1 = Expr1 + 12
+                ADDR<4> DEC<3> R1<3> Value<6>
+                    DEC             Decrement register. Sub 6 byte from R1:
+                                        Ass:        ADDR DEC Expr-1 12
+                                        Meaning:    Expr1 = Expr1 - 12
 
+                ADDR<4> LMR<3> R1<3> R2<3> addType<3>
+                    LMR             Load Memory from register
+                                        Ass:        ADDR LMR Expr-1 = Expr-2 + Offset
+                                        Meaning:    *(Expr) = Expr-2 + Offset
+                                        Inverse of LRP!
 
+                ADDR<4> LMP<3> R1<3> R2<3> addType<3>
+                    LMP             Load Memory from pointer.
+                                        Ass:        ADDR LMP Expr-1 = Expr-2 + 1
+                                        Meaning:    *(Expr-1) = *(Expr2 + Offset)
+                                        Copies one memory location to another.
 
+                ADDR<4> LML<3> R1<3> TypeInfo<3>
+                    LML             Load register Literal Value
+                                        Ass:        ADDR LML Expr-1 = CodeAddress <Label>       // label in next 2 Instructions.
+                                                                    = DataFrame <Size>          // Size in next Instruction
+                                                                    = Int <Value>               // Value in next 2 Instructions
+                                                                    = String "XXXXX"            // Stored as size in next Instruction followed by even number of bytes zero padded.
+                                                                    = DataAddress               // ????
+                                                                    = Array                     // ???
+                                                                    = Map                       // ???
+                                        Meaning:    *(Expr-1) = new Data(Values)
 
+            addType:
+                000:    No offset (effectively + 0)
+                001:    Value in next byte
 
+            TypeInfo:
+                000:    CodeAddress
+                001:    DataFrame
+                010:    Int
+                011:    String
 
 
 

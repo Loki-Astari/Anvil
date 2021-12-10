@@ -46,11 +46,18 @@ class Assembler
                 int assemble_JumpJp(std::istream& lineStream, bool buildSymbols);
                 int assemble_JumpCall(std::istream& lineStream, bool buildSymbols);
                 int assemble_JumpMethod(std::istream& lineStream);
+            int assemble_Addr(std::istream& lineStream, bool buildSymbols);
+                int assemble_AddrINC(std::istream& lineStream, Instruction flag, std::string const& action);
+                int assemble_AddrAssign(std::istream& lineStream, Instruction flag, std::string const& action);
+                int assemble_AddrLiteral(std::istream& lineStream, Instruction flag, std::string const& action, bool buildSymbol);
+                    std::string assemble_AddrLHS(std::istream& lineStream, Instruction flag, std::string const& action);
+                    int assemble_AddrRHS(std::istream& lineStream, std::string const& action, std::string const& regValue1);
 
         std::uint32_t getAddress(std::string const& lineStream, bool buildSymbols);
-        bool          getRegister(std::string const& addressRegValue);
+        bool          getRegister(std::string const& addressRegValue, int registerShift);
         int           assemble_JumpLength(std::string const& cmd, std::string const& flagValue, std::istream& lineStream, bool buildSymbols);
         bool          assemble_JumpConditionFlag(std::string const& flagValue);
+        bool          assemble_AddrGetLiteralType(std::string const& type);
 
         std::string getAction(std::stringstream& lineStream, bool buildSymbols);
 
@@ -59,6 +66,7 @@ class Assembler
         static constexpr Instruction Action_Mask            = 0xF000;
         static constexpr Instruction Act_CMD                = 0x0000;
         static constexpr Instruction Act_Jump               = 0x1000;
+        static constexpr Instruction Act_Addr               = 0x2000;
 
 
         // Action CMD
@@ -106,15 +114,7 @@ class Assembler
         static constexpr Instruction Jump_Condition_XX      = 0x01C0;
 
         // Action Jump Register
-        static constexpr Instruction Jump_Reg_Global        = 0x0000;
-        static constexpr Instruction Jump_Reg_FramePointer  = 0x0040;
-        static constexpr Instruction Jump_Reg_This          = 0x0080;
-        static constexpr Instruction Jump_Reg_Extra         = 0x00C0;
-
-        static constexpr Instruction Jump_Reg_StackPointer  = 0x0100;
-        static constexpr Instruction Jump_Reg_Expr_1        = 0x0140;
-        static constexpr Instruction Jump_Reg_Expr_2        = 0x0180;
-        static constexpr Instruction Jump_Reg_Expr_3        = 0x01C0;
+        static constexpr int         Jump_Reg_Shift         = 6;
 
         // Action Jump Offset
         static constexpr Instruction Jump_Offset_Mask       = 0x003F;
@@ -123,6 +123,45 @@ class Assembler
         static constexpr Instruction InvalidAction          = 0xFFFF;
         static constexpr Instruction InvalidCmd             = 0x0FFF;
         static constexpr Instruction InvalidJump            = 0x1FFF;
+
+        // Action Addr Type
+        static constexpr Instruction Action_Addr_Mask       = 0x0E00;
+        static constexpr Instruction Addr_LRR               = 0x0000;
+        static constexpr Instruction Addr_LRP               = 0x0200;
+        static constexpr Instruction Addr_INC               = 0x0400;
+        static constexpr Instruction Addr_DEC               = 0x0600;
+        static constexpr Instruction Addr_LMR               = 0x0800;
+        static constexpr Instruction Addr_LMP               = 0x0A00;
+        static constexpr Instruction Addr_LML               = 0x0C00;
+
+        // Action Addr Register
+        static constexpr int         Addr_Reg1_Shift        = 6;
+        static constexpr int         Addr_Reg2_Shift        = 3;
+        static constexpr Instruction Addr_Reg1_Mask         = 0x01C0;
+        static constexpr Instruction Addr_Reg2_Mask         = 0x0038;
+
+        // Action Addr addType
+        static constexpr Instruction Addr_AddType_Mask      = 0x0007;
+        static constexpr Instruction Addr_AddType_Zero      = 0x0000;
+        static constexpr Instruction Addr_AddType_Value     = 0x0001;
+
+        // Action Addr Literal Type
+        static constexpr Instruction Addr_Literal_Mask      = 0x0038;
+        static constexpr Instruction Addr_Literal_CodeAddr  = 0x0000;
+        static constexpr Instruction Addr_Literal_DataFrame = 0x0008;
+        static constexpr Instruction Addr_Literal_Int       = 0x0010;
+        static constexpr Instruction Addr_Literal_String    = 0x0018;
+
+        // Register ID
+        static constexpr Instruction Reg_Global             = 0x0000;
+        static constexpr Instruction Reg_FramePointer       = 0x0001;
+        static constexpr Instruction Reg_This               = 0x0002;
+        static constexpr Instruction Reg_Extra              = 0x0003;
+
+        static constexpr Instruction Reg_StackPointer       = 0x0004;
+        static constexpr Instruction Reg_Expr_1             = 0x0005;
+        static constexpr Instruction Reg_Expr_2             = 0x0006;
+        static constexpr Instruction Reg_Expr_3             = 0x0007;
 };
 
 }
