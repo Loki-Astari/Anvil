@@ -145,6 +145,6 @@ JUMP Return AL
     // Result      output = vm.run();
 
     // EXPECT_EQ_OR_LOG(bad, output, 255, result);
-    EXPECT_FALSE_OR_DEBUG(bad, result);
+    //EXPECT_FALSE_OR_DEBUG(bad, result);
 }
 

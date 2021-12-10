@@ -30,7 +30,7 @@ int Assembler::assemble_AddrINC(std::istream& lineStream, Instruction flag, std:
 
     std::string regValue1;
     lineStream >> regValue1;
-    if (!getRegister(regValue1, Addr_Reg2_Shift))
+    if (!getRegister(regValue1, Addr_Reg1_Shift))
     {
         errorStream << "Invalid Input: ADDR " << action << " >" << regValue1 << "< " << lineStream.rdbuf() << "\n";
         error = true;
@@ -73,7 +73,7 @@ int Assembler::assemble_AddrLiteral(std::istream& lineStream, Instruction flag, 
         error = true;
         return 0;
     }
-    switch (instructions[0] & Addr_Literal_Mask)
+    switch (Addr_Literal_Mask & instructions[0])
     {
         case Addr_Literal_CodeAddr:
         {
@@ -107,6 +107,11 @@ int Assembler::assemble_AddrLiteral(std::istream& lineStream, Instruction flag, 
         }
         case Addr_Literal_String:
         {
+            for (int x = lineStream.peek(); x != EOF && std::isspace(x);)
+            {
+                lineStream.get();
+                x = lineStream.peek();
+            }
             std::string line;
             std::getline(lineStream, line);
             instructions[1] = static_cast<Instruction>(line.size());
@@ -188,4 +193,3 @@ bool Assembler::assemble_AddrGetLiteralType(std::string const& type)
     }
     return true;
 }
-

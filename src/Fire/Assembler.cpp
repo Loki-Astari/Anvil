@@ -244,5 +244,3 @@ std::uint32_t Assembler::getAddress(std::string const& destination, bool buildSy
     // We did not find the symbol return invalid address.
     return 0;
 }
-
-
