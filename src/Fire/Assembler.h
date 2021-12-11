@@ -41,6 +41,10 @@ class Assembler
                 int assemble_CmdNoOp();
                 int assemble_CmdKill(std::istream& lineStream);
                 int assemble_CmdInit(std::istream& lineStream);
+                int assemble_CmdImport(std::istream& lineStream);
+                    int assemble_CmdImportLoad(std::istream& lineStream);
+                    int assemble_CmdImportGetSymbol(std::istream& lineStream);
+                    int assemble_CmdImportCall(std::istream& lineStream);
             int assemble_Jump(std::istream& lineStream, bool BuildSymbols);
                 int assemble_JumpReturn(std::istream& lineStream);
                 int assemble_JumpJp(std::istream& lineStream, bool buildSymbols);
@@ -89,6 +93,18 @@ class Assembler
         static constexpr Instruction Cmd_Init_Size_16_16    = 0x0200;
         static constexpr Instruction Cmd_Init_Size_16_32    = 0x0300;
 
+        // Action CMD Import
+        static constexpr Instruction Cmd_Import_Mask        = 0x01C0;
+        static constexpr Instruction Cmd_Import_Load        = 0x0000;
+        static constexpr Instruction Cmd_Import_GetSymbol   = 0x0040;
+        static constexpr Instruction Cmd_Import_Call        = 0x0080;
+        static constexpr Instruction Cmd_Import_UnLoad      = 0x00C0;
+
+        // Action CMD Import Load
+        static constexpr Instruction Cmd_Import_Reg1_Mask   = 0x0038;
+        static constexpr int         Cmd_Import_Reg1_Shift  = 3;
+        static constexpr Instruction Cmd_Import_Reg2_Mask   = 0x0007;
+        static constexpr int         Cmd_Import_Reg2_Shift  = 0;
 
         // Action Jump Type
         static constexpr Instruction Action_Jump_Mask       = 0x0E00;

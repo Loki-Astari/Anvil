@@ -45,6 +45,10 @@ class FireVM
         void runActionCMD(Instruction instruction);
             void runActionCMDKill(Instruction instruction);
             void runActionCMDInit(Instruction instruction);
+            void runActionCMDImport(Instruction instruction);
+                void runActionCMDImportLoad(Instruction instruction);
+                void runActionCMDImportGetSymbol(Instruction instruction);
+                void runActionCMDImportCall(Instruction instruction);
         void runActionJump(Instruction instruction);
             void runActionJumpReturn(Instruction instruction);
             void runActionJumpCall(Instruction instruction);
@@ -65,13 +69,17 @@ class FireVM
         static constexpr Result     haltRanOutOfProgramMemory       = 0xFFFF0000;
         static constexpr Result     haltInvalidAction               = 0xFFFF0001;
         static constexpr Result     haltInvalidCmd                  = 0xFFFF0002;
-        static constexpr Result     haltInvalidJump                 = 0xFFFF0003;
-        static constexpr Result     haltInvalidAddr                 = 0xFFFF0004;
-        static constexpr Result     haltInvalidReturnState          = 0xFFFF0005;
-        static constexpr Result     haltInvalidMethod               = 0xFFFF0006;
-        static constexpr Result     haltInvalidAddType              = 0xFFFF0007;
-        static constexpr Result     haltInvalidLiteralType          = 0xFFFF0008;
-        static constexpr Result     haltMemoryNotAddress            = 0xFFFF0009;
+        static constexpr Result     haltInvalidCmdLoadType          = 0xFFFF0003;
+        static constexpr Result     haltInvalidJump                 = 0xFFFF0004;
+        static constexpr Result     haltInvalidAddr                 = 0xFFFF0005;
+        static constexpr Result     haltInvalidReturnState          = 0xFFFF0006;
+        static constexpr Result     haltInvalidMethod               = 0xFFFF0007;
+        static constexpr Result     haltInvalidAddType              = 0xFFFF0008;
+        static constexpr Result     haltInvalidLiteralType          = 0xFFFF0009;
+        static constexpr Result     haltMemoryNotAddress            = 0xFFFF000A;
+        static constexpr Result     haltInvalidImportLoadBadLibrary = 0xFFFF000B;
+        static constexpr Result     haltInvalidImportGetSymbolFailed= 0xFFFF000C;
+        static constexpr Result     haltInvalidImportNotFunc        = 0xFFFF000C;
 };
 
 }

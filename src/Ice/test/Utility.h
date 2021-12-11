@@ -46,7 +46,7 @@
                                        EXPECT_FALSE(check);             \
                                        if (check) {                     \
                                             std::cerr << "FALSE FAIL\n";\
-                                            std::cerr << output.rdbuf();\
+                                            std::cerr << output.str();  \
                                         }                               \
                                       }                                 \
                                       while(false)

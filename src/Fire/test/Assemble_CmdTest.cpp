@@ -11,6 +11,7 @@ using namespace ThorsAnvil::Anvil::Fire;
  * Cmd_NoOp
  * Cmd_Kill
  * Cmd_Init
+ * Cmd_ImportLoad
  * -----------
  * Cmd_Invalid
  * Cmd_NoOp_BadOperands
@@ -218,6 +219,67 @@ CMD Init 255 -255
 )");
 
     EXPECT_FAIL(bad, "Invalid Input: CMD Init >", result);
+}
+
+TEST(Assembler_CmdTest, Cmd_ImportLoad)
+{
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(result, bad, R"(
+CMD Import Load Expr-1 Anvil.System
+)");
+
+    EXPECT_EQ_OR_LOG(bad, as.codeBlock.size(), 10, result);
+    if (as.codeBlock.size() == 10)
+    {
+        EXPECT_EQ_OR_LOG(bad, as.codeBlock[2], Assembler::Act_CMD | Assembler::Cmd_Import | Assembler::Cmd_Import_Load | (Assembler::Reg_Expr_1 << Assembler::Cmd_Import_Reg1_Shift), result);
+        EXPECT_EQ_OR_LOG(bad, as.codeBlock[3], 12, result);
+        EXPECT_EQ_OR_LOG(bad, std::string("Anvil.System"), std::string(reinterpret_cast<char const*>(&as.codeBlock[4]), 12), result);
+    }
+    EXPECT_SUCC(bad, result);
+}
+
+TEST(Assembler_CmdTest, Cmd_ImportGetSymbol)
+{
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(result, bad, R"(
+CMD Import GetSymbol Expr-1 Expr-2 __ZN3Ice6System5printERKNSt3__112basic_stringIcNS1_11char_traitsIcEENS1_9allocatorIcEEEE
+)");
+
+    EXPECT_EQ_OR_LOG(bad, as.codeBlock.size(), 48, result);
+    if (as.codeBlock.size() == 48)
+    {
+        EXPECT_EQ_OR_LOG(bad, as.codeBlock[2], Assembler::Act_CMD | Assembler::Cmd_Import | Assembler::Cmd_Import_GetSymbol
+                              | (Assembler::Reg_Expr_1 << Assembler::Cmd_Import_Reg1_Shift)
+                              | (Assembler::Reg_Expr_2 << Assembler::Cmd_Import_Reg2_Shift)
+                              , result);
+        EXPECT_EQ_OR_LOG(bad, as.codeBlock[3], 88, result);
+        EXPECT_EQ_OR_LOG(bad,
+                            std::string("__ZN3Ice6System5printERKNSt3__112basic_stringIcNS1_11char_traitsIcEENS1_9allocatorIcEEEE"),
+                            std::string(reinterpret_cast<char const*>(&as.codeBlock[4]), 88),
+                            result);
+    }
+    EXPECT_SUCC(bad, result);
+}
+
+TEST(Assembler_CmdTest, Cmd_ImportCall)
+{
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(result, bad, R"(
+CMD Import Call Extra StackPointer
+)");
+
+    EXPECT_EQ_OR_LOG(bad, as.codeBlock.size(), 3, result);
+    if (as.codeBlock.size() == 3)
+    {
+        EXPECT_EQ_OR_LOG(bad, as.codeBlock[2], Assembler::Act_CMD | Assembler::Cmd_Import | Assembler::Cmd_Import_Call
+                              | (Assembler::Reg_Extra << Assembler::Cmd_Import_Reg1_Shift)
+                              | (Assembler::Reg_StackPointer << Assembler::Cmd_Import_Reg2_Shift)
+                              , result);
+    }
+    EXPECT_SUCC(bad, result);
 }
 
 
