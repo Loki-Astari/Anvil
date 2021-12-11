@@ -104,98 +104,69 @@ int Assembler::assemble_CmdImport(std::istream& lineStream)
     }
 }
 
+int Assembler::assemble_CmdImportGetRegisters(std::istream& lineStream, std::string const& importType, bool getReg2, bool getName)
+{
+    std::string regValue1;
+    lineStream >> regValue1;
+    if (!getRegister(regValue1, Cmd_Import_Reg1_Shift))
+    {
+        errorStream << "Invalid Input: CMD Import " << importType << " >" << regValue1 << "< " << lineStream.rdbuf() << "\n";
+        error = true;
+        return 0;
+    }
+
+    std::string regValue2;
+    if (getReg2)
+    {
+        lineStream >> regValue2;
+        if (!getRegister(regValue2, Cmd_Import_Reg2_Shift))
+        {
+            errorStream << "Invalid Input: CMD Import " << importType << " " << regValue1 << " >" << regValue2 << "< " << lineStream.rdbuf() << "\n";
+            error = true;
+            return 0;
+        }
+    }
+
+    if (getName)
+    {
+        std::string name;
+        lineStream >> name;
+        if (name == "")
+        {
+            errorStream << "Invalid Input: CMD Import " << importType << " " << regValue1 << " " << regValue2 << " ????: Name of object required.\n";
+            error = true;
+            return 0;
+        }
+        instructions[1] = name.size();
+        std::size_t offset = name.size();
+        offset += (offset % 2) == 1 ? 1 : 0;
+        offset /= 2;
+        instructions.resize(2 + offset);
+        std::copy(std::begin(name), std::end(name), reinterpret_cast<char*>(&instructions[2]));
+        return 2 + offset;
+    }
+    return 1;
+}
+
 int Assembler::assemble_CmdImportLoad(std::istream& lineStream)
 {
     instructions[0] |= Cmd_Import_Load;
-
-    std::string regValue;
-    lineStream >> regValue;
-    if (!getRegister(regValue, Cmd_Import_Reg1_Shift))
-    {
-        errorStream << "Invalid Input: CMD Import Load >" << regValue << "< " << lineStream.rdbuf() << "\n";
-        error = true;
-        return 0;
-    }
-
-    std::string libraryName;
-    lineStream >> libraryName;
-    if (libraryName == "")
-    {
-        errorStream << "Invalid Input: CMD Import Load " << regValue << " ????: Name of library required.\n";
-        error = true;
-        return 0;
-    }
-    instructions[1] = libraryName.size();
-    std::size_t offset = libraryName.size();
-    offset += (offset % 2) == 1 ? 1 : 0;
-    offset /= 2;
-    instructions.resize(2 + offset);
-    std::copy(std::begin(libraryName), std::end(libraryName), reinterpret_cast<char*>(&instructions[2]));
-    return 2 + offset;
+    return assemble_CmdImportGetRegisters(lineStream, "Load", false, true);
 
     // CMD Import Load Expr-1 Anvil.System
 }
 int Assembler::assemble_CmdImportGetSymbol(std::istream& lineStream)
 {
     instructions[0] |= Cmd_Import_GetSymbol;
+    return assemble_CmdImportGetRegisters(lineStream, "GetSymbol", true, true);
 
-    std::string regValue1;
-    lineStream >> regValue1;
-    if (!getRegister(regValue1, Cmd_Import_Reg1_Shift))
-    {
-        errorStream << "Invalid Input: CMD Import GetSymbol >" << regValue1 << "< " << lineStream.rdbuf() << "\n";
-        error = true;
-        return 0;
-    }
-
-    std::string regValue2;
-    lineStream >> regValue2;
-    if (!getRegister(regValue2, Cmd_Import_Reg2_Shift))
-    {
-        errorStream << "Invalid Input: CMD Import GetSymbol " << regValue1 << " >" << regValue2 << "< " << lineStream.rdbuf() << "\n";
-        error = true;
-        return 0;
-    }
-
-    std::string symbolName;
-    lineStream >> symbolName;
-    if (symbolName == "")
-    {
-        errorStream << "Invalid Input: CMD Import GetSymbol " << regValue1 << " " << regValue2 << " ????: Name of library required.\n";
-        error = true;
-        return 0;
-    }
-    instructions[1] = symbolName.size();
-    std::size_t offset = symbolName.size();
-    offset += (offset % 2) == 1 ? 1 : 0;
-    offset /= 2;
-    instructions.resize(2 + offset);
-    std::copy(std::begin(symbolName), std::end(symbolName), reinterpret_cast<char*>(&instructions[2]));
-    return 2 + offset;
-
-    //CMD Import GetSymbol Expr-1 Expr-2 __ZN3Ice6System5printERKNSt3__112basic_stringIcNS1_11char_traitsIcEENS1_9allocatorIcEEEE
+    //CMD Import GetSymbol Expr-1 Expr-2 _ZN3Ice6System5printERKNSt3__112basic_stringIcNS1_11char_traitsIcEENS1_9allocatorIcEEEE
 }
 
 int Assembler::assemble_CmdImportCall(std::istream& lineStream)
 {
     instructions[0] |= Cmd_Import_Call;
+    return assemble_CmdImportGetRegisters(lineStream, "Call", true, false);
 
-    std::string regValue1;
-    lineStream >> regValue1;
-    if (!getRegister(regValue1, Cmd_Import_Reg1_Shift))
-    {
-        errorStream << "Invalid Input: CMD Import Call >" << regValue1 << "< " << lineStream.rdbuf() << "\n";
-        error = true;
-        return 0;
-    }
-
-    std::string regValue2;
-    lineStream >> regValue2;
-    if (!getRegister(regValue2, Cmd_Import_Reg2_Shift))
-    {
-        errorStream << "Invalid Input: CMD Import Call " << regValue1 << " >" << regValue2 << "< " << lineStream.rdbuf() << "\n";
-        error = true;
-        return 0;
-    }
-    return 1;
+    //CMD Import Call Expr-1 Expr-2
 }

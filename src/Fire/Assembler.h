@@ -45,6 +45,7 @@ class Assembler
                     int assemble_CmdImportLoad(std::istream& lineStream);
                     int assemble_CmdImportGetSymbol(std::istream& lineStream);
                     int assemble_CmdImportCall(std::istream& lineStream);
+                        int assemble_CmdImportGetRegisters(std::istream& lineStream, std::string const& importType, bool getReg2, bool getName);
             int assemble_Jump(std::istream& lineStream, bool BuildSymbols);
                 int assemble_JumpReturn(std::istream& lineStream);
                 int assemble_JumpJp(std::istream& lineStream, bool buildSymbols);
@@ -53,15 +54,18 @@ class Assembler
             int assemble_Addr(std::istream& lineStream, bool buildSymbols);
                 int assemble_AddrINC(std::istream& lineStream, Instruction flag, std::string const& action);
                 int assemble_AddrAssign(std::istream& lineStream, Instruction flag, std::string const& action);
-                int assemble_AddrLiteral(std::istream& lineStream, Instruction flag, std::string const& action, bool buildSymbol);
-                    std::string assemble_AddrLHS(std::istream& lineStream, Instruction flag, std::string const& action);
                     int assemble_AddrRHS(std::istream& lineStream, std::string const& action, std::string const& regValue1);
+                int assemble_AddrLiteral(std::istream& lineStream, Instruction flag, bool buildSymbol);
+                    std::string assemble_AddrLHS(std::istream& lineStream, Instruction flag, std::string const& action);
+                    int assemble_AddrLiteralCodeAddress(std::istream& lineStream, bool buildSymbol, std::string const& regValue1);
+                    int assemble_AddrLiteralDataFrame(std::istream& lineStream, std::string const& regValue1);
+                    int assemble_AddrLiteralInt(std::istream& lineStream, std::string const& regValue1);
+                    int assemble_AddrLiteralString(std::istream& lineStream, std::string const& regValue1);
 
         std::uint32_t getAddress(std::string const& lineStream, bool buildSymbols);
         bool          getRegister(std::string const& addressRegValue, int registerShift);
         int           assemble_JumpLength(std::string const& cmd, std::string const& flagValue, std::istream& lineStream, bool buildSymbols);
         bool          assemble_JumpConditionFlag(std::string const& flagValue);
-        bool          assemble_AddrGetLiteralType(std::string const& type);
 
         std::string getAction(std::stringstream& lineStream, bool buildSymbols);
 

@@ -146,4 +146,104 @@ TEST(FireVM_CmdTest, Cmd_Invalid)
     EXPECT_EQ(result, FireVM::haltInvalidCmd);
 }
 
+TEST(FireVM_CmdTest, Cmd_ImportInvalid)
+{
+    std::stringstream   result;
+    bool                bad = false;
+    BuildVM             vm(result, bad, R"(
+CMD Import Call Expr-1 Expr-2
+)");
+
+    EXPECT_EQ_OR_LOG(bad, vm.codeBlock.size(), 3, result);
+    if (vm.codeBlock.size() == 3)
+    {
+        vm.codeBlock[2] |= Assembler::Cmd_Import_Mask;
+        Result      output = vm.run();
+        EXPECT_EQ_OR_LOG(bad, output, FireVM::haltInvalidCmdLoadType, result);
+    }
+    EXPECT_SUCC(bad, result);
+}
+
+TEST(FireVM_CmdTest, Cmd_ImportValidLibrary)
+{
+    std::stringstream   result;
+    bool                bad = false;
+    BuildVM             vm(result, bad, R"(
+ADDR LRR Expr-1 = StackPointer + 0
+CMD Import Load Expr-1 Anvil_System
+CMD Kill 33
+)");
+
+    Result      output = vm.run();
+    EXPECT_EQ_OR_LOG(bad, output, 33, result);
+    EXPECT_SUCC(bad, result);
+}
+
+TEST(FireVM_CmdTest, Cmd_ImportValidLibraryAndSymbol)
+{
+    std::stringstream   result;
+    bool                bad = false;
+    BuildVM             vm(result, bad, R"(
+ADDR LRR Expr-1 = StackPointer + 0
+ADDR LRR Expr-2 = StackPointer + 1
+CMD Import Load Expr-1 Anvil_System
+CMD Import GetSymbol Expr-2 Expr-1 _ZN3Ice6System5printERKNSt3__112basic_stringIcNS1_11char_traitsIcEENS1_9allocatorIcEEEE
+CMD Kill 34
+)");
+
+    Result      output = vm.run();
+    EXPECT_EQ_OR_LOG(bad, output, 34, result);
+    EXPECT_SUCC(bad, result);
+}
+
+TEST(FireVM_CmdTest, Cmd_ImportValidLibraryAndSymbolThenCall)
+{
+    std::stringstream   result;
+    bool                bad = false;
+    BuildVM             vm(result, bad, R"(
+ADDR LRR Expr-1 = StackPointer + 0
+ADDR LRR Expr-2 = StackPointer + 1
+ADDR LRR Expr-3 = StackPointer + 2
+ADDR LML Expr-3 = String Hello World
+ADDR DEC Expr-3 1
+CMD Import Load Expr-1 Anvil_System
+CMD Import GetSymbol Expr-2 Expr-1 _ZN3Ice6System5printERKNSt3__112basic_stringIcNS1_11char_traitsIcEENS1_9allocatorIcEEEE
+CMD Import Call Expr-2 Expr-3
+CMD Kill 34
+)");
+
+    Result      output = vm.run();
+    EXPECT_EQ_OR_LOG(bad, output, 34, result);
+    EXPECT_SUCC(bad, result);
+}
+
+TEST(FireVM_CmdTest, Cmd_ImportInvalidLib)
+{
+    std::stringstream   result;
+    bool                bad = false;
+    BuildVM             vm(result, bad, R"(
+ADDR LRR Expr-1 = StackPointer + 0
+CMD Import Load Expr-1 Nothing
+)");
+
+    Result      output = vm.run();
+    EXPECT_EQ_OR_LOG(bad, output, FireVM::haltInvalidImportLoadBadLibrary, result);
+    EXPECT_SUCC(bad, result);
+}
+
+TEST(FireVM_CmdTest, Cmd_ImportValidLibraryBadSymbol)
+{
+    std::stringstream   result;
+    bool                bad = false;
+    BuildVM             vm(result, bad, R"(
+ADDR LRR Expr-1 = StackPointer + 0
+ADDR LRR Expr-2 = StackPointer + 1
+CMD Import Load Expr-1 Anvil_System
+CMD Import GetSymbol Expr-1 Expr-2 Thing
+)");
+
+    Result      output = vm.run();
+    EXPECT_EQ_OR_LOG(bad, output, FireVM::haltInvalidImportGetSymbolFailed, result);
+    EXPECT_SUCC(bad, result);
+}
 

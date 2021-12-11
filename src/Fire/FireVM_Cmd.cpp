@@ -68,12 +68,6 @@ void FireVM::runActionCMDImport(Instruction instruction)
         case Assembler::Cmd_Import_Load:        {return runActionCMDImportLoad(instruction);}
         case Assembler::Cmd_Import_GetSymbol:   {return runActionCMDImportGetSymbol(instruction);}
         case Assembler::Cmd_Import_Call:        {return runActionCMDImportCall(instruction);}
-        case Assembler::Cmd_Import_UnLoad:
-        {
-            std::cerr << "UnLoad\n";
-            std::cerr << "==================\n";
-            break;
-        }
         default:
         {
             running = false;

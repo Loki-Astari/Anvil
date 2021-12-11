@@ -15,7 +15,7 @@ int Assembler::assemble_Addr(std::istream& lineStream, bool buildSymbols)
     else if (action == "LRP")   {return assemble_AddrAssign(lineStream,Addr_LRP, action);}
     else if (action == "LMR")   {return assemble_AddrAssign(lineStream,Addr_LMR, action);}
     else if (action == "LMP")   {return assemble_AddrAssign(lineStream,Addr_LMP, action);}
-    else if (action == "LML")   {return assemble_AddrLiteral(lineStream,Addr_LML, action, buildSymbols);}
+    else if (action == "LML")   {return assemble_AddrLiteral(lineStream,Addr_LML, buildSymbols);}
     else
     {
         errorStream << "Invalid Input: ADDR >" << action << "< " << lineStream.rdbuf() << "\n";
@@ -58,75 +58,88 @@ int Assembler::assemble_AddrAssign(std::istream& lineStream, Instruction flag, s
     return assemble_AddrRHS(lineStream, action, regValue1);
 }
 
-int Assembler::assemble_AddrLiteral(std::istream& lineStream, Instruction flag, std::string const& action, bool buildSymbol)
+int Assembler::assemble_AddrLiteral(std::istream& lineStream, Instruction flag, bool buildSymbol)
 {
-    std::string regValue1 = assemble_AddrLHS(lineStream, flag, action);
+    std::string regValue1 = assemble_AddrLHS(lineStream, flag, "LML");
     if (regValue1 == "")
     {
         return 0;
     }
     std::string literal;
     lineStream >> literal;
-    if (!assemble_AddrGetLiteralType(literal))
+
+    if (literal == "CodeAddress")          {return assemble_AddrLiteralCodeAddress(lineStream, buildSymbol, regValue1);}
+    else if (literal == "DataFrame")       {return assemble_AddrLiteralDataFrame(lineStream, regValue1);}
+    else if (literal == "Int")             {return assemble_AddrLiteralInt(lineStream, regValue1);}
+    else if (literal == "String")          {return assemble_AddrLiteralString(lineStream, regValue1);}
+    else
     {
-        errorStream << "Invalid Input: ADDR " << action << " " << regValue1 << " = >" << literal << "< " << lineStream.rdbuf() << "\n";
+        errorStream << "Invalid Input: ADDR LML " << regValue1 << " = >" << literal << "< " << lineStream.rdbuf() << "\n";
         error = true;
         return 0;
     }
-    switch (Addr_Literal_Mask & instructions[0])
+}
+
+int Assembler::assemble_AddrLiteralCodeAddress(std::istream& lineStream, bool buildSymbol, std::string const& regValue1)
+{
+    instructions[0] |= Addr_Literal_CodeAddr;
+
+    std::string destination;
+    lineStream >> destination;
+    std::uint32_t addr = getAddress(destination, buildSymbol);
+    if (addr == 0)
     {
-        case Addr_Literal_CodeAddr:
-        {
-            std::string destination;
-            lineStream >> destination;
-            std::uint32_t addr = getAddress(destination, buildSymbol);
-            if (addr == 0)
-            {
-                errorStream << "Invalid Input: ADDR " << action << " " << regValue1 << " = " << literal << " >" << destination << "< " << lineStream.rdbuf() << "\n";
-                error = true;
-                return 0;
-            }
-            instructions[1] = static_cast<Instruction>((addr >> 16) & 0xFFFF);
-            instructions[2] = static_cast<Instruction>(addr & 0xFFFF);
-            return 3;
-        }
-        case Addr_Literal_DataFrame:
-        {
-            Instruction size = 0;
-            lineStream >> size;
-            instructions[1] = size;
-            return 2;
-        }
-        case Addr_Literal_Int:
-        {
-            std::int32_t value;
-            lineStream >> value;
-            instructions[1] = static_cast<Instruction>((value >> 16) & 0xFFFF);
-            instructions[2] = static_cast<Instruction>(value & 0xFFFF);
-            return 3;
-        }
-        case Addr_Literal_String:
-        {
-            for (int x = lineStream.peek(); x != EOF && std::isspace(x);)
-            {
-                lineStream.get();
-                x = lineStream.peek();
-            }
-            std::string line;
-            std::getline(lineStream, line);
-            instructions[1] = static_cast<Instruction>(line.size());
-            // Get the string size.
-            std::size_t offset = line.size();
-            // Make it even (As we are coying into space that is blocks of 16bits.
-            offset = offset + ((offset % 2) == 1 ? 1 : 0);
-            // Total size: Instruction + Size + String length
-            offset = 2 + (offset / 2);
-            instructions.resize(offset);
-            std::copy(std::begin(line), std::end(line), reinterpret_cast<char*>(&instructions[2]));
-            return offset;
-        }
+        errorStream << "Invalid Input: ADDR LML " << regValue1 << " = CodeAddress >" << destination << "< " << lineStream.rdbuf() << "\n";
+        error = true;
+        return 0;
     }
-    return 0;
+    instructions[1] = static_cast<Instruction>((addr >> 16) & 0xFFFF);
+    instructions[2] = static_cast<Instruction>(addr & 0xFFFF);
+    return 3;
+}
+
+int Assembler::assemble_AddrLiteralDataFrame(std::istream& lineStream, std::string const& /*regValue1*/)
+{
+    instructions[0] |= Addr_Literal_DataFrame;
+
+    Instruction size = 0;
+    lineStream >> size;
+    instructions[1] = size;
+    return 2;
+}
+
+int Assembler::assemble_AddrLiteralInt(std::istream& lineStream, std::string const& /*regValue1*/)
+{
+    instructions[0] |= Addr_Literal_Int;
+
+    std::int32_t value;
+    lineStream >> value;
+    instructions[1] = static_cast<Instruction>((value >> 16) & 0xFFFF);
+    instructions[2] = static_cast<Instruction>(value & 0xFFFF);
+    return 3;
+}
+
+int Assembler::assemble_AddrLiteralString(std::istream& lineStream, std::string const& /*regValue1*/)
+{
+    instructions[0] |= Addr_Literal_String;
+
+    for (int x = lineStream.peek(); x != EOF && std::isspace(x);)
+    {
+        lineStream.get();
+        x = lineStream.peek();
+    }
+    std::string line;
+    std::getline(lineStream, line);
+    instructions[1] = static_cast<Instruction>(line.size());
+    // Get the string size.
+    std::size_t offset = line.size();
+    // Make it even (As we are coying into space that is blocks of 16bits.
+    offset = offset + ((offset % 2) == 1 ? 1 : 0);
+    // Total size: Instruction + Size + String length
+    offset = 2 + (offset / 2);
+    instructions.resize(offset);
+    std::copy(std::begin(line), std::end(line), reinterpret_cast<char*>(&instructions[2]));
+    return offset;
 }
 
 std::string Assembler::assemble_AddrLHS(std::istream& lineStream, Instruction flag, std::string const& action)
@@ -187,17 +200,4 @@ int Assembler::assemble_AddrRHS(std::istream& lineStream, std::string const& act
     instructions[0] |= Addr_AddType_Value;
     instructions[1] = static_cast<Instruction>(offset);
     return 2;
-}
-
-bool Assembler::assemble_AddrGetLiteralType(std::string const& type)
-{
-    if (type == "CodeAddress")          {instructions[0] |= Addr_Literal_CodeAddr;}
-    else if (type == "DataFrame")       {instructions[0] |= Addr_Literal_DataFrame;}
-    else if (type == "Int")             {instructions[0] |= Addr_Literal_Int;}
-    else if (type == "String")          {instructions[0] |= Addr_Literal_String;}
-    else
-    {
-        return false;
-    }
-    return true;
 }

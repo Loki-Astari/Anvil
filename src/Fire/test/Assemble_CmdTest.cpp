@@ -282,4 +282,47 @@ CMD Import Call Extra StackPointer
     EXPECT_SUCC(bad, result);
 }
 
+TEST(Assembler_CmdTest, Cmd_Invalid_Import)
+{
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(result, bad, R"(
+CMD Import Full Extra StackPointer
+)");
+
+    EXPECT_FAIL(bad, "Invalid Input: CMD Import >", result);
+}
+
+TEST(Assembler_CmdTest, Cmd_Invalid_Import_Reg1)
+{
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(result, bad, R"(
+CMD Import Load Zack StackPointer LibName
+)");
+
+    EXPECT_FAIL(bad, "Invalid Input: CMD Import Load >", result);
+}
+
+TEST(Assembler_CmdTest, Cmd_Invalid_Import_Reg2)
+{
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(result, bad, R"(
+CMD Import Call Extra Zack2
+)");
+
+    EXPECT_FAIL(bad, "Invalid Input: CMD Import Call Extra >", result);
+}
+
+TEST(Assembler_CmdTest, Cmd_Invalid_Import_Symbol)
+{
+    std::stringstream   result;
+    bool                bad = false;
+    BuildAssembler      as(result, bad, R"(
+CMD Import GetSymbol Extra StackPointer
+)");
+
+    EXPECT_FAIL(bad, "Invalid Input: CMD Import GetSymbol Extra StackPointer ????", result);
+}
 
