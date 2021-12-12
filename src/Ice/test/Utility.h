@@ -22,8 +22,9 @@
 #define EXPECT_FAIL(check, error, output)   \
                                     do                                          \
                                     {                                           \
-                                        EXPECT_TRUE((check == true) && (output.str().find(error) != std::string::npos));    \
-                                        if ((check != true) || (output.str().find(error) == std::string::npos)) {           \
+                                        bool getCheck = check;                  \
+                                        EXPECT_TRUE((getCheck == true) && (output.str().find(error) != std::string::npos));    \
+                                        if ((getCheck != true) || (output.str().find(error) == std::string::npos)) {           \
                                             std::cout << "TRUE: FAIL\n";        \
                                             std::cout << output.str() << "\n";  \
                                         }                                       \
@@ -31,106 +32,108 @@
                                     while(false)
 
 #define EXPECT_TRUE_OR_DEBUG(check, output) \
-                                     do                                 \
-                                     {                                  \
-                                        EXPECT_TRUE(check);             \
-                                        if (!(check)) {                 \
-                                            std::cerr << "TRUE: FAIL\n";\
-                                            std::cerr << output.rdbuf();\
-                                        }                               \
-                                      }                                 \
-                                      while(false)
+                                    do                                          \
+                                    {                                           \
+                                        bool getCheck = check;                  \
+                                        EXPECT_TRUE(getCheck);                  \
+                                        if (!(getCheck)) {                      \
+                                            std::cerr << "TRUE: FAIL\n";        \
+                                            std::cerr << output.rdbuf();        \
+                                        }                                       \
+                                    }                                           \
+                                    while(false)
 #define EXPECT_FALSE_OR_DEBUG(check, output) \
-                                     do                                 \
-                                     {                                  \
-                                       EXPECT_FALSE(check);             \
-                                       if (check) {                     \
-                                            std::cerr << "FALSE FAIL\n";\
-                                            std::cerr << output.str();  \
-                                        }                               \
-                                      }                                 \
-                                      while(false)
+                                    do                                          \
+                                    {                                           \
+                                        bool getCheck = check;                  \
+                                        EXPECT_FALSE(getCheck);                 \
+                                        if (getCheck) {                         \
+                                            std::cerr << "FALSE FAIL\n";        \
+                                            std::cerr << output.str();          \
+                                        }                                       \
+                                    }                                           \
+                                    while(false)
 #define EXPECT_THROW_OR_DEBUG(check, msg, output) \
-                                     do                                 \
-                                     {                                  \
-                                        try {                           \
-                                            check;                      \
+                                    do                                          \
+                                    {                                           \
+                                        try {                                   \
+                                            check;                              \
                                             std::cerr << "THROW FAIL (Throw expected but did not happen)\n";\
-                                            std::cerr << output.rdbuf();\
-                                            EXPECT_TRUE(false);         \
-                                        }                               \
-                                        catch(std::exception const& e)  \
-                                        {                               \
-                                            std::string error(e.what());\
+                                            std::cerr << output.rdbuf();        \
+                                            EXPECT_TRUE(false);                 \
+                                        }                                       \
+                                        catch(std::exception const& e)          \
+                                        {                                       \
+                                            std::string error(e.what());        \
                                             if (error.find(msg) == std::string::npos) {\
                                                 std::cerr << "THROW FAIL (Throw happened but not expected message)\n" \
-                                                          << error << "\n"  \
-                                                          << output.rdbuf();\
-                                                throw;                  \
-                                            }                           \
-                                        }                               \
-                                        catch(std::string const& m)     \
-                                        {                               \
+                                                          << error << "\n"      \
+                                                          << output.rdbuf();    \
+                                                throw;                          \
+                                            }                                   \
+                                        }                                       \
+                                        catch(std::string const& m)             \
+                                        {                                       \
                                             std::cerr << "THROW FAIL (Got a string expecting a standard exception)\n" \
                                                       << "String Thrown: " << m << "\n" \
-                                                      << output.rdbuf();\
-                                            throw;                      \
-                                        }                               \
-                                        catch(int e)                    \
-                                        {                               \
+                                                      << output.rdbuf();        \
+                                            throw;                              \
+                                        }                                       \
+                                        catch(int e)                            \
+                                        {                                       \
                                             std::cerr << "THROW FAIL (Got an int expecting a standard exception)\n" \
                                                       << "Int Thrown: " << e << "\n" \
-                                                      << output.rdbuf();\
-                                            throw;                      \
-                                        }                               \
-                                        catch(...)                      \
-                                        {                               \
-                                            std::cerr << "THROW FAIL\n" \
+                                                      << output.rdbuf();        \
+                                            throw;                              \
+                                        }                                       \
+                                        catch(...)                              \
+                                        {                                       \
+                                            std::cerr << "THROW FAIL\n"         \
                                                       << "This was a non standard exception of unknown type\n" \
-                                                      << output.rdbuf();\
-                                            throw;                      \
-                                        }                               \
-                                      }                                 \
-                                      while(false)
+                                                      << output.rdbuf();        \
+                                            throw;                              \
+                                        }                                       \
+                                    }                                           \
+                                    while(false)
 #define EXPECT_NO_THROW_OR_DEBUG(check, output) \
-                                     do                                 \
-                                     {                                  \
-                                        try                             \
-                                        {                               \
-                                            check;                      \
-                                            EXPECT_TRUE(true);          \
-                                        }                               \
-                                        catch(std::exception const& e)\
-                                        {                               \
-                                            std::string error(e.what());\
-                                            std::cerr << "THROW FAIL\n" \
+                                    do                                          \
+                                    {                                           \
+                                        try                                     \
+                                        {                                       \
+                                            check;                              \
+                                            EXPECT_TRUE(true);                  \
+                                        }                                       \
+                                        catch(std::exception const& e)          \
+                                        {                                       \
+                                            std::string error(e.what());        \
+                                            std::cerr << "THROW FAIL\n"         \
                                                       << "Exception Message: " << error << "\n"  \
-                                                      << output.rdbuf();\
-                                            throw;                      \
-                                        }                               \
-                                        catch(std::string const& m)     \
-                                        {                               \
-                                            std::cerr << "THROW FAIL\n" \
+                                                      << output.rdbuf();        \
+                                            throw;                              \
+                                        }                                       \
+                                        catch(std::string const& m)             \
+                                        {                                       \
+                                            std::cerr << "THROW FAIL\n"         \
                                                       << "String Thrown: " << m << "\n" \
-                                                      << output.rdbuf();\
-                                            throw;                      \
-                                        }                               \
-                                        catch(int e)                    \
-                                        {                               \
-                                            std::cerr << "THROW FAIL\n" \
+                                                      << output.rdbuf();        \
+                                            throw;                              \
+                                        }                                       \
+                                        catch(int e)                            \
+                                        {                                       \
+                                            std::cerr << "THROW FAIL\n"         \
                                                       << "Int Thrown: " << e << "\n" \
-                                                      << output.rdbuf();\
-                                            throw;                      \
-                                        }                               \
-                                        catch(...)                      \
-                                        {                               \
-                                            std::cerr << "THROW FAIL\n" \
+                                                      << output.rdbuf();        \
+                                            throw;                              \
+                                        }                                       \
+                                        catch(...)                              \
+                                        {                                       \
+                                            std::cerr << "THROW FAIL\n"         \
                                                       << "This was a non standard exception of unknown type\n" \
-                                                      << output.rdbuf();\
-                                            throw;                      \
-                                        }                               \
-                                      }                                 \
-                                      while(false)
+                                                      << output.rdbuf();        \
+                                            throw;                              \
+                                        }                                       \
+                                    }                                           \
+                                    while(false)
 
 inline std::stringstream buildStream(char const* buffer)
 {
