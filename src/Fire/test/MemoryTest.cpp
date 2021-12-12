@@ -1,95 +1,397 @@
 #include <gtest/gtest.h>
 
 #include "Memory.h"
-#include "../Ice/test/Utility.h"
 
 using namespace ThorsAnvil::Anvil::Fire;
 
-TEST(MemoryTest, MemoryLocationDefaultsToVoid)
-{
-    MemoryLocation  m1;
 
-    MemoryType  type = m1.visit(MemoryLocationVisitorCheckType{});
-    EXPECT_EQ(type, MemoryType::Void);
+#if 0
+TEST(MemoryTest, MakeSureAddressGetBehaves)
+{
+
+    Result      output = vm.run();
+
+    EXPECT_EQ_OR_LOG(bad, output, 16, result);
+    bool isIntAddress = true;
+    vm.machineState.stack[0].getAddress([&](){isIntAddress = false;});
+    bool isDataFrameAddress = true;
+    vm.machineState.stack[1].getAddress([&](){isDataFrameAddress = false;});
+    bool isDataAddressAddress = true;
+    vm.machineState.stack[2].getAddress([&](){isDataAddressAddress = false;});
+
+    EXPECT_EQ_OR_LOG(bad, isIntAddress, false, result);
+    EXPECT_EQ_OR_LOG(bad, isDataFrameAddress, true, result);
+    EXPECT_EQ_OR_LOG(bad, isDataAddressAddress, true, result);
+    EXPECT_SUCC(bad, result);
 }
 
-TEST(MemoryTest, InitMemoryLocationWithVoid)
-{
-    MemoryLocation  m1;
-    m1.init(CodeAddress{});
-    m1.init(Void{});
+    using Object = std::variant<Void,
+                                CodeAddress,
+                                DataAddress,
+                                DataFrame,
+                                Int,                    // Std::Integer
+                                String,                 // Std::String
+                                Array,
+                                Map
+                               >;
+#endif
 
-    MemoryType  type = m1.visit(MemoryLocationVisitorCheckType{});
-    EXPECT_EQ(type, MemoryType::Void);
+TEST(MemoryTest, MemoryDefaultVoid)
+{
+    bool                isGood = true;
+    auto badAction = [&](){isGood = false;};
+
+    MemoryLocation      value;
+    value.getValue<Void>(badAction);
+    EXPECT_TRUE(isGood);
+
+    isGood = true;
+    value.getValue<CodeAddress>(badAction);
+    EXPECT_FALSE(isGood);
+
+    isGood = true;
+    value.getValue<DataAddress>(badAction);
+    EXPECT_FALSE(isGood);
+
+    isGood = true;
+    value.getValue<DataFrame>(badAction);
+    EXPECT_FALSE(isGood);
+
+    isGood = true;
+    value.getValue<Int>(badAction);
+    EXPECT_FALSE(isGood);
+
+    isGood = true;
+    value.getValue<String>(badAction);
+    EXPECT_FALSE(isGood);
+
+    isGood = true;
+    value.getValue<Array>(badAction);
+    EXPECT_FALSE(isGood);
+
+    isGood = true;
+    value.getValue<Map>(badAction);
+    EXPECT_FALSE(isGood);
+
+    isGood = true;
+    value.getAddress(badAction);
+    EXPECT_FALSE(isGood);
 }
 
-TEST(MemoryTest, InitMemoryLocationWithCodeAddress)
+TEST(MemoryTest, MemoryCodeAddress)
 {
-    MemoryLocation  m1;
+    bool                isGood = true;
+    auto badAction = [&](){isGood = false;};
 
-    m1.init(CodeAddress{});
+    MemoryLocation      value;
+    value.init(CodeAddress{12});
 
-    MemoryType  type = m1.visit(MemoryLocationVisitorCheckType{});
-    EXPECT_EQ(type, MemoryType::CodeAddress);
+    value.getValue<Void>(badAction);
+    EXPECT_FALSE(isGood);
+
+    isGood = true;
+    value.getValue<CodeAddress>(badAction);
+    EXPECT_TRUE(isGood);
+
+    isGood = true;
+    value.getValue<DataAddress>(badAction);
+    EXPECT_FALSE(isGood);
+
+    isGood = true;
+    value.getValue<DataFrame>(badAction);
+    EXPECT_FALSE(isGood);
+
+    isGood = true;
+    value.getValue<Int>(badAction);
+    EXPECT_FALSE(isGood);
+
+    isGood = true;
+    value.getValue<String>(badAction);
+    EXPECT_FALSE(isGood);
+
+    isGood = true;
+    value.getValue<Array>(badAction);
+    EXPECT_FALSE(isGood);
+
+    isGood = true;
+    value.getValue<Map>(badAction);
+    EXPECT_FALSE(isGood);
+
+    isGood = true;
+    value.getAddress(badAction);
+    EXPECT_FALSE(isGood);
 }
 
-TEST(MemoryTest, InitMemoryLocationWithDataAddress)
+TEST(MemoryTest, MemoryDataAddress)
 {
-    MemoryLocation  m1;
+    bool                isGood = true;
+    auto badAction = [&](){isGood = false;};
 
-    m1.init(DataAddress{});
+    MemoryLocation      value;
+    value.init(DataAddress{&value});
 
-    MemoryType  type = m1.visit(MemoryLocationVisitorCheckType{});
-    EXPECT_EQ(type, MemoryType::DataAddress);
+    value.getValue<Void>(badAction);
+    EXPECT_FALSE(isGood);
+
+    isGood = true;
+    value.getValue<CodeAddress>(badAction);
+    EXPECT_FALSE(isGood);
+
+    isGood = true;
+    value.getValue<DataAddress>(badAction);
+    EXPECT_TRUE(isGood);
+
+    isGood = true;
+    value.getValue<DataFrame>(badAction);
+    EXPECT_FALSE(isGood);
+
+    isGood = true;
+    value.getValue<Int>(badAction);
+    EXPECT_FALSE(isGood);
+
+    isGood = true;
+    value.getValue<String>(badAction);
+    EXPECT_FALSE(isGood);
+
+    isGood = true;
+    value.getValue<Array>(badAction);
+    EXPECT_FALSE(isGood);
+
+    isGood = true;
+    value.getValue<Map>(badAction);
+    EXPECT_FALSE(isGood);
+
+    isGood = true;
+    auto v = value.getAddress(badAction);
+    EXPECT_TRUE(isGood);
+    EXPECT_EQ(&value, v);
 }
 
-TEST(MemoryTest, InitMemoryLocationWithDataFrame)
+TEST(MemoryTest, MemoryDataFrame)
 {
-    MemoryLocation  m1;
+    bool                isGood = true;
+    auto badAction = [&](){isGood = false;};
 
-    m1.init(DataFrame{});
+    MemoryLocation      value;
+    value.init(DataFrame{12});
 
-    MemoryType  type = m1.visit(MemoryLocationVisitorCheckType{});
-    EXPECT_EQ(type, MemoryType::DataFrame);
+    value.getValue<Void>(badAction);
+    EXPECT_FALSE(isGood);
+
+    isGood = true;
+    value.getValue<CodeAddress>(badAction);
+    EXPECT_FALSE(isGood);
+
+    isGood = true;
+    value.getValue<DataAddress>(badAction);
+    EXPECT_FALSE(isGood);
+
+    isGood = true;
+    DataFrame& v1 = value.getValue<DataFrame>(badAction);
+    EXPECT_TRUE(isGood);
+
+    isGood = true;
+    value.getValue<Int>(badAction);
+    EXPECT_FALSE(isGood);
+
+    isGood = true;
+    value.getValue<String>(badAction);
+    EXPECT_FALSE(isGood);
+
+    isGood = true;
+    value.getValue<Array>(badAction);
+    EXPECT_FALSE(isGood);
+
+    isGood = true;
+    value.getValue<Map>(badAction);
+    EXPECT_FALSE(isGood);
+
+    isGood = true;
+    auto v2 = value.getAddress(badAction);
+    EXPECT_TRUE(isGood);
+    EXPECT_EQ(&v1[0], v2);
 }
 
-TEST(MemoryTest, InitMemoryLocationWithInt)
+TEST(MemoryTest, MemoryInt)
 {
-    MemoryLocation  m1;
+    bool                isGood = true;
+    auto badAction = [&](){isGood = false;};
 
-    m1.init(Int{});
+    MemoryLocation      value;
+    value.init(Int{12});
 
-    MemoryType  type = m1.visit(MemoryLocationVisitorCheckType{});
-    EXPECT_EQ(type, MemoryType::Int);
+    value.getValue<Void>(badAction);
+    EXPECT_FALSE(isGood);
+
+    isGood = true;
+    value.getValue<CodeAddress>(badAction);
+    EXPECT_FALSE(isGood);
+
+    isGood = true;
+    value.getValue<DataAddress>(badAction);
+    EXPECT_FALSE(isGood);
+
+    isGood = true;
+    value.getValue<DataFrame>(badAction);
+    EXPECT_FALSE(isGood);
+
+    isGood = true;
+    value.getValue<Int>(badAction);
+    EXPECT_TRUE(isGood);
+
+    isGood = true;
+    value.getValue<String>(badAction);
+    EXPECT_FALSE(isGood);
+
+    isGood = true;
+    value.getValue<Array>(badAction);
+    EXPECT_FALSE(isGood);
+
+    isGood = true;
+    value.getValue<Map>(badAction);
+    EXPECT_FALSE(isGood);
+
+    isGood = true;
+    value.getAddress(badAction);
+    EXPECT_FALSE(isGood);
 }
 
-TEST(MemoryTest, InitMemoryLocationWithString)
+
+TEST(MemoryTest, MemoryString)
 {
-    MemoryLocation  m1;
+    bool                isGood = true;
+    auto badAction = [&](){isGood = false;};
 
-    m1.init(String{});
+    MemoryLocation      value;
+    value.init(String{"Hi"});
 
-    MemoryType  type = m1.visit(MemoryLocationVisitorCheckType{});
-    EXPECT_EQ(type, MemoryType::String);
+    value.getValue<Void>(badAction);
+    EXPECT_FALSE(isGood);
+
+    isGood = true;
+    value.getValue<CodeAddress>(badAction);
+    EXPECT_FALSE(isGood);
+
+    isGood = true;
+    value.getValue<DataAddress>(badAction);
+    EXPECT_FALSE(isGood);
+
+    isGood = true;
+    value.getValue<DataFrame>(badAction);
+    EXPECT_FALSE(isGood);
+
+    isGood = true;
+    value.getValue<Int>(badAction);
+    EXPECT_FALSE(isGood);
+
+    isGood = true;
+    value.getValue<String>(badAction);
+    EXPECT_TRUE(isGood);
+
+    isGood = true;
+    value.getValue<Array>(badAction);
+    EXPECT_FALSE(isGood);
+
+    isGood = true;
+    value.getValue<Map>(badAction);
+    EXPECT_FALSE(isGood);
+
+    isGood = true;
+    value.getAddress(badAction);
+    EXPECT_FALSE(isGood);
 }
 
-TEST(MemoryTest, InitMemoryLocationWithArray)
+
+
+TEST(MemoryTest, MemoryArray)
 {
-    MemoryLocation  m1;
+    bool                isGood = true;
+    auto badAction = [&](){isGood = false;};
 
-    m1.init(Array{});
+    MemoryLocation      value;
+    value.init(Array{});
 
-    MemoryType  type = m1.visit(MemoryLocationVisitorCheckType{});
-    EXPECT_EQ(type, MemoryType::Array);
+    value.getValue<Void>(badAction);
+    EXPECT_FALSE(isGood);
+
+    isGood = true;
+    value.getValue<CodeAddress>(badAction);
+    EXPECT_FALSE(isGood);
+
+    isGood = true;
+    value.getValue<DataAddress>(badAction);
+    EXPECT_FALSE(isGood);
+
+    isGood = true;
+    value.getValue<DataFrame>(badAction);
+    EXPECT_FALSE(isGood);
+
+    isGood = true;
+    value.getValue<Int>(badAction);
+    EXPECT_FALSE(isGood);
+
+    isGood = true;
+    value.getValue<String>(badAction);
+    EXPECT_FALSE(isGood);
+
+    isGood = true;
+    value.getValue<Array>(badAction);
+    EXPECT_TRUE(isGood);
+
+    isGood = true;
+    value.getValue<Map>(badAction);
+    EXPECT_FALSE(isGood);
+
+    isGood = true;
+    value.getAddress(badAction);
+    EXPECT_FALSE(isGood);
 }
 
-TEST(MemoryTest, InitMemoryLocationWithMap)
+
+
+TEST(MemoryTest, MemoryMap)
 {
-    MemoryLocation  m1;
+    bool                isGood = true;
+    auto badAction = [&](){isGood = false;};
 
-    m1.init(Map{});
+    MemoryLocation      value;
+    value.init(Map{});
 
-    MemoryType  type = m1.visit(MemoryLocationVisitorCheckType{});
-    EXPECT_EQ(type, MemoryType::Map);
+    value.getValue<Void>(badAction);
+    EXPECT_FALSE(isGood);
+
+    isGood = true;
+    value.getValue<CodeAddress>(badAction);
+    EXPECT_FALSE(isGood);
+
+    isGood = true;
+    value.getValue<DataAddress>(badAction);
+    EXPECT_FALSE(isGood);
+
+    isGood = true;
+    value.getValue<DataFrame>(badAction);
+    EXPECT_FALSE(isGood);
+
+    isGood = true;
+    value.getValue<Int>(badAction);
+    EXPECT_FALSE(isGood);
+
+    isGood = true;
+    value.getValue<String>(badAction);
+    EXPECT_FALSE(isGood);
+
+    isGood = true;
+    value.getValue<Array>(badAction);
+    EXPECT_FALSE(isGood);
+
+    isGood = true;
+    value.getValue<Map>(badAction);
+    EXPECT_TRUE(isGood);
+
+    isGood = true;
+    value.getAddress(badAction);
+    EXPECT_FALSE(isGood);
 }
+
+
 

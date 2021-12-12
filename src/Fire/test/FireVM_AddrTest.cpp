@@ -340,32 +340,3 @@ CMD Kill 16
     EXPECT_SUCC(bad, result);
 }
 
-TEST(FireVM_AddrTest, MakeSureAddressGetBehaves)
-{
-    std::stringstream   result;
-    bool                bad = false;
-    BuildVM             vm(result, bad, R"(
-ADDR LML StackPointer = Int 10
-ADDR INC StackPointer 1
-ADDR LML StackPointer = DataFrame 1
-ADDR INC StackPointer 1
-ADDR LMR StackPointer = FramePointer + 1
-CMD Kill 16
-)");
-
-    Result      output = vm.run();
-
-    EXPECT_EQ_OR_LOG(bad, output, 16, result);
-    bool isIntAddress = true;
-    vm.machineState.stack[0].getAddress([&](){isIntAddress = false;});
-    bool isDataFrameAddress = true;
-    vm.machineState.stack[1].getAddress([&](){isDataFrameAddress = false;});
-    bool isDataAddressAddress = true;
-    vm.machineState.stack[2].getAddress([&](){isDataAddressAddress = false;});
-
-    EXPECT_EQ_OR_LOG(bad, isIntAddress, false, result);
-    EXPECT_EQ_OR_LOG(bad, isDataFrameAddress, true, result);
-    EXPECT_EQ_OR_LOG(bad, isDataAddressAddress, true, result);
-    EXPECT_SUCC(bad, result);
-}
-
