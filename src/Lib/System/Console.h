@@ -5,119 +5,71 @@
 
 #ifdef ANVIL
 #pragma vera-pushoff
-namespace System
+namespace Sys
 {
-    constructor:
+    // Compiler generated constructor for class
+    // Run at startup.
+    $Constructor: func{Void -> Void}
+    {
+        ->
+        // Compiler generated Full Label: NS_Sys_$Constructor:
+
+        // Initialize the 'console' object
+        ADDR LRR Expr-1 = This + 1
+        CMD Import Load Expr-1 Anvil_System
+
+        // Set the location pointed at by Expr-1 (console) to a Frame (size 1 method print)
+        ADDR LRR Expr-1 = This + 0
+        ADDR LML Expr-1 = DataFrame 2
+        ADDR LRP Expr-1 = Expr-1 + 0
+        // Call the Console constructor
+        // Setting the This register to the value of Expr-1
+        JUMP Call Expr-1 NS_Sys_Class_Console_$Constructor
+        <-
+    }
+
+    $Destructor:
     {->
-        # When a function is called the
-        #       "Stack" pointer is set.
-        #       "This"  pointer is null
-        # Objects at offset from the "Stack" pointer are:
-        #   0:          Location to put the return value
-        #   1:          Previous Stack Pointer
-        #   2:          Previous This  Pointer
-        #   3:          The pc to set when returning from the function.
-        #   [4->n+4)    Any parameters passed to the function.
-        #
-        # When a namespace constructor is called one parameter is passed.
-        #   The address of the first object of that namespace within the global region.
-        #   In this case the "console" object.
-
-        # To initiale the "console" object.
-        # We must create the object then call its constructor.
-
-            # To create a class object we create a Frame object in the VM.
-            # Then call the constructor
-            Set Stack + 4 = Frame 2
-
-            # Call the constructor set up the next stack frame
-            # Call 5 Method Stack + 4 !System::Console::$constructor
-            Call 5 Method Stack + 4 !System::Console::constructor
-
-        # Now return
-        Return
-
     <-}
-    destructor:
-    {->
-        # See comments for constructor.
 
-        # Call Method Stack + 4 !System::Console::$constructor
-        Call 5 Method Stack + 4 !System::Console::destructor
-
-        Set Stack + 4 = Void
-
-        # Now return
-        Return
-    <-}
     class Console
     {
-        constructor: func
-        {->
-            # When a method is called the
-            #       "Stack" pointer is set.
-            #       "This"  pointer points at the object
-            # Objects at offset from the "Stack" pointer are:
-            #   0:          Location to put the return value
-            #   1:          Previous Stack Pointer
-            #   2:          Previous This  Pointer
-            #   3:          The pc to set when returning from the function.
-            #   [4->n+4)    Any parameters passed to the function.
-            #
-            # Objects at offset from the "This" pointer are:
-            #   0:          Parent object
-            #   [1->n+1)    All the member variables
+        // Compiler generated constructor for class
+        // Run when object of this class created.
+        $Constructor: func{Void -> Void}
+        {
+            ->
+            // Compiler generated Full Label: NS_Sys_Class_Console_$Constructor:
 
-            # Loads the result of dlopen() into Global + $obj1
-            CMD Import Add 4 Anvil_System
-            Set This + 1 = Stack + 4
+                // Get the address of the print function (it is a member of the class)
+                ADDR LRR Expr-1 = This + 0
+                ADDR LML Expr-1 = CodeAddress NS_Sys_Class_Console_Func_print
 
-            # Loads the result of dlsym() into  Global + $obj2
-            Set Stack + 8 = This + 1
-            CMD Import Sym 4 __ZN3Ice6System5printERKNSt3__112basic_stringIcNS1_11char_traitsIcEENS1_9allocatorIcEEEE
-            Set This + 2 = Stack + 4
+                // Get the address of the C++ function that print will use.
+                ADDR INC Expr-1 1
+                ADDR LRR Expr-2 = Global + 1
+                CMD Import GetSymbol Expr-1 Expr-2 _ZN3Ice6System5printERKNSt3__112basic_stringIcNS1_11char_traitsIcEENS1_9allocatorIcEEEE
+            <-
+        }
 
-            # Done
-            Return
-        <-}
-        destructor:
-        {->
-            # See comments for constructor.
+        print: func {Void -> Std::String}
+        {
+            ->
+                // Compiler generated Full label: NS_Sys_Class_Console_Func_print:
+                // Expr-1 points at the address of the C++ function.
+                ADDR LRR Expr-1 = This + 1
 
-            # Reads the pointer from Global + $obj1 calls dlclose()
-            Set Stack + 8 = This + 1
-            CMD Import Rem 4
-        <-}
-        # lib is unusable by the "Anvil" language as it has type "Void"
-        # But still takes a space in the object that can be used by the assembler.
-        # The constructor above uses this to hold a pointer to the dynamicall loaded module
-        lib: Void;
+                // Expr-2 points at the return value (Note Parameters are after that)
+                ADDR LRR Expr-2 = StackPointer + 0
+                ADDR DEC Expr-2 5
 
-        # This is a function that can be used.
-        print : func {System::String => Void}
-        {->
-            # When a method is called the
-            #       "Stack" pointer is set.
-            #       "This"  pointer points at the object
-            # Objects at offset from the "Stack" pointer are:
-            #   0:          Location to put the return value
-            #   1:          Previous Stack Pointer
-            #   2:          Previous This  Pointer
-            #   3:          The pc to set when returning from the function.
-            #   [4->n+4)    Any parameters passed to the function.
-            #
-            # Objects at offset from the "This" pointer are:
-            #   0:          Parent object
-            #   [1->n+1)    All the member variables
-
-            Set Stack + 9 = Stack + 1
-            Cmd Import Call 5 String
-
-            # Done
-            Return
-        <-}
+                // Call C++ function.
+                CMD Import Call Expr-1 Expr-2
+            <-
+        }
     }
-    console: Conole;
+    console: Console;
+    $dll: Void;
 }
 #pragma vera-pop
 #else
