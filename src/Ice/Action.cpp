@@ -34,7 +34,8 @@ void Action::token()
 void Action::error(std::string const& msg) const
 {
     std::stringstream extended;
-    extended << "Error: " << msg << " -> Last Token: >" << lexer.lexem() << "<\n"
+    extended << "Error: '" << msg << "'\n"
+             << "Last Token: >" << lexer.lexem() << "<\n"
              << "Line:  " << lineNo << " : " << currentLine.size() << "     FileOffset: " << offset << "\n"
              << currentLine << "\n"
              << "\n";
