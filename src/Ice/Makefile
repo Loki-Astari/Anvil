@@ -15,6 +15,7 @@ Ice_LDLIBS					= -lfl
 %/ice.lex.o:				FILE_WARNING_FLAGS += -Wno-sign-compare
 %/Action.o:					FILE_WARNING_FLAGS += -Wno-unknown-pragmas
 %/Semantic.o:				FILE_WARNING_FLAGS += -Wno-unknown-pragmas
+%/AssembleyGenerator.o:		FILE_WARNING_FLAGS += -Wno-unknown-pragmas
 FILE_WARNING_FLAGS			= -Wno-unused-private-field
 
 include $(THORSANVIL_ROOT)/build/tools/Makefile

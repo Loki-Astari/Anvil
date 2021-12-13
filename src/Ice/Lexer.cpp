@@ -8,7 +8,9 @@ Lexer::Lexer(std::istream& input, std::ostream& output)
 
 std::string_view Lexer::lexem() const
 {
-    std::string_view    tokenView(YYText(), YYLeng());
+    int                 length = YYLeng();
+    length = length > 0 ? length : 0;
+    std::string_view    tokenView(YYText(), length);
     while (tokenView.size() > 0 && tokenView[tokenView.size() - 1] == '\0')
     {
         tokenView.remove_suffix(1);

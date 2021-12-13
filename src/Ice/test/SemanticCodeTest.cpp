@@ -7,6 +7,7 @@
 
 struct SemanticCompiler
 {
+    ThorsAnvil::Anvil::Ice::AllScopeAndName nameInfo;
     ThorsAnvil::Anvil::Ice::StandardScope   globalScope;
     ThorsAnvil::Anvil::Ice::Lexer           lexer;
     ThorsAnvil::Anvil::Ice::Storage         storage;
@@ -15,7 +16,7 @@ struct SemanticCompiler
 
     SemanticCompiler(std::istream& input, std::ostream& output)
         : lexer(input, output)
-        , semanticAnalyser(lexer, globalScope, storage, output)
+        , semanticAnalyser(lexer, nameInfo, globalScope, storage, output)
         , parser(lexer, semanticAnalyser)
     {}
 

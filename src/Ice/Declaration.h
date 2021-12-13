@@ -36,6 +36,8 @@ using ParamList     = std::list<TypeRef>;
 using ObjectIdList  = std::list<ObjectIdRef>;
 using IdentifierList= std::list<std::string>;
 
+using ScopeAndName      = std::pair<ScopeRef, std::string>;
+using AllScopeAndName   = std::vector<ScopeAndName>;
 template<typename T>
 struct ReversView
 {
@@ -54,6 +56,7 @@ class Container
 {
     public:
         using NameMap = std::map<std::string, std::unique_ptr<Decl>>;
+        using ObjectMap = std::map<std::string, std::size_t>;
         using NameRef = NameMap::const_iterator;
 
         template<typename T, typename... Args>
@@ -61,8 +64,14 @@ class Container
         virtual std::string const& contName() const = 0;
         std::pair<bool, NameRef> get(std::string const& name) const;
 
+        std::size_t size() const {return nextObjectId;}
+
+        virtual bool storeFunctionsInContainer() const {return false;}
     private:
         NameMap     names;
+        ObjectMap   objectId;
+        std::size_t nextObjectId = 0;
+
 
         friend std::ostream& operator<<(std::ostream& stream, Container const& cont)
         {
@@ -169,6 +178,7 @@ class Class: public DeclContainer<Type>
     public:
         Class(std::string const& name);
         virtual DeclType declType() const override                                          {return DeclType::Class;}
+        virtual bool storeFunctionsInContainer() const override {return true;}
 };
 
 class Array: public Type
@@ -321,11 +331,37 @@ class StandardScope: public Namespace
         }
 };
 
+// By default only object need runtime storage.
+// So most types simply return false.
+template<typename T>
+inline
+bool doesDeclNeedRuntimeStorage(Container&, Decl const&)
+{
+    return false;
+}
+template<>
+inline
+bool doesDeclNeedRuntimeStorage<Object>(Container& container, Decl const& decl)
+{
+    Object const& object = dynamic_cast<Object const&>(decl);
+    // If we don't store functions and thus is a function then return false.
+    // Otherwise return true as:
+    //      A: This is not a function so needs storage in the local context.
+    //      B: Is a function and the local context says it needs to store it.
+    return (!container.storeFunctionsInContainer() && object.getType().declType() == DeclType::Func)
+                ? false
+                : true;
+}
+
 template<typename T, typename... Args>
 inline T& Container::add(Args&&... args)
 {
     std::unique_ptr<Decl> decl(new T(args...));
     auto& location = names[decl->declName()];
+    if (doesDeclNeedRuntimeStorage<T>(*this, *decl))
+    {
+        objectId[decl->declName()] = nextObjectId++;
+    }
     location = std::move(decl);
     return dynamic_cast<T&>(*location);
 }

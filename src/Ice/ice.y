@@ -43,7 +43,8 @@ int yylex(void*, ThorsAnvil::Anvil::Ice::Lexer& lexer, ThorsAnvil::Anvil::Ice::A
 
 %%
 
-Anvil:              NamespaceList                                       {
+Anvil:                                                                  { /* Empty File */ $$ = 0;}
+                |   NamespaceList                                       {
                                                                             action.log("Anvil:              NamespaceList");
                                                                             action.assertNoStorage($1);
                                                                             $$ = 0;

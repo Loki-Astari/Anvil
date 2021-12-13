@@ -19,11 +19,12 @@ struct ScopePrinter
     }
 };
 
-Semantic::Semantic(Lexer& lexer, Scope& globalScope, Storage& storage, std::ostream& output)
+Semantic::Semantic(Lexer& lexer, AllScopeAndName& nameInfo, Scope& globalScope, Storage& storage, std::ostream& output)
     : Action(lexer, output)
     , anonNameCount(0)
     , globalScope(globalScope)
     , storage(storage)
+    , nameInfo(nameInfo)
 {
     currentScope.emplace_back(globalScope);
 }
@@ -76,6 +77,18 @@ Int Semantic::generateAnonName()
     ScopePrinter    printer("generateAnonName");
     std::string name = generateAnonNameString();
     return storage.add(std::move(name));
+}
+
+std::string Semantic::getCurrentScopeFullName()
+{
+    std::string result;
+    for (auto& scopeRefForward: currentScope)
+    {
+        auto& scopeForward = scopeRefForward.get();
+        result += (scopeForward.contName() + "::");
+    }
+
+    return result;
 }
 
 Int Semantic::identifierCreate(std::string_view view)
@@ -458,7 +471,10 @@ Int Semantic::scopeAddNamespace(Int name)
     Namespace&      newNameSpace = getOrAddScope<Namespace>(topScope, namespaceName);
     currentScope.emplace_back(newNameSpace);
 
-    return storage.add(ScopeRef{dynamic_cast<Scope&>(newNameSpace)});
+    ScopeRef    scopeRef = dynamic_cast<Scope&>(newNameSpace);
+    nameInfo.emplace_back(scopeRef, getCurrentScopeFullName());
+
+    return storage.add(scopeRef);
 }
 
 Int Semantic::scopeAddClass(Int name)

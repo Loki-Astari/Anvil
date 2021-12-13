@@ -18,13 +18,15 @@ namespace ThorsAnvil::Anvil::Ice
 
 class Semantic: public Action
 {
-    std::size_t anonNameCount;
-    Scope&      globalScope;
-    Storage&    storage;
-    std::vector<std::reference_wrapper<Scope>>  currentScope;
+
+    std::size_t             anonNameCount;
+    Scope&                  globalScope;
+    Storage&                storage;
+    AllScopeAndName&        nameInfo;
+    std::vector<ScopeRef>   currentScope;
 
     public:
-        Semantic(Lexer& lexer, Scope& globalScope, Storage& storage, std::ostream& output = std::cout);
+        Semantic(Lexer& lexer, AllScopeAndName& nameInfo, Scope& globalScope, Storage& storage, std::ostream& output = std::cout);
         virtual ~Semantic() override;
 
         void display(std::ostream& stream);
@@ -71,6 +73,7 @@ class Semantic: public Action
         Decl& searchScopeForPath(IdentifierList const& objectId) const;
         Decl* searchScopeForIdentifier(std::string const& path, std::string& partialMatch) const;
         std::string  generateAnonNameString();
+        std::string  getCurrentScopeFullName();
 
         template<typename T>
         T& getScopeSymbol(Scope& scope, IdentifierList const& identifier);
