@@ -19,12 +19,12 @@ struct ScopePrinter
     }
 };
 
-Semantic::Semantic(Lexer& lexer, AllScopeAndName& nameInfo, Scope& globalScope, Storage& storage, std::ostream& output)
+Semantic::Semantic(Lexer& lexer, NamespaceDecOrder& namespaceDecOrder, Scope& globalScope, Storage& storage, std::ostream& output)
     : Action(lexer, output)
     , anonNameCount(0)
     , globalScope(globalScope)
     , storage(storage)
-    , nameInfo(nameInfo)
+    , namespaceDecOrder(namespaceDecOrder)
 {
     currentScope.emplace_back(globalScope);
 }
@@ -79,7 +79,7 @@ Int Semantic::generateAnonName()
     return storage.add(std::move(name));
 }
 
-std::string Semantic::getCurrentScopeFullName()
+std::string Semantic::getCurrentScopeFullName() const
 {
     std::string result;
     for (auto& scopeRefForward: currentScope)
@@ -469,12 +469,11 @@ Int Semantic::scopeAddNamespace(Int name)
     SAccessString   namespaceName(storage, name);
     Scope&          topScope = currentScope.back().get();
     Namespace&      newNameSpace = getOrAddScope<Namespace>(topScope, namespaceName);
+    newNameSpace.setPath(getCurrentScopeFullName());
     currentScope.emplace_back(newNameSpace);
 
-    ScopeRef    scopeRef = dynamic_cast<Scope&>(newNameSpace);
-    nameInfo.emplace_back(scopeRef, getCurrentScopeFullName());
-
-    return storage.add(scopeRef);
+    namespaceDecOrder.emplace_back(NamespaceRef{newNameSpace});
+    return storage.add(ScopeRef{dynamic_cast<Scope&>(newNameSpace)});
 }
 
 Int Semantic::scopeAddClass(Int name)

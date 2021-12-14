@@ -18,9 +18,10 @@ namespace ThorsAnvil::Anvil::Ice
 enum class DeclType {Void, Namespace, Class, Array, Map, Func, Object, CodeBlock, Statement};
 
 // Console::print("Hello World");
-class Type;
-class Object;
 class Decl;
+class Type;
+class Namespace;
+class Object;
 class Container;
 class ObjectId;
 
@@ -36,8 +37,8 @@ using ParamList     = std::list<TypeRef>;
 using ObjectIdList  = std::list<ObjectIdRef>;
 using IdentifierList= std::list<std::string>;
 
-using ScopeAndName      = std::pair<ScopeRef, std::string>;
-using AllScopeAndName   = std::vector<ScopeAndName>;
+using NamespaceRef      = std::reference_wrapper<Namespace>;
+using NamespaceDecOrder = std::vector<NamespaceRef>;
 template<typename T>
 struct ReversView
 {
@@ -114,9 +115,20 @@ class DeclContainer: public D, public Container
 
 class Namespace: public DeclContainer<Decl>
 {
+    std::string path;
     public:
         Namespace(std::string const& name);
         virtual DeclType declType() const override                                          {return DeclType::Namespace;}
+
+        void setPath(std::string p)
+        {
+            path = std::move(p);
+            path += contName();
+        }
+        std::string const& fullPathName() const
+        {
+            return path;
+        }
 };
 
 class Statement;

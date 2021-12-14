@@ -11,18 +11,20 @@ namespace ThorsAnvil::Anvil::Ice
 
 class AssembleyGenerator
 {
-    AllScopeAndName&    nameInfo;
+    NamespaceDecOrder&  namespaceDecOrder;
     Scope&              globalScope;
     std::ostream&       error;
 
     public:
-        AssembleyGenerator(AllScopeAndName& nameInfo, Scope& scope, std::ostream& error);
+        AssembleyGenerator(NamespaceDecOrder& namespaceDecOrder, Scope& scope, std::ostream& error);
         void generate(std::string const& entryPoint, std::ostream& output);
 
     private:
         void generate_InitStatement(std::ostream& output);
         void generate_CallsToConstructAllNameSpace(std::ostream& output);
         void generate_CallToEntryPoint(std::string const& entryPoint, std::ostream& output);
+        void generate_CallsToDestructAllNameSpace(std::ostream& output);
+        void generate_EndMainSection(std::ostream& output);
         void generate_AllNSConstructors(std::ostream& output);
 
 };

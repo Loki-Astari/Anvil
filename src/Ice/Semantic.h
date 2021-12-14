@@ -22,11 +22,11 @@ class Semantic: public Action
     std::size_t             anonNameCount;
     Scope&                  globalScope;
     Storage&                storage;
-    AllScopeAndName&        nameInfo;
+    NamespaceDecOrder&      namespaceDecOrder;
     std::vector<ScopeRef>   currentScope;
 
     public:
-        Semantic(Lexer& lexer, AllScopeAndName& nameInfo, Scope& globalScope, Storage& storage, std::ostream& output = std::cout);
+        Semantic(Lexer& lexer, NamespaceDecOrder& namespaceDecOrder, Scope& globalScope, Storage& storage, std::ostream& output = std::cout);
         virtual ~Semantic() override;
 
         void display(std::ostream& stream);
@@ -73,7 +73,7 @@ class Semantic: public Action
         Decl& searchScopeForPath(IdentifierList const& objectId) const;
         Decl* searchScopeForIdentifier(std::string const& path, std::string& partialMatch) const;
         std::string  generateAnonNameString();
-        std::string  getCurrentScopeFullName();
+        std::string  getCurrentScopeFullName() const;
 
         template<typename T>
         T& getScopeSymbol(Scope& scope, IdentifierList const& identifier);

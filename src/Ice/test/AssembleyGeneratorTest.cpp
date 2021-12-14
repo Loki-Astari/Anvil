@@ -9,21 +9,21 @@ using namespace ThorsAnvil::Anvil::Ice;
 
 struct AssembleyGeneratorCompiler
 {
-    AllScopeAndName     nameInfo;
+    NamespaceDecOrder   namespaceDecOrder;
     Namespace           globalScope;
     std::stringstream   error;
     AssembleyGenerator  generator;
 
     AssembleyGeneratorCompiler()
         : globalScope("")
-        , generator(nameInfo, globalScope, error)
+        , generator(namespaceDecOrder, globalScope, error)
     {}
 
     bool compile(std::istream& input)
     {
         Lexer           lexer(input, error);
         Storage         storage;
-        Semantic        semanticAnalyser(lexer, nameInfo, globalScope, storage, error);
+        Semantic        semanticAnalyser(lexer, namespaceDecOrder, globalScope, storage, error);
         Parser          parser(lexer, semanticAnalyser);
 
         return parser.parse();
@@ -37,6 +37,9 @@ struct AssembleyGeneratorCompiler
 
 bool getNextCommandLine(std::istream& stream, std::string& line)
 {
+    // Find a line with meaning.
+    // i.e. ignore lines that are comments and load the 
+    // first line that is not a  comment.
     while (std::getline(stream, line))
     {
         if (line.size() > 2 && line[0] == '/' && line[1] == '/')
@@ -48,24 +51,18 @@ bool getNextCommandLine(std::istream& stream, std::string& line)
     return static_cast<bool>(stream);
 }
 
-TEST(AssembleyGenerator, Std)
+TEST(AssembleyGeneratorTest, Std)
 {
     AssembleyGeneratorCompiler      compiler;
     std::istringstream              input(R"(
 
 namespace Std
 {
-   class Integer
-   {
-   }
-   class String
-   {
-   }
 }
     )");
 
     ASSERT_TRUE(compiler.compile(input));
-    EXPECT_EQ(compiler.nameInfo.size(), 1);
+    EXPECT_EQ(compiler.namespaceDecOrder.size(), 1);
 
     std::stringstream   output;
     compiler.generate(output);
@@ -76,4 +73,30 @@ namespace Std
     bool readOK = getNextCommandLine(fullOutput, line);
     ASSERT_TRUE(readOK);
     EXPECT_EQ(line, "CMD Init 0 10000");
+}
+
+TEST(AssembleyGeneratorTest, Sys)
+{
+    AssembleyGeneratorCompiler      compiler;
+    std::istringstream              input(R"(
+
+namespace Std
+{
+    class Console {}
+    console: Console;
+}
+    )");
+
+    ASSERT_TRUE(compiler.compile(input));
+    EXPECT_EQ(compiler.namespaceDecOrder.size(), 1);
+
+    std::stringstream   output;
+    compiler.generate(output);
+
+    std::stringstream fullOutput(std::move(output.str()));
+    std::string       line;
+
+    bool readOK = getNextCommandLine(fullOutput, line);
+    ASSERT_TRUE(readOK);
+    EXPECT_EQ(line, "CMD Init 1 10000");
 }
