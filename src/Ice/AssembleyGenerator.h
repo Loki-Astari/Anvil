@@ -25,7 +25,8 @@ class AssembleyGenerator
         void generate_CallToEntryPoint(std::string const& entryPoint, std::ostream& output);
         void generate_CallsToDestructAllNameSpace(std::ostream& output);
         void generate_EndMainSection(std::ostream& output);
-        void generate_AllNSConstructors(std::ostream& output);
+        void generate_AllNSCode(std::ostream& output);
+        void generate_SpecificNSCodeBlock(std::ostream& output, Namespace& ns, std::string const& name);
 
 };
 

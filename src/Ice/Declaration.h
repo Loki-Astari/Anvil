@@ -15,6 +15,34 @@
 namespace ThorsAnvil::Anvil::Ice
 {
 
+    // View
+    enum ViewType {Forward, Reverse};
+
+    template<ViewType V, typename I>
+    struct View
+    {
+        I beginRange;
+        I endRange;
+        using ForwardI = I;
+        using ReverseI = std::reverse_iterator<I>;
+        auto begin() {if constexpr (V == Forward) {return beginRange;} else {return ReverseI(endRange);}}
+        auto end()   {if constexpr (V == Forward) {return endRange;} else {return ReverseI(beginRange);}}
+    };
+
+    // Helper function to make view without need to know type.
+    template<ViewType V, typename I>
+    View<V, I> make_View(I begin, I end) {return View<V, I>{begin, end};}
+
+    // Helper function to make view without need to know type.
+    template<ViewType V, typename C>
+    std::enable_if_t<std::is_const_v<C>, View<V, typename C::const_iterator>>
+    make_View(C& c) {return View<V, typename C::const_iterator>{std::cbegin(c), std::cend(c)};}
+
+    template<ViewType V, typename C>
+    std::enable_if_t<!std::is_const_v<C>, View<V, typename C::iterator>>
+    make_View(C& c) {return View<V, typename C::iterator>{std::begin(c), std::end(c)};}
+
+
 enum class DeclType {Void, Namespace, Class, Array, Map, Func, Object, CodeBlock, Statement};
 
 // Console::print("Hello World");
@@ -131,30 +159,7 @@ class Namespace: public DeclContainer<Decl>
         }
 };
 
-class Statement;
-class CodeBlock: public DeclContainer<Decl>
-{
-    std::vector<std::unique_ptr<Statement>>     code;
-    std::vector<std::unique_ptr<Statement>>     codeBack;
-    public:
-        using DeclContainer<Decl>::DeclContainer;
-        virtual DeclType declType() const override                                          {return DeclType::CodeBlock;}
-
-        template<bool B, typename T, typename... Args>
-        Statement& addCode(Args&&... args)
-        {
-            if constexpr (B)
-            {
-                code.emplace_back(std::make_unique<T>(std::forward<Args>(args)...));
-                return *code.back();
-            }
-            else
-            {
-                codeBack.emplace_back(std::make_unique<T>(std::forward<Args>(args)...));
-                return *codeBack.back();
-            }
-        }
-};
+class CodeBlock; // : public DeclContainer<Decl>
 
 class Type: public Decl
 {
@@ -278,9 +283,46 @@ class Statement
 {
     public:
         virtual ~Statement() = 0;
+        virtual void generateAssembley(std::ostream& output) const = 0;
 };
 
 inline Statement::~Statement() {}
+
+class CodeBlock: public DeclContainer<Decl>, public Statement
+{
+    std::vector<std::unique_ptr<Statement>>     code;
+    std::vector<std::unique_ptr<Statement>>     codeBack;
+    public:
+        using DeclContainer<Decl>::DeclContainer;
+        virtual DeclType declType() const override                                          {return DeclType::CodeBlock;}
+
+        template<bool B, typename T, typename... Args>
+        Statement& addCode(Args&&... args)
+        {
+            if constexpr (B)
+            {
+                code.emplace_back(std::make_unique<T>(std::forward<Args>(args)...));
+                return *code.back();
+            }
+            else
+            {
+                codeBack.emplace_back(std::make_unique<T>(std::forward<Args>(args)...));
+                return *codeBack.back();
+            }
+        }
+        virtual void generateAssembley(std::ostream& output) const override
+        {
+            for (auto& c: make_View<Forward>(code))
+            {
+                c->generateAssembley(output);
+            }
+            for (auto& c: make_View<Reverse>(codeBack))
+            {
+                c->generateAssembley(output);
+            }
+        }
+};
+
 
 class StatExprFunctionCall: public Statement
 {
@@ -291,6 +333,10 @@ class StatExprFunctionCall: public Statement
             : object(std::move(object))
             , objectList(std::move(objectList))
         {}
+        virtual void generateAssembley(std::ostream& output) const
+        {
+            output << "SHOULD ADD CALL INSTRUCTIONS HERE\n";
+        }
 };
 
 

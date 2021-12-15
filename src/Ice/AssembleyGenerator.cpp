@@ -8,30 +8,6 @@
 
 using namespace ThorsAnvil::Anvil::Ice;
 
-namespace
-{
-    enum ViewType {Forward, Reverse};
-
-    template<ViewType V, typename I>
-    struct View
-    {
-        I beginRange;
-        I endRange;
-        using ForwardI = I;
-        using ReverseI = std::reverse_iterator<I>;
-        auto begin() {if constexpr (V == Forward) {return beginRange;} else {return ReverseI(endRange);}}
-        auto end()   {if constexpr (V == Forward) {return endRange;} else {return ReverseI(beginRange);}}
-    };
-
-    // Helper function to make view without need to know type.
-    template<ViewType V, typename I>
-    View<V, I> make_View(I begin, I end) {return View<V, I>{begin, end};}
-
-    // Helper function to make view without need to know type.
-    template<ViewType V, typename C>
-    View<V, typename C::iterator> make_View(C& c) {return View<V, typename C::iterator>{std::begin(c), std::end(c)};}
-}
-
 AssembleyGenerator::AssembleyGenerator(NamespaceDecOrder& namespaceDecOrder, Scope& scope, std::ostream& error)
     : namespaceDecOrder(namespaceDecOrder)
     , globalScope(scope)
@@ -45,7 +21,7 @@ void AssembleyGenerator::generate(std::string const& entryPoint, std::ostream& o
     generate_CallToEntryPoint(entryPoint, output);
     generate_CallsToDestructAllNameSpace(output);
     generate_EndMainSection(output);
-    generate_AllNSConstructors(output);
+    generate_AllNSCode(output);
 }
 
 void AssembleyGenerator::generate_InitStatement(std::ostream& output)
@@ -113,6 +89,23 @@ void AssembleyGenerator::generate_EndMainSection(std::ostream& output)
             << "\n";
 }
 
-void AssembleyGenerator::generate_AllNSConstructors(std::ostream& /*output*/)
+void AssembleyGenerator::generate_AllNSCode(std::ostream& output)
 {
+    for (auto const& nsref: make_View<Forward>(namespaceDecOrder))
+    {
+        Namespace&  ns = nsref.get();
+        generate_SpecificNSCodeBlock(output, ns, "$constructor");
+        generate_SpecificNSCodeBlock(output, ns, "$destructor");
+    }
+}
+
+void AssembleyGenerator::generate_SpecificNSCodeBlock(std::ostream& output, Namespace& ns, std::string const& name)
+{
+    auto find = ns.get(name + "$Code");
+    if (!find.first)
+    {
+        throw std::runtime_error("Expected there to be a " + name + " in a Namespace");
+    }
+    CodeBlock& code = dynamic_cast<CodeBlock&>(*find.second->second);
+    code.generateAssembley(output);
 }
