@@ -1,7 +1,6 @@
 #include <gtest/gtest.h>
 
 #include "AssembleyGenerator.h"
-#include "Declaration.h"
 #include "Semantic.h"
 #include "test/Utility.h"
 

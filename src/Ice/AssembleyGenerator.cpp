@@ -99,13 +99,11 @@ void AssembleyGenerator::generate_AllNSCode(std::ostream& output)
     }
 }
 
-void AssembleyGenerator::generate_SpecificNSCodeBlock(std::ostream& output, Namespace& ns, std::string const& name)
+void AssembleyGenerator::generate_SpecificNSCodeBlock(std::ostream& /*output*/, Namespace& ns, std::string const& name)
 {
     auto find = ns.get(name + "$Code");
     if (!find.first)
     {
         throw std::runtime_error("Expected there to be a " + name + " in a Namespace");
     }
-    CodeBlock& code = dynamic_cast<CodeBlock&>(*find.second->second);
-    code.generateAssembley(output);
 }

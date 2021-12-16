@@ -2,7 +2,9 @@
 #define THORSANVIL_ANVIL_ICE_STORAGE_H
 
 #include "Action.h"     // Just to get Int
-#include "Declaration.h"
+#include "Declaration/Types.h"
+#include "Declaration/Objects.h"
+#include "Declaration/Container.h"
 
 #include <list>
 #include <vector>

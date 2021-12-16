@@ -1,7 +1,7 @@
 #ifndef THORSANVIL_ANVIL_ICE_ICECOMPILER_H
 #define THORSANVIL_ANVIL_ICE_ICECOMPILER_H
 
-#include "Declaration.h"
+#include "Declaration/Namespace.h"
 #include "Storage.h"
 #include <string>
 #include <iostream>

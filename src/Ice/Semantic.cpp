@@ -1,7 +1,10 @@
 #include "Semantic.h"
+#include "Declaration/Inline.h"
+
 #include <string>
 #include <list>
 #include <cctype>
+#include <sstream>
 
 using namespace ThorsAnvil::Anvil::Ice;
 

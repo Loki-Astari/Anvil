@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include "Semantic.h"
+#include "Declaration/StandardScope.h"
 #include "test/Utility.h"
 #include "test/SemanticTest.h"
 

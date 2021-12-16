@@ -1,6 +1,12 @@
 #include <gtest/gtest.h>
 
-#include "Declaration.h"
+#include "Declaration/StandardScope.h"
+#include "Declaration/Namespace.h"
+#include "Declaration/Types.h"
+#include "Declaration/Objects.h"
+#include "Declaration/Code.h"
+#include "Declaration/Inline.h"
+
 #include "test/Utility.h"
 
 using namespace ThorsAnvil::Anvil::Ice;

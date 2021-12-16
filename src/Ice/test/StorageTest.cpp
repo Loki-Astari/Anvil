@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 
 #include "Storage.h"
-#include "Declaration.h"
+#include "Declaration/Namespace.h"
 #include "test/Utility.h"
 
 using namespace ThorsAnvil::Anvil::Ice;

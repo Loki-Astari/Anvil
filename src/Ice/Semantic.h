@@ -4,7 +4,8 @@
 #include "Action.h"
 #include "Lexer.h"
 #include "Parser.h"
-#include "Declaration.h"
+#include "Declaration/Namespace.h"
+#include "Declaration/Code.h"
 #include "Storage.h"
 
 #include <fstream>
