@@ -3,6 +3,7 @@
 #include "Lexer.h"
 #include "Semantic.h"
 #include "Parser.h"
+#include "Declaration/Inline.h"
 
 #include <numeric>
 
