@@ -244,14 +244,14 @@ Int Semantic::paramListAdd(Int pl, Int type)
 Int Semantic::objectListCreate()
 {
     ScopePrinter    printer("objectListCreate");
-    return storage.add(ObjectIdList{});
+    return storage.add(ExpressionList{});
 }
 
 Int Semantic::objectListAdd(Int ol, Int object)
 {
-    ScopePrinter        printer("objectListAdd");
-    SAccessObjectIdList objectList(storage, ol);
-    SAccessExpression   objectRef(storage, object);
+    ScopePrinter            printer("objectListAdd");
+    SAccessExpressionList   objectList(storage, ol);
+    SAccessExpression       objectRef(storage, object);
 
     objectList.get().emplace_back(std::move(objectRef));
 
@@ -547,18 +547,18 @@ Int Semantic::scopeAddObject(Int name, Int type, Int init)
 
     if (typeInfo.get().declType() == DeclType::Class)
     {
-        ObjectIdList empty;
-        std::reference_wrapper<ObjectIdList> initList(empty);
+        ExpressionList empty;
+        std::reference_wrapper<ExpressionList> initList(empty);
 
         if (init != 0) // Default
         {
-            SAccessObjectIdList   initInfo(storage, init);
+            SAccessExpressionList   initInfo(storage, init);
             initList = initInfo.get();
         }
         ObjectId objectInit(generateAnonNameString(), object, IdentifierList{"$constructor"}, getMemberType(object, IdentifierList{"$constructor"}));
         ObjectId objectDest(generateAnonNameString(), object, IdentifierList{"$destructor"},  getMemberType(object, IdentifierList{"$destructor"}));
         addCodeToCurrentScope<true, StatExprFunctionCall>(objectInit, std::move(initList.get()));
-        addCodeToCurrentScope<false,StatExprFunctionCall>(objectDest, ObjectIdList{});
+        addCodeToCurrentScope<false,StatExprFunctionCall>(objectDest, ExpressionList{});
     }
     // TODO Init other types.
 
@@ -620,7 +620,7 @@ Int Semantic::addLiteralString()
     return storage.add(ExpressionRef{literalObject});
 }
 
-void Semantic::codeAddFunctionCallError(char const* base, ObjectIdList const& parameters, ParamList const& paramTypeList)
+void Semantic::codeAddFunctionCallError(char const* base, ExpressionList const& parameters, ParamList const& paramTypeList)
 {
     std::stringstream errorMsg;
 
@@ -641,9 +641,9 @@ void Semantic::codeAddFunctionCallError(char const* base, ObjectIdList const& pa
 
 Int Semantic::codeAddFunctionCall(Int obj, Int pl)
 {
-    ScopePrinter        printer("codeAddFunctionCall");
-    SAccessExpression   object(storage, obj);
-    SAccessObjectIdList param(storage, pl);
+    ScopePrinter            printer("codeAddFunctionCall");
+    SAccessExpression       object(storage, obj);
+    SAccessExpressionList   param(storage, pl);
 
     // Compare the types in the parameter list to the expected types for the function call.
     Type const& funcCallType = object.get().getType();

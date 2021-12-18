@@ -71,7 +71,7 @@ class Semantic: public Action
 
         virtual Int codeAddFunctionCall(Int obj, Int param)         override;
     private:
-        void codeAddFunctionCallError(char const* base, ObjectIdList const& parameters, ParamList const& paramTypeList);
+        void codeAddFunctionCallError(char const* base, ExpressionList const& parameters, ParamList const& paramTypeList);
         Type const& getMemberType(Object& from, IdentifierList const& memberName) const;
         Decl& searchScopeForPath(IdentifierList const& objectId) const;
         Decl* searchScopeForIdentifier(std::string const& path, std::string& partialMatch) const;

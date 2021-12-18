@@ -14,7 +14,7 @@
 namespace ThorsAnvil::Anvil::Ice
 {
 
-using Data = std::variant<Int, TypeRef, ObjectRef, DeclRef, ScopeRef, ExpressionRef, ParamList, ObjectIdList, IdentifierList, std::string>;
+using Data = std::variant<Int, TypeRef, ObjectRef, DeclRef, ScopeRef, ExpressionRef, ParamList, ExpressionList, IdentifierList, std::string>;
 
 template<typename T>
 class StorageAccess;
@@ -149,7 +149,7 @@ using SAccessDecl           = StorageAccessRef<Decl>;
 using SAccessScope          = StorageAccessRef<Scope>;
 using SAccessExpression     = StorageAccessRef<Expression>;
 using SAccessParamList      = StorageAccessDirect<ParamList>;
-using SAccessObjectIdList   = StorageAccessDirect<ObjectIdList>;
+using SAccessExpressionList = StorageAccessDirect<ExpressionList>;
 using SAccessIdentifierList = StorageAccessDirect<IdentifierList>;
 using SAccessString         = StorageAccessDirect<std::string>;
 

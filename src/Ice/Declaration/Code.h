@@ -62,9 +62,9 @@ class CodeBlock: public DeclContainer<Decl>, public Statement
 class StatExprFunctionCall: public Statement
 {
     Expression const&   object;
-    ObjectIdList        objectList;
+    ExpressionList      objectList;
     public:
-        StatExprFunctionCall(Expression const& object, ObjectIdList&& objectList)
+        StatExprFunctionCall(Expression const& object, ExpressionList&& objectList)
             : object(object)
             , objectList(std::move(objectList))
         {}

@@ -257,10 +257,10 @@ TEST(StorageTest, StoreObjectList)
 
     auto action = [&]()
     {
-        ObjectIdList   paramList;
+        ExpressionList   paramList;
         Int index = storage.add(paramList);
 
-        SAccessObjectIdList  value(storage, index);
+        SAccessExpressionList  value(storage, index);
     };
     EXPECT_NO_THROW(
         action();

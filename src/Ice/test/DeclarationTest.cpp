@@ -132,7 +132,7 @@ TEST(DeclarationsTest, DeclCodeBlockAddCodeInitObject)
     CodeBlock       codeBlock("Name");
     Class           type("Type");
     Object          object("Object",type);
-    ObjectIdList    param;
+    ExpressionList  param;
     codeBlock.addCode<true, StatExprFunctionCall>(ObjectId("Name", object, IdentifierList{}, type), std::move(param));
 }
 
@@ -141,7 +141,7 @@ TEST(DeclarationsTest, DeclCodeBlockAddCodeFunctionCall)
     CodeBlock       codeBlock("Name");
     Class           type("Type");
     Object          object("Object",type);
-    ObjectIdList    param;
+    ExpressionList  param;
     codeBlock.addCode<true, StatExprFunctionCall>(ObjectId("Name", object, IdentifierList{}, type), std::move(param));
 }
 

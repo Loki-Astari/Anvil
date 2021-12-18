@@ -24,7 +24,6 @@ class Expression: public Decl
         Type const& getType() const                 {return runtimeObjectType;}
 };
 
-using ExpressionRef = std::reference_wrapper<Expression>;
 
 class ObjectId: public Expression
 {
@@ -51,8 +50,8 @@ class Literal: public Expression
         {}
 };
 
-using ObjectIdRef       = std::reference_wrapper<Expression>;
-using ObjectIdList      = std::list<ObjectIdRef>;
+using ExpressionRef     = std::reference_wrapper<Expression>;
+using ExpressionList    = std::list<ExpressionRef>;
 
 }
 
