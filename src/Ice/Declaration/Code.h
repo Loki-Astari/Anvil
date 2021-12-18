@@ -17,6 +17,7 @@ class Statement
 {
     public:
         virtual ~Statement() = 0;
+        virtual void generateAssembley(std::ostream& output) = 0;
 };
 
 inline Statement::~Statement() {}
@@ -43,6 +44,18 @@ class CodeBlock: public DeclContainer<Decl>, public Statement
                 return *codeBack.back();
             }
         }
+
+        virtual void generateAssembley(std::ostream& output) override
+        {
+            for (auto const& stat: make_View<Forward>(code))
+            {
+                stat->generateAssembley(output);
+            }
+            for (auto const& stat: make_View<Reverse>(codeBack))
+            {
+                stat->generateAssembley(output);
+            }
+        }
 };
 
 
@@ -55,6 +68,10 @@ class StatExprFunctionCall: public Statement
             : object(object)
             , objectList(std::move(objectList))
         {}
+        virtual void generateAssembley(std::ostream& output) override
+        {
+            output << "// TODO Generate function call\n";
+        }
 };
 
 }

@@ -88,7 +88,7 @@ std::string Semantic::getCurrentScopeFullName() const
     for (auto& scopeRefForward: currentScope)
     {
         auto& scopeForward = scopeRefForward.get();
-        result += (scopeForward.contName() + "::");
+        result += (scopeForward.contName() + "-");
     }
 
     return result;

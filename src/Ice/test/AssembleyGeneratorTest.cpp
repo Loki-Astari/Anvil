@@ -92,6 +92,8 @@ namespace Std
     std::stringstream   output;
     compiler.generate(output);
 
+    std::cerr << ">" << output.str() << "<\n\n";
+
     std::stringstream fullOutput(std::move(output.str()));
     std::string       line;
 
