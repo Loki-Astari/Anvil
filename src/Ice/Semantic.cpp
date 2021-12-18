@@ -203,8 +203,11 @@ Int Semantic::objectIDCreate(Int il_ns, Int il_ob)
     Decl&       findDecl    = searchScopeForPath(namespaceList.get());
     Object&     object      = dynamic_cast<Object&>(findDecl);
     Type const& memberType  = getMemberType(object, objectList.get());
+    Scope&      topScope    = currentScope.back().get();
 
-    return storage.add(ObjectId(object, std::move(objectList.get()), memberType));
+    ObjectId&   objectId    = topScope.add<ObjectId>(generateAnonNameString(), object, std::move(objectList.get()), memberType);
+
+    return storage.add(ExpressionRef{objectId});
 }
 
 Int Semantic::identifierListCreate()
@@ -248,7 +251,7 @@ Int Semantic::objectListAdd(Int ol, Int object)
 {
     ScopePrinter        printer("objectListAdd");
     SAccessObjectIdList objectList(storage, ol);
-    SAccessObjectId     objectRef(storage, object);
+    SAccessExpression   objectRef(storage, object);
 
     objectList.get().emplace_back(std::move(objectRef));
 
@@ -410,7 +413,7 @@ Int Semantic::findTypeInScope(Int fp)
 Int Semantic::findObjectInScope(Int fp)
 {
     ScopePrinter            printer("findObjectInScope");
-    SAccessObjectId         objectId(storage, fp);
+    SAccessExpression       objectId(storage, fp);
 
     if (objectType.declType() != DeclType::Func)
     {
@@ -552,8 +555,8 @@ Int Semantic::scopeAddObject(Int name, Int type, Int init)
             SAccessObjectIdList   initInfo(storage, init);
             initList = initInfo.get();
         }
-        ObjectId objectInit(object, IdentifierList{"$constructor"}, getMemberType(object, IdentifierList{"$constructor"}));
-        ObjectId objectDest(object, IdentifierList{"$destructor"},  getMemberType(object, IdentifierList{"$destructor"}));
+        ObjectId objectInit(generateAnonNameString(), object, IdentifierList{"$constructor"}, getMemberType(object, IdentifierList{"$constructor"}));
+        ObjectId objectDest(generateAnonNameString(), object, IdentifierList{"$destructor"},  getMemberType(object, IdentifierList{"$destructor"}));
         addCodeToCurrentScope<true, StatExprFunctionCall>(objectInit, std::move(initList.get()));
         addCodeToCurrentScope<false,StatExprFunctionCall>(objectDest, ObjectIdList{});
     }
@@ -610,13 +613,11 @@ Int Semantic::scopeClose(Int oldScopeId)
 Int Semantic::addLiteralString()
 {
     ScopePrinter    printer("addLiteralString");
-    std::string     objectName = generateAnonNameString();
-    Type&           stringType = getScopeSymbol<Type>(globalScope, {"Std", "String"});
+    Type&           stringType      = getScopeSymbol<Type>(globalScope, {"Std", "String"});
+    Scope&          topScope        = currentScope.back().get();
+    Expression&     literalObject   = topScope.add<Literal<std::string>>(generateAnonNameString(), stringType, std::string(lexer.lexem()));
 
-    Scope&          literalScope = getScopeSymbol<Namespace>(globalScope, {"$Literal"});
-    Object&         literalObject = literalScope.add<Literal<std::string>>(std::move(objectName), stringType, std::string(lexer.lexem()));
-
-    return storage.add(ObjectId{literalObject, {}, stringType});
+    return storage.add(ExpressionRef{literalObject});
 }
 
 void Semantic::codeAddFunctionCallError(char const* base, ObjectIdList const& parameters, ParamList const& paramTypeList)
@@ -641,7 +642,7 @@ void Semantic::codeAddFunctionCallError(char const* base, ObjectIdList const& pa
 Int Semantic::codeAddFunctionCall(Int obj, Int pl)
 {
     ScopePrinter        printer("codeAddFunctionCall");
-    SAccessObjectId     object(storage, obj);
+    SAccessExpression   object(storage, obj);
     SAccessObjectIdList param(storage, pl);
 
     // Compare the types in the parameter list to the expected types for the function call.

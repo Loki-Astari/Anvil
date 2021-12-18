@@ -5,6 +5,7 @@
 #include "Declaration/Types.h"
 #include "Declaration/Objects.h"
 #include "Declaration/Container.h"
+#include "Declaration/Expression.h"
 
 #include <list>
 #include <vector>
@@ -13,7 +14,7 @@
 namespace ThorsAnvil::Anvil::Ice
 {
 
-using Data = std::variant<Int, TypeRef, ObjectRef, DeclRef, ScopeRef, ParamList, ObjectIdList, IdentifierList, ObjectId, std::string>;
+using Data = std::variant<Int, TypeRef, ObjectRef, DeclRef, ScopeRef, ExpressionRef, ParamList, ObjectIdList, IdentifierList, std::string>;
 
 template<typename T>
 class StorageAccess;
@@ -146,10 +147,10 @@ using SAccessType           = StorageAccessRef<Type>;
 using SAccessObject         = StorageAccessRef<Object>;
 using SAccessDecl           = StorageAccessRef<Decl>;
 using SAccessScope          = StorageAccessRef<Scope>;
+using SAccessExpression     = StorageAccessRef<Expression>;
 using SAccessParamList      = StorageAccessDirect<ParamList>;
 using SAccessObjectIdList   = StorageAccessDirect<ObjectIdList>;
 using SAccessIdentifierList = StorageAccessDirect<IdentifierList>;
-using SAccessObjectId       = StorageAccessDirect<ObjectId>;
 using SAccessString         = StorageAccessDirect<std::string>;
 
 }

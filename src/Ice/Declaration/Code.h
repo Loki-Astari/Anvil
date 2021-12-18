@@ -3,8 +3,8 @@
 
 #include "../Utility/View.h"
 #include "Decl.h"
-#include "Objects.h"
 #include "Container.h"
+#include "Expression.h"
 
 #include <vector>
 #include <memory>
@@ -48,11 +48,11 @@ class CodeBlock: public DeclContainer<Decl>, public Statement
 
 class StatExprFunctionCall: public Statement
 {
-    ObjectId        object;
-    ObjectIdList    objectList;
+    Expression const&   object;
+    ObjectIdList        objectList;
     public:
-        StatExprFunctionCall(ObjectId const& object, ObjectIdList&& objectList)
-            : object(std::move(object))
+        StatExprFunctionCall(Expression const& object, ObjectIdList&& objectList)
+            : object(object)
             , objectList(std::move(objectList))
         {}
 };

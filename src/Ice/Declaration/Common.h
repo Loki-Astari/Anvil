@@ -9,7 +9,7 @@
 namespace ThorsAnvil::Anvil::Ice
 {
 
-enum class DeclType {Void, Namespace, Class, Array, Map, Func, Object, CodeBlock, Statement};
+enum class DeclType {Void, Namespace, Class, Array, Map, Func, Object, CodeBlock, Statement, Expression};
 
 class Decl;
 class Type;

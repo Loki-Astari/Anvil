@@ -275,10 +275,11 @@ TEST(StorageTest, ObjectId)
     {
         Class      type("T");
         Object     object("M", type);
-        ObjectId   objectId(object, {}, type);
-        Int index = storage.add(objectId);
+        ObjectId   objectId("Name", object, {}, type);
+        Expression& e = objectId;
+        Int index = storage.add(ExpressionRef(e));
 
-        SAccessObjectId  value(storage, index);
+        SAccessExpression  value(storage, index);
     };
     EXPECT_NO_THROW(
         action();

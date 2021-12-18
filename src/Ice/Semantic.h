@@ -4,6 +4,8 @@
 #include "Action.h"
 #include "Lexer.h"
 #include "Parser.h"
+#include "Declaration/Objects.h"
+#include "Declaration/Expression.h"
 #include "Declaration/Namespace.h"
 #include "Declaration/Code.h"
 #include "Storage.h"
@@ -92,7 +94,7 @@ class Semantic: public Action
             }
         }
         template<bool B, typename T, typename... Args>
-        void addCodeToCurrentScope(ObjectId const& objectId, Args&&... args)
+        void addCodeToCurrentScope(Expression const& objectId, Args&&... args)
         {
             Scope&      topScope = currentScope.back().get();
             CodeBlock*  codeBlock = dynamic_cast<CodeBlock*>(&topScope);

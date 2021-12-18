@@ -106,15 +106,8 @@ TEST(DeclarationsTest, DeclLiteral)
     Literal<std::string>   literal("Name", type, std::string("Hi There"));
 
     EXPECT_EQ(literal.declName(), "Name");
-    EXPECT_EQ(literal.declType(), DeclType::Object);
+    EXPECT_EQ(literal.declType(), DeclType::Expression);
     EXPECT_EQ(&literal.getType(), dynamic_cast<Type*>(&type));
-
-    auto find1 = literal.find("Member");
-    ASSERT_TRUE(find1.first);
-    EXPECT_EQ(dynamic_cast<Class*>(find1.second->second.get()), &member);
-
-    auto find2 = literal.find("NotMember");
-    EXPECT_FALSE(find2.first);
 }
 
 TEST(DeclarationsTest, DeclCodeBlock)
@@ -140,7 +133,7 @@ TEST(DeclarationsTest, DeclCodeBlockAddCodeInitObject)
     Class           type("Type");
     Object          object("Object",type);
     ObjectIdList    param;
-    codeBlock.addCode<true, StatExprFunctionCall>(ObjectId(object, IdentifierList{}, type), std::move(param));
+    codeBlock.addCode<true, StatExprFunctionCall>(ObjectId("Name", object, IdentifierList{}, type), std::move(param));
 }
 
 TEST(DeclarationsTest, DeclCodeBlockAddCodeFunctionCall)
@@ -149,7 +142,7 @@ TEST(DeclarationsTest, DeclCodeBlockAddCodeFunctionCall)
     Class           type("Type");
     Object          object("Object",type);
     ObjectIdList    param;
-    codeBlock.addCode<true, StatExprFunctionCall>(ObjectId(object, IdentifierList{}, type), std::move(param));
+    codeBlock.addCode<true, StatExprFunctionCall>(ObjectId("Name", object, IdentifierList{}, type), std::move(param));
 }
 
 
