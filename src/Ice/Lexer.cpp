@@ -4,12 +4,12 @@ using namespace ThorsAnvil::Anvil::Ice;
 
 Lexer::Lexer(std::istream& input, std::ostream& output)
     : yyFlexLexer(&input, &output)
+    , started(false)
 {}
 
 std::string_view Lexer::lexem() const
 {
-    int                 length = YYLeng();
-    length = length > 0 ? length : 0;
+    int length = started ? YYLeng() : 0;
     std::string_view    tokenView(YYText(), length);
     while (tokenView.size() > 0 && tokenView[tokenView.size() - 1] == '\0')
     {

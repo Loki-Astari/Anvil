@@ -337,7 +337,7 @@ NotObjectIdentifier:        NameSpaceIdentifier
 
 int yylex(void*, Lexer& lexer, Action& action)
 {
-    return lexer.yylexWithAction(action);
+    return lexer.yylexWithActionGo(action);
 }
 
 void yy::Parser::error(yy::location const& /*location*/, std::string const& msg)
