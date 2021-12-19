@@ -13,8 +13,29 @@ Address Space
     within the same "Data Frame", but no assumptions can be made about objects in different
     "Data Frames".
 
-    A "Data Frame" represents a set of data objects that can be accessed vi a Data Address Register
-    plus (or minus) an offset. It can represent an "Object" a "Stack Frame" or "Global Area".
+    Several registers are used to point to different "Data Frames"
+        * Global:       This registers points to the beginning of the global area.
+        *               The Ice compiler puts all namespace objects in the Global Data Frame.
+        *               The size of the Global Data Frame is specified by the CMD Init instruction.
+        *               If you have not used this instruction the default size is 0
+        *
+        * Frame Pointer:This register points to the beginning of the current data frame.
+        *               This is used to store local variables.
+        *               If you execute a JUMP Method/Call/Ret this register may change.
+        *
+        * Stack Pointer:This register points at the end of the current data frame.
+        *               Like C++ one past the end.
+        *               If the DataFrame is expanded with a new variables this will be increased.
+        *
+        *               Note: The available space that Stack Pointer can expand into is defined
+        *                     by the CMD Init instruction. The default size is 1000
+        *
+        * This:         This register points at the data frame of the current object you are
+        *               working on. Objects are created with a specified size and this should
+        *               be built into the code (there is no way to query this at runtime).
+        *               Objects are created with ADDR LML <AddrReg> = DataFrame <Size>
+        *
+        * Extra:        ?
 
 Registers
 ---------
@@ -22,7 +43,7 @@ There is a "PC" register that points at an address in code space.
 
     PC  Register:
 
-There is a 3 bit flag register.
+There is a 3 bit "flag" register.
 Any operation on a data space memory location to an Integer can affect the conditions of the flags.
     eg. SET or arithmetic operation
 A code instruction that does a comparison "CMP" has the effect of doing LHS - RHS the result of
@@ -55,26 +76,19 @@ Any conditional instructions has a 4 bit FFFF section of the instruction.
                             //  }
     JUMP JP REL 123         // Unconditional Jump FFFF = 0000
 
-There are six Address Registers (16 bit) that point at locations in a "Data Frame" (data space).
+There are eight "Address" Registers (16 bit) that point at locations in a "Data Frame" (data space).
 
     Global
     Frame Pointer
-    This
-    ?
-
     Stack Pointer
+    This
+
+    Extra
     Expr-1
     Expr-2
     Expr-3
 
-There are zero data registers.
-
-The "Frame Pointer" points at the first element in the current "Stack Frame" the "Stack Pointer"
-points at one past end of the current "Stack Frame" (ie it points at the location where we will
-put the next item in the frame). If "Frame Pointer" and "Stack Pointer" are the same then there
-are currently no active objects.
-
-
+There are zero "data" registers.
 
 
 Code Memory Locations
@@ -108,7 +122,74 @@ Invalid:
         0x2FFF          => Invalid Move
         0x3FFF          => Invalid Load
 
+Instructions:
+    CMD NoOp                                    Does nothing.
+    CMD Kill <Value>                            Stops the application with the return code value.
+    CMD Init <GlobalSize> <StackSize>           Initializes the VM with space for Global objects
+                                                and space for a stack which is used to store local
+                                                variables used in code.
+    CMD Import Load <reg1> <Name>               Load the C++ shared libary:  Anvil/lib<Name>.<plat-shared-lib-extension>
+                                                Store the resulting void* reference in the memory pointed at by reg1.
+    CMD Import GetSymbol <reg1> <reg2> <Name>   Get the address of the C++ function <Name> from the C++ shared library
+                                                loaded by `CMD Import Load' whose reference is stored in reg1 and store
+                                                the void* for this function in memory pointed at by reg2.
+    CMD Import Call <reg1> <reg2>               reg1 points at the memory location that contains the void* retrieved by
+                                                `CMD Import GetSymbol`. reg2 points at a DataFrame that holds the parameters.
+                                                as per the standard calling conventions.
+                                                This calls the C++ code.
+    CMD Import UnLoad <reg1>                    Unloads the shared library.
+    -----------------------------
+    JUMP JP <Condition> <Relative-22 bit>       Jump instructions happen conditionally on the "Flag" register
+                                                Jumps relative to the pc (after this instruction complete).
+    JUMP Call <Label>                           Note: Previous code is supposed to set up space for the
+                                                      return value and parameters used by the call.
+                                                      and subsequent code removes parameters and result
+                                                      from the Stack Frame.
+                                                Saves in the current Frame the registers.
+                                                    PC/Frame Pointer/This
+                                                Updates the registers:
+                                                    PC:             To the location of <Label>
+                                                    FramePointer:   To the location of new StackFrame.
+                                                    StackPointer:   = FramePointer.
+                                                    This:           Unchanged.
+    JUMP Method <Reg> <Method Offset>           Like the call instructions.
+                                                Note: The destination address is looked up by using "Reg"
+                                                      as a pointer to a data frame and "Method Offset" is
+                                                      the offset into the data frame that we have stored
+                                                      the 32 bit destination address.
+                                                Different from "Call"
+                                                    This:           is changed to the value of <Reg>
+    JUMP Ret <Condition>                        Ret like Jp instructions are conditional.
+                                                If Stack and Frame pointers are not equal it fails.
+                                                Updates the registers:
+                                                    PC:             to the location pre Call/Method
+                                                    This:           to the location pre Call
+                                                    Frame Pointer:  to the location pre Call
+                                                    Stack Pointer:  to the location pre Call
+    -------------------------------
+    ADDR LRR <Reg1> = <Reg2> + <offset>         Load Register from Register:
+                                                    Reg1 = Reg2 + offset.
+    ADDR LRP <Reg1> = <Reg2> + <offset>         Load Register from Pointer: 
+                                                    Reg1 = *(Reg2 + offset)
+                                                    The location pointed at must contain a
+                                                        Data Address or Data Frame
+    ADDR LMR <Reg1> = <Reg2> + <offset>         Load Memory from Register
+                                                    *Reg1 = Reg2 + offset
+    ADDR LMP <Reg1> = <Reg2> + <offset>         Load Memory from Pointer
+                                                    *Reg1 = *(Reg2 + offset)
+    ADDR LML <Reg1> = <Literal>                 Load Memory from Literal
+                                                    Literal = CodeAddress <Address of code>
+                                                            | DataFrame <FrameSize>
+                                                            | Int <IntValue>
+                                                            | String "<StringValue>"
+    ADDR INC <Reg> <Value>                      Reg = Reg + <Value>
+    ADDR DEC <Reg> <Value>                      Reg = Reg - <Value>
+    -------------------------------
 
+
+
+Bit Patterns of Instructions:
+=============================
 
     16 Bit: 4 bit cmd 12 bits that are command specific.
 

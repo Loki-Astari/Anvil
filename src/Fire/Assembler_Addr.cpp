@@ -121,6 +121,8 @@ int Assembler::assemble_AddrLiteralInt(std::istream& lineStream, std::string con
 
 int Assembler::assemble_AddrLiteralString(std::istream& lineStream, std::string const& /*regValue1*/)
 {
+    // TODO Does not implement Instructions.help description.
+    //      Fix the code or the description.
     instructions[0] |= Addr_Literal_String;
 
     for (int x = lineStream.peek(); x != EOF && std::isspace(x);)

@@ -70,7 +70,17 @@ class StatExprFunctionCall: public Statement
         {}
         virtual void generateAssembley(std::ostream& output) override
         {
-            output << "// TODO Generate function call\n";
+            output << "// StatExprFunctionCall: Generate function call\n"
+                   << "// Make Space for the result to be place in.\n"
+                   << "ADDR INC StackPointer 1\n"
+                   << "// Add Parameters to the stack:\n";
+            for (auto const& param: objectList)
+            {
+                ((void)param);
+                //param.get().generateAssembleyPlaceOnStack(output);
+                output << "ADDR INC StackPointer 1\n";
+            }
+            //object.generateAssembleyMethodCall(output);
         }
 };
 
