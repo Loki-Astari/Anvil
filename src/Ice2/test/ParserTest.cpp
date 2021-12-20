@@ -45,7 +45,6 @@ namespace Name_Space
     EXPECT_TRUE_OR_DEBUG(compiler.globalScope.get("Name_Space").first, result);
 }
 
-#if 0
 TEST(ParserTest,NameSpaceNested)
 {
     std::stringstream    result;
@@ -61,8 +60,11 @@ namespace Name_Space
     ParserCompiler  compiler(file, result);
 
     EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
+    EXPECT_TRUE_OR_DEBUG(compiler.globalScope.get("Name_Space").first, result);
+    ThorsAnvil::Anvil::Ice::Decl& decl = *compiler.globalScope.get("Name_Space").second->second;
+    ThorsAnvil::Anvil::Ice::Namespace& ns = dynamic_cast<ThorsAnvil::Anvil::Ice::Namespace&>(decl);
+    EXPECT_TRUE_OR_DEBUG(ns.get("Nest_Space").first, result);
 }
-#endif
 
 TEST(ParserTest,NameSpaceTwice)
 {
@@ -77,7 +79,7 @@ namespace Twice_Space
 }
     )");
 
-    ParserCompiler  compiler(file, std::result);
+    ParserCompiler  compiler(file, result);
 
     EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
     EXPECT_TRUE_OR_DEBUG(compiler.globalScope.get("Name_Space").first, result);

@@ -12,10 +12,11 @@ namespace ThorsAnvil::Anvil::Ice
 
 using Int                   = std::size_t;
 using NamespaceList         = std::list<NamespaceRef>;
+using DeclList              = std::list<DeclRef>;
 using Identifier            = std::string;
 
 
-enum class ParserType {Void, NamespaceList, Namespace, Identifier};
+enum class ParserType {Void, DeclList, NamespaceList, Decl, Namespace, Identifier};
 
 template<ParserType PT>
 struct IdTraits;
@@ -26,6 +27,15 @@ struct IdTraits<ParserType::Void>
     static constexpr bool valid = false;
 };
 template<>
+struct IdTraits<ParserType::DeclList>
+{
+    static constexpr bool valid = true;
+    using AccessType = DeclList;
+    using ExportType = DeclList;
+    static ExportType& convert(AccessType& object) {return object;}
+    static DeclList defaultUnusedValue;
+};
+template<>
 struct IdTraits<ParserType::NamespaceList>
 {
     static constexpr bool valid = true;
@@ -33,6 +43,16 @@ struct IdTraits<ParserType::NamespaceList>
     using ExportType = NamespaceList;
     static ExportType& convert(AccessType& object) {return object;}
     static NamespaceList defaultUnusedValue;
+};
+template<>
+struct IdTraits<ParserType::Decl>
+{
+    static constexpr bool valid = true;
+    using AccessType = DeclRef;
+    using ExportType = Decl;
+    static ExportType& convert(AccessType& object) {return object.get();}
+    // TODO Make this Void-Decl
+    static Namespace defaultUnusedValue;
 };
 template<>
 struct IdTraits<ParserType::Namespace>
@@ -103,11 +123,15 @@ struct IdAccess
 };
 
 using VoidId                = Id<ParserType::Void, false>;
+using DeclListId            = Id<ParserType::DeclList>;
 using NamespaceListId       = Id<ParserType::NamespaceList>;
+using DeclId                = Id<ParserType::Decl>;
 using NamespaceId           = Id<ParserType::Namespace>;
 using IdentifierId          = Id<ParserType::Identifier>;
 
+using DeclListAccess        = IdAccess<ParserType::DeclList>;
 using NamespaceListAccess   = IdAccess<ParserType::NamespaceList>;
+using DeclAccess            = IdAccess<ParserType::Decl>;
 using NamespaceAccess       = IdAccess<ParserType::Namespace>;
 using IdentifierAccess      = IdAccess<ParserType::Identifier>;
 

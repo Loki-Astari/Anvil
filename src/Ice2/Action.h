@@ -48,7 +48,10 @@ class Action
         NamespaceListId     listNamespaceCreate();
         NamespaceListId     listNamespaceAppend(NamespaceListId listId, NamespaceId id);
         NamespaceId         scopeNamespaceOpen(IdentifierId id);
-        NamespaceId         scopeNamespaceClose(NamespaceId id);
+        NamespaceId         scopeNamespaceClose(NamespaceId id, DeclListId listId);
+        DeclListId          listDeclCreate();
+        DeclListId          listDeclAppend(DeclListId listId, DeclId id);
+        DeclId              declFromNamespace(NamespaceId id);
         IdentifierId        identifierCreate();
 
 
@@ -58,7 +61,9 @@ class Action
         virtual NamespaceListId     listNamespaceCreateV();
         virtual NamespaceListId     listNamespaceAppendV(NamespaceList& listId, Namespace& id, Reuse&& reuse);
         virtual NamespaceId         scopeNamespaceOpenV(std::string&, Reuse&& reuse);
-        virtual NamespaceId         scopeNamespaceCloseV(Namespace&, Reuse&& reuse);
+        virtual NamespaceId         scopeNamespaceCloseV(Namespace&, DeclList& list, Reuse&& reuse);
+        virtual DeclListId          listDeclCreateV();
+        virtual DeclListId          listDeclAppendV(DeclList& list, Decl& decl, Reuse&& reuse);
         virtual IdentifierId        identifierCreateV();
     private:
         void addToLine();

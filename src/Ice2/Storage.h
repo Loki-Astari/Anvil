@@ -10,7 +10,7 @@
 namespace ThorsAnvil::Anvil::Ice
 {
 
-using Data = std::variant<Int, NamespaceList, NamespaceRef, Identifier>;
+using Data = std::variant<Int, DeclList, NamespaceList, DeclRef, NamespaceRef, Identifier>;
 
 template<typename T>
 class StorageAccess;

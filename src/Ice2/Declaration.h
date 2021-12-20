@@ -73,6 +73,7 @@ class Namespace: public NamedScope
         virtual bool storeFunctionsInContainer() const override {return false;}
 };
 
+using DeclRef           = std::reference_wrapper<Decl>;
 using ScopeRef          = std::reference_wrapper<Scope>;
 using NamespaceRef      = std::reference_wrapper<Namespace>;
 

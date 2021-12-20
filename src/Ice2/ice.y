@@ -30,7 +30,9 @@ int yylex(void*, ThorsAnvil::Anvil::Ice::Lexer& lexer, ThorsAnvil::Anvil::Ice::A
 
 %{
 using ThorsAnvil::Anvil::Ice::VoidId;
+using ThorsAnvil::Anvil::Ice::DeclListId;
 using ThorsAnvil::Anvil::Ice::NamespaceListId;
+using ThorsAnvil::Anvil::Ice::DeclId;
 using ThorsAnvil::Anvil::Ice::NamespaceId;
 using ThorsAnvil::Anvil::Ice::IdentifierId;
 %}
@@ -39,6 +41,8 @@ using ThorsAnvil::Anvil::Ice::IdentifierId;
     VoidId              voidId;
     NamespaceListId     namespaceListId;
     NamespaceId         namespaceId;
+    DeclListId          declListId;
+    DeclId              declId;
     IdentifierId        identifierId;
 }
 
@@ -48,6 +52,10 @@ using ThorsAnvil::Anvil::Ice::IdentifierId;
 %type   <namespaceListId>       NamespaceList
 %type   <namespaceId>           Namespace
 %type   <namespaceId>           NamespaceStart
+%type   <declListId>            DeclListOpt
+%type   <declListId>            DeclList
+%type   <declId>                Decl
+%type   <declId>                NamespaceDecl
 %type   <identifierId>          IdentifierNamespace
 
 
@@ -60,8 +68,18 @@ Anvil:                                                          {$$ = action.anv
 NamespaceList:          Namespace                               {$$ = action.listNamespaceAppend(action.listNamespaceCreate(), $1);}
                     |   NamespaceList Namespace                 {$$ = action.listNamespaceAppend($1, $2);}
 
-Namespace:              NamespaceStart '{' '}'                  {$$ = action.scopeNamespaceClose($1);}
+Namespace:              NamespaceStart '{' DeclListOpt  '}'     {$$ = action.scopeNamespaceClose($1, $3);}
 NamespaceStart:         NAMESPACE IdentifierNamespace           {$$ = action.scopeNamespaceOpen($2);}
+
+DeclListOpt:                                                    {$$ = action.listDeclCreate();}
+                    |   DeclList                                {$$ = $1;}
+
+DeclList:               Decl                                    {$$ = action.listDeclAppend(action.listDeclCreate(), $1);}
+                    |   DeclList Decl                           {$$ = action.listDeclAppend($1, $2);}
+
+Decl:                   NamespaceDecl                           {$$ = $1;}
+
+NamespaceDecl:          Namespace                               {$$ = action.declFromNamespace($1);}
 
 IdentifierNamespace:    IDENTIFIER_NS                           {$$ = action.identifierCreate();}
 

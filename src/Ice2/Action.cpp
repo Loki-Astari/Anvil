@@ -115,16 +115,50 @@ NamespaceId Action::scopeNamespaceOpenV(std::string& namespaceName, Reuse&& /*re
 }
 // ------------------
 
-NamespaceId Action::scopeNamespaceClose(NamespaceId id)
+NamespaceId Action::scopeNamespaceClose(NamespaceId id, DeclListId listId)
 {
     ScopePrinter scope("scopeNamespaceClose");
     NamespaceAccess     access(storage, id);
-    return scopeNamespaceCloseV(access, [&access](){return access.reuse();});
+    return scopeNamespaceCloseV(access, DeclListAccess(storage, listId), [&access](){return access.reuse();});
 }
-NamespaceId Action::scopeNamespaceCloseV(Namespace&, Reuse&& reuse)
+NamespaceId Action::scopeNamespaceCloseV(Namespace&, DeclList&, Reuse&& reuse)
 {
     currentScope.pop_back();
     return reuse();;
+}
+// ------------------
+
+DeclListId Action::listDeclCreate()
+{
+    ScopePrinter scope("listDeclCreate");
+    return listDeclCreateV();
+}
+DeclListId Action::listDeclCreateV()
+{
+    return storage.add<DeclList>(DeclList{});
+}
+// ------------------
+
+DeclListId Action::listDeclAppend(DeclListId listId, DeclId id)
+{
+    ScopePrinter scope("listDeclAppend");
+    DeclListAccess     access(storage, listId);
+
+    return listDeclAppendV(access, DeclAccess(storage, id), [&access](){return access.reuse();});
+}
+DeclListId Action::listDeclAppendV(DeclList& list, Decl& decl, Reuse&& reuse)
+{
+    list.emplace_back(decl);
+    return reuse();
+}
+// ------------------
+
+DeclId Action::declFromNamespace(NamespaceId id)
+{
+    ScopePrinter scope("declFromNamespace");
+    Namespace& ns = storage.get<NamespaceRef>(id.value).get();
+    Decl& decl = dynamic_cast<Decl&>(ns);
+    return storage.add<DeclRef>(decl);
 }
 // ------------------
 
@@ -138,6 +172,7 @@ IdentifierId Action::identifierCreateV()
     return storage.add<std::string>(std::string(lexer.lexem()));
 }
 // ------------------
+
 
 // Action Utility Functions
 // ========================
@@ -204,7 +239,9 @@ std::ostream& operator<<(std::ostream& str, Action const& action)
 template struct IdAccess<ParserType::Namespace>;
 template struct IdAccess<ParserType::Identifier>;
 
+DeclList        IdTraits<ParserType::DeclList>::defaultUnusedValue;
 NamespaceList   IdTraits<ParserType::NamespaceList>::defaultUnusedValue;
+Namespace       IdTraits<ParserType::Decl>::defaultUnusedValue("This is an Invalid Decl");
 Namespace       IdTraits<ParserType::Namespace>::defaultUnusedValue("This Is an Invalid Namespace");
 std::string     IdTraits<ParserType::Identifier>::defaultUnusedValue("This Is an Invalid Identifier");
 }
