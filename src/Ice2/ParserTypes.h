@@ -16,7 +16,7 @@ using DeclList              = std::list<DeclRef>;
 using Identifier            = std::string;
 
 
-enum class ParserType {Void, DeclList, NamespaceList, Decl, Namespace, Identifier};
+enum class ParserType {Void, DeclList, NamespaceList, Decl, Namespace, Class, Identifier};
 
 template<ParserType PT>
 struct IdTraits;
@@ -62,6 +62,15 @@ struct IdTraits<ParserType::Namespace>
     using ExportType = Namespace;
     static ExportType& convert(AccessType& object) {return object.get();}
     static Namespace defaultUnusedValue;
+};
+template<>
+struct IdTraits<ParserType::Class>
+{
+    static constexpr bool valid = true;
+    using AccessType = ClassRef;
+    using ExportType = Class;
+    static ExportType& convert(AccessType& object) {return object.get();}
+    static Class defaultUnusedValue;
 };
 template<>
 struct IdTraits<ParserType::Identifier>
@@ -127,12 +136,14 @@ using DeclListId            = Id<ParserType::DeclList>;
 using NamespaceListId       = Id<ParserType::NamespaceList>;
 using DeclId                = Id<ParserType::Decl>;
 using NamespaceId           = Id<ParserType::Namespace>;
+using ClassId               = Id<ParserType::Class>;
 using IdentifierId          = Id<ParserType::Identifier>;
 
 using DeclListAccess        = IdAccess<ParserType::DeclList>;
 using NamespaceListAccess   = IdAccess<ParserType::NamespaceList>;
 using DeclAccess            = IdAccess<ParserType::Decl>;
 using NamespaceAccess       = IdAccess<ParserType::Namespace>;
+using ClassAccess           = IdAccess<ParserType::Class>;
 using IdentifierAccess      = IdAccess<ParserType::Identifier>;
 
 }

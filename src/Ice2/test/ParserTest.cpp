@@ -146,7 +146,26 @@ namespace Name_Space
 
     EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 }
+#endif
 
+TEST(ParserTest, ClassTrivial)
+{
+    std::stringstream    result;
+    std::stringstream    file = buildStream(R"(
+namespace Name_Space
+{
+    class ClassName
+    {
+    }
+}
+    )");
+
+    ParserCompiler  compiler(file, result);
+
+    EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
+}
+
+#if 0
 TEST(ParserTest,NameTypeObject)
 {
     std::stringstream    result;

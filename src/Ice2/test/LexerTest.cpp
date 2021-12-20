@@ -29,6 +29,7 @@ TEST(LexerTest, GetLexemeEmptyStream)
 TEST(LexerTest, ReadSymbolsFile)
 {
 #if 0
+namespace
 class
 array
 map
@@ -40,6 +41,8 @@ Name_Space
 ::
 ->
 "This is a String"
+{
+}
 (
 )
 :
@@ -49,6 +52,10 @@ Name_Space
 #endif
     std::stringstream    file = buildStream(R"(
 namespace
+class
+TypeName
+Ns
+Name_Space
 {
 }
 $
@@ -71,11 +78,11 @@ $
     EXPECT_EQ(yy::Parser::token::NAMESPACE, val);
     EXPECT_EQ(lexer.lexem(), "namespace");
 
-#if 0
     val = lexer.yylexWithActionGo(action);
     EXPECT_EQ(yy::Parser::token::CLASS, val);
     EXPECT_EQ(lexer.lexem(), "class");
 
+#if 0
     val = lexer.yylexWithActionGo(action);
     EXPECT_EQ(yy::Parser::token::ARRAY, val);
     EXPECT_EQ(lexer.lexem(), "array");
@@ -91,6 +98,7 @@ $
     val = lexer.yylexWithActionGo(action);
     EXPECT_EQ(yy::Parser::token::IDENTIFIER_OBJECT, val);
     EXPECT_EQ(lexer.lexem(), "objectName");
+#endif
 
     val = lexer.yylexWithActionGo(action);
     EXPECT_EQ(yy::Parser::token::IDENTIFIER_TYPE, val);
@@ -104,6 +112,7 @@ $
     EXPECT_EQ(yy::Parser::token::IDENTIFIER_NS, val);
     EXPECT_EQ(lexer.lexem(), "Name_Space");
 
+#if 0
     val = lexer.yylexWithActionGo(action);
     EXPECT_EQ(yy::Parser::token::SCOPE, val);
     EXPECT_EQ(lexer.lexem(), "::");

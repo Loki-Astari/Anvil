@@ -128,6 +128,30 @@ NamespaceId Action::scopeNamespaceCloseV(Namespace&, DeclList&, Reuse&& reuse)
 }
 // ------------------
 
+ClassId Action::scopeClassOpen(IdentifierId id)
+{
+    ScopePrinter scope("scopeClassOpen");
+    IdentifierAccess     access(storage, id);
+    return scopeClassOpenV(access, [&access](){return access.reuse();});
+}
+ClassId Action::scopeClassOpenV(std::string&, Reuse&& /*reuse*/)
+{
+    return 0;
+}
+// ------------------
+
+ClassId Action::scopeClassClose(ClassId id, DeclListId listId)
+{
+    ScopePrinter scope("scopeClassClose");
+    ClassAccess     access(storage, id);
+    return scopeClassCloseV(access, DeclListAccess(storage, listId), [&access](){return access.reuse();});
+}
+ClassId Action::scopeClassCloseV(Class& /*cl*/, DeclList& /*list*/, Reuse&& /*reuse*/)
+{
+    return 0;
+}
+// ------------------
+
 DeclListId Action::listDeclCreate()
 {
     ScopePrinter scope("listDeclCreate");
@@ -150,15 +174,6 @@ DeclListId Action::listDeclAppendV(DeclList& list, Decl& decl, Reuse&& reuse)
 {
     list.emplace_back(decl);
     return reuse();
-}
-// ------------------
-
-DeclId Action::declFromNamespace(NamespaceId id)
-{
-    ScopePrinter scope("declFromNamespace");
-    Namespace& ns = storage.get<NamespaceRef>(id.value).get();
-    Decl& decl = dynamic_cast<Decl&>(ns);
-    return storage.add<DeclRef>(decl);
 }
 // ------------------
 
@@ -243,5 +258,6 @@ DeclList        IdTraits<ParserType::DeclList>::defaultUnusedValue;
 NamespaceList   IdTraits<ParserType::NamespaceList>::defaultUnusedValue;
 Namespace       IdTraits<ParserType::Decl>::defaultUnusedValue("This is an Invalid Decl");
 Namespace       IdTraits<ParserType::Namespace>::defaultUnusedValue("This Is an Invalid Namespace");
+Class           IdTraits<ParserType::Class>::defaultUnusedValue("This Is an Invalid Class");
 std::string     IdTraits<ParserType::Identifier>::defaultUnusedValue("This Is an Invalid Identifier");
 }

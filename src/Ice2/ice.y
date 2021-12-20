@@ -29,34 +29,45 @@ int yylex(void*, ThorsAnvil::Anvil::Ice::Lexer& lexer, ThorsAnvil::Anvil::Ice::A
 %lex-param   {Action& action}
 
 %{
+using ThorsAnvil::Anvil::Ice::ParserType;
+
+
 using ThorsAnvil::Anvil::Ice::VoidId;
 using ThorsAnvil::Anvil::Ice::DeclListId;
 using ThorsAnvil::Anvil::Ice::NamespaceListId;
 using ThorsAnvil::Anvil::Ice::DeclId;
 using ThorsAnvil::Anvil::Ice::NamespaceId;
+using ThorsAnvil::Anvil::Ice::ClassId;
 using ThorsAnvil::Anvil::Ice::IdentifierId;
 %}
 %union {
     semantic_type(): voidId{0} {};
     VoidId              voidId;
-    NamespaceListId     namespaceListId;
-    NamespaceId         namespaceId;
     DeclListId          declListId;
+    NamespaceListId     namespaceListId;
     DeclId              declId;
+    NamespaceId         namespaceId;
+    ClassId             classId;
     IdentifierId        identifierId;
 }
 
 %token                          NAMESPACE
+%token                          CLASS
 %token                          IDENTIFIER_NS
+%token                          IDENTIFIER_TYPE
 %type   <voidId>                Anvil
 %type   <namespaceListId>       NamespaceList
 %type   <namespaceId>           Namespace
 %type   <namespaceId>           NamespaceStart
+%type   <classId>               Class
+%type   <classId>               ClassStart
 %type   <declListId>            DeclListOpt
 %type   <declListId>            DeclList
 %type   <declId>                Decl
 %type   <declId>                NamespaceDecl
+%type   <declId>                ClassDecl
 %type   <identifierId>          IdentifierNamespace
+%type   <identifierId>          IdentifierType
 
 
 
@@ -78,10 +89,17 @@ DeclList:               Decl                                    {$$ = action.lis
                     |   DeclList Decl                           {$$ = action.listDeclAppend($1, $2);}
 
 Decl:                   NamespaceDecl                           {$$ = $1;}
+                    |   ClassDecl                               {$$ = $1;}
 
-NamespaceDecl:          Namespace                               {$$ = action.declFromNamespace($1);}
+NamespaceDecl:          Namespace                               {$$ = action.convert<ParserType::Namespace, ParserType::Decl>($1);}
+ClassDecl:              Class                                   {$$ = action.convert<ParserType::Class, ParserType::Decl>($1);}
+
+Class:                  ClassStart '{' DeclListOpt '}'          {$$ = action.scopeClassClose($1, $3);}
+ClassStart:             CLASS IdentifierType                    {$$ = action.scopeClassOpen($2);}
+
 
 IdentifierNamespace:    IDENTIFIER_NS                           {$$ = action.identifierCreate();}
+IdentifierType:         IDENTIFIER_TYPE                         {$$ = action.identifierCreate();}
 
 %%
 

@@ -12,7 +12,7 @@
 namespace ThorsAnvil::Anvil::Ice
 {
 
-enum class DeclType {Namespace};
+enum class DeclType {Namespace, Class};
 class Decl
 {
     public:
@@ -73,9 +73,20 @@ class Namespace: public NamedScope
         virtual bool storeFunctionsInContainer() const override {return false;}
 };
 
+class Class: public NamedScope
+{
+    public:
+        Class(std::string name)
+            : NamedScope(std::move(name))
+        {}
+        virtual DeclType declType() const override {return DeclType::Class;}
+        virtual bool storeFunctionsInContainer() const override {return true;}
+};
+
 using DeclRef           = std::reference_wrapper<Decl>;
 using ScopeRef          = std::reference_wrapper<Scope>;
 using NamespaceRef      = std::reference_wrapper<Namespace>;
+using ClassRef          = std::reference_wrapper<Class>;
 
 using NamespaceDecOrder = std::vector<NamespaceRef>;
 

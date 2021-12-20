@@ -3,6 +3,7 @@
 
 #include "ParserTypes.h"
 #include "Declaration.h"
+#include "Storage.h"
 
 #include <iostream>
 #include <sstream>
@@ -49,10 +50,23 @@ class Action
         NamespaceListId     listNamespaceAppend(NamespaceListId listId, NamespaceId id);
         NamespaceId         scopeNamespaceOpen(IdentifierId id);
         NamespaceId         scopeNamespaceClose(NamespaceId id, DeclListId listId);
+        ClassId             scopeClassOpen(IdentifierId id);
+        ClassId             scopeClassClose(ClassId id, DeclListId listId);
         DeclListId          listDeclCreate();
         DeclListId          listDeclAppend(DeclListId listId, DeclId id);
-        DeclId              declFromNamespace(NamespaceId id);
         IdentifierId        identifierCreate();
+
+        template<ParserType From, ParserType To>
+        Id<To> convert(Id<From> id)
+        {
+            using FromType = typename IdTraits<From>::ExportType;
+            using ToType = typename IdTraits<To>::ExportType;
+            using ToStoreType = typename IdTraits<To>::AccessType;
+            IdAccess<From>  access(storage, id);
+            FromType&  fromValue = access;
+            ToType&    toType = dynamic_cast<ToType&>(fromValue);
+            return storage.add<ToStoreType>(ToStoreType{toType});
+        }
 
 
         // Parsing virtual methods
@@ -62,6 +76,8 @@ class Action
         virtual NamespaceListId     listNamespaceAppendV(NamespaceList& listId, Namespace& id, Reuse&& reuse);
         virtual NamespaceId         scopeNamespaceOpenV(std::string&, Reuse&& reuse);
         virtual NamespaceId         scopeNamespaceCloseV(Namespace&, DeclList& list, Reuse&& reuse);
+        virtual ClassId             scopeClassOpenV(std::string&, Reuse&& reuse);
+        virtual ClassId             scopeClassCloseV(Class&, DeclList& list, Reuse&& reuse);
         virtual DeclListId          listDeclCreateV();
         virtual DeclListId          listDeclAppendV(DeclList& list, Decl& decl, Reuse&& reuse);
         virtual IdentifierId        identifierCreateV();
