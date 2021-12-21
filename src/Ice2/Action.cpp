@@ -39,10 +39,7 @@ Action::~Action()
 // ========================
 void Action::token()
 {
-#pragma vera-pushoff
-    using namespace std::string_literals;
-#pragma vera-pop
-    log("Token: "s .append(lexer.lexem()).c_str());
+    log("Token: ", lexer.lexem(), "\n");
     addToLine();
 }
 
@@ -61,6 +58,13 @@ void Action::resetLine()
     ++offset;
 }
 
+// Public Utility
+// ========================
+std::string Action::anonName()
+{
+    Scope&          topScope = currentScope.back();
+    return topScope.anonName();
+}
 
 // Parser
 // ========================
@@ -222,6 +226,17 @@ ClassId Action::scopeClassCloseV(Class& cl, DeclList& /*list*/, Reuse&& reuse)
 }
 // ------------------
 
+ClassId Action::scopeClassAnon(DeclListId listId)
+{
+    ScopePrinter scope("scopeClassAnon");
+    std::string     anonN   = anonName();
+    IdentifierId    anonId  = storage.add<std::string>(std::move(anonN));
+    ClassId         classId = scopeClassOpen(anonId);
+    classId = scopeClassClose(classId, listId);
+    return classId;
+}
+// ------------------
+
 FunctionId Action::scopeFunctionOpen(IdentifierId id)
 {
     ScopePrinter scope("scopeFunctionOpen");
@@ -235,26 +250,6 @@ FunctionId Action::scopeFunctionOpenV(std::string& className, Reuse&& /*reuse*/)
     currentScope.emplace_back(newFunction);
 
     return storage.add(FunctionRef{newFunction});
-}
-// ------------------
-
-ObjectId Action::scopeObjectAdd(IdentifierId name, TypeId type)
-{
-    ScopePrinter scope("scopeObjectAdd");
-    IdentifierAccess    nameAccess(storage, name);
-    TypeAccess          typeAccess(storage, type);
-    return scopeObjectAddV(nameAccess, typeAccess);
-}
-ObjectId Action::scopeObjectAddV(Identifier& name, Type& type)
-{
-    Scope&  topScope = currentScope.back();
-    auto find = topScope.get(name);
-    if (find.first)
-    {
-        error("Object Already defined: ", name);
-    }
-    Object& object = topScope.add<Object>(name, type);
-    return storage.add<ObjectRef>(object);
 }
 // ------------------
 
@@ -275,6 +270,38 @@ FunctionId Action::scopeFunctionCloseV(Function& cl, ParamList& /*list*/, Type& 
     }
     currentScope.pop_back();
     return reuse();
+}
+// ------------------
+
+FunctionId Action::scopeFunctionAnon(ParamListId listId, TypeId returnType)
+{
+    ScopePrinter scope("scopeFunctionAnon");
+    std::string     anonN   = anonName();
+    IdentifierId    anonId  = storage.add<std::string>(std::move(anonN));
+    FunctionId      funcId  = scopeFunctionOpen(anonId);
+    funcId = scopeFunctionClose(funcId, listId, returnType);
+    return funcId;
+}
+
+// ------------------
+
+ObjectId Action::scopeObjectAdd(IdentifierId name, TypeId type)
+{
+    ScopePrinter scope("scopeObjectAdd");
+    IdentifierAccess    nameAccess(storage, name);
+    TypeAccess          typeAccess(storage, type);
+    return scopeObjectAddV(nameAccess, typeAccess);
+}
+ObjectId Action::scopeObjectAddV(Identifier& name, Type& type)
+{
+    Scope&  topScope = currentScope.back();
+    auto find = topScope.get(name);
+    if (find.first)
+    {
+        error("Object Already defined: ", name);
+    }
+    Object& object = topScope.add<Object>(name, type);
+    return storage.add<ObjectRef>(object);
 }
 // ------------------
 
@@ -324,6 +351,7 @@ std::string Action::getCurrentScopeFullName() const
 
 TypeId Action::getTypeFromName(IdentifierId id)
 {
+    ScopePrinter scope("getTypeFromName");
     IdentifierAccess    access(storage, id);
 
     for (auto const& scope: make_View<Reverse>(currentScope))
@@ -341,6 +369,7 @@ TypeId Action::getTypeFromName(IdentifierId id)
 
 TypeId Action::getTypeFromScope(ScopeId scopeId, IdentifierId id)
 {
+    ScopePrinter scope("getTypeFromScope");
     ScopeAccess         scopeAccess(storage, scopeId);
     IdentifierAccess    access(storage, id);
 
@@ -356,6 +385,7 @@ TypeId Action::getTypeFromScope(ScopeId scopeId, IdentifierId id)
 
 ScopeId Action::getScopeFromName(IdentifierId id)
 {
+    ScopePrinter scope("getScopeFromName");
     IdentifierAccess    access(storage, id);
 
     for (auto const& scope: make_View<Reverse>(currentScope))
@@ -373,6 +403,7 @@ ScopeId Action::getScopeFromName(IdentifierId id)
 
 ScopeId Action::getScopeFromScope(ScopeId scopeId, IdentifierId id)
 {
+    ScopePrinter scope("getScopeFromScope");
     ScopeAccess         scopeAccess(storage, scopeId);
     IdentifierAccess    access(storage, id);
 

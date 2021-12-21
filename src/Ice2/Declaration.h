@@ -38,9 +38,11 @@ class Scope: public Decl
     MemberStorage   members;
     MemberIndex     objectId;
     std::size_t     nextObjectId;
+    std::size_t     anonNameCount;
     public:
         Scope()
             : nextObjectId(0)
+            , anonNameCount(0)
         {}
         std::pair<bool, NameRef> get(std::string const& name) const;
         template<typename T, typename... Args>
@@ -57,6 +59,30 @@ class Scope: public Decl
             str << "===================\n\n\n";
             return str;
         }
+        std::string anonName()
+        {
+            // 64 bit Size: Convert to hex => 16 bit
+            // Prefix with dollar => 17bit
+            std::string name(17, '$');
+            generateHexName(name, anonNameCount);
+            ++anonNameCount;
+            return name;
+        }
+    private:
+        char hex(std::size_t halfByte)
+        {
+            return halfByte < 10
+                        ? '0' + halfByte
+                        : 'a' + (halfByte - 10);
+        }
+        void generateHexName(std::string& name, std::size_t count)
+        {
+            for (int loop = 0; loop < 16; ++loop)
+            {
+                name[loop+1] = hex((count >> (loop * 4)) & 0xF);
+            }
+        }
+
 };
 
 class NamedScope: public Scope

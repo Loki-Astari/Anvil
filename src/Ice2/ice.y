@@ -45,6 +45,7 @@ using ThorsAnvil::Anvil::Ice::IdentifierId;
 using ThorsAnvil::Anvil::Ice::Decl;
 using ThorsAnvil::Anvil::Ice::Scope;
 using ThorsAnvil::Anvil::Ice::Namespace;
+using ThorsAnvil::Anvil::Ice::Type;
 using ThorsAnvil::Anvil::Ice::Class;
 using ThorsAnvil::Anvil::Ice::Function;
 using ThorsAnvil::Anvil::Ice::Object;
@@ -84,9 +85,13 @@ using ThorsAnvil::Anvil::Ice::Object;
 %type   <namespaceId>           NamespaceStart
 %type   <classId>               Class
 %type   <classId>               ClassStart
+%type   <classId>               ClassAnon
 %type   <functionId>            Function
 %type   <functionId>            FunctionStart
+%type   <functionId>            FunctionAnon
 %type   <scopeId>               ScopedType
+%type   <typeId>                TypeDecl
+%type   <typeId>                AnonType
 %type   <typeId>                Type
 %type   <objectId>              Object
 %type   <identifierId>          ScopeIdentifier
@@ -124,11 +129,19 @@ Decl:                   Namespace                                           {$$ 
 
 Class:                  ClassStart '{' DeclListOpt '}'                      {$$ = action.scopeClassClose($1, $3);}
 ClassStart:             CLASS IdentifierType                                {$$ = action.scopeClassOpen($2);}
+ClassAnon:              CLASS '{' DeclListOpt '}'                           {$$ = action.scopeClassAnon($3);}
 
 Function:               FunctionStart '{' ParamListOpt ARROW Type '}'       {$$ = action.scopeFunctionClose($1, $3, $5);}
 FunctionStart:          FUNC IdentifierType                                 {$$ = action.scopeFunctionOpen($2);}
+FunctionAnon:           FUNC '{' ParamListOpt ARROW Type '}'                {$$ = action.scopeFunctionAnon($3, $5);}
 
-Object:                 IdentifierObject ':' Type ';'                       {$$ = action.scopeObjectAdd($1, $3);}
+Object:                 IdentifierObject ':' TypeDecl                       {$$ = action.scopeObjectAdd($1, $3);}
+
+TypeDecl:               Type ';'                                            {$$ = $1;}
+                    |   AnonType                                            {$$ = $1;}
+
+AnonType:               ClassAnon                                           {$$ = action.convert<Class, Type>($1);}
+                    |   FunctionAnon                                        {$$ = action.convert<Function, Type>($1);}
 
 Type:                   IdentifierType                                      {$$ = action.getTypeFromName($1);}
                     |   ScopedType SCOPE IdentifierType                     {$$ = action.getTypeFromScope($1, $3);}

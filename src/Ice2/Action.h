@@ -44,6 +44,9 @@ class Action
         virtual void newLine()                                          {resetLine();}
         virtual void token();
 
+        // Public Utility
+        std::string         anonName();
+
         // Parsing
         VoidId              anvilProgram(NamespaceListId id);
         DeclListId          listDeclCreate();
@@ -57,8 +60,10 @@ class Action
         NamespaceId         scopeNamespaceClose(NamespaceId id, DeclListId listId);
         ClassId             scopeClassOpen(IdentifierId id);
         ClassId             scopeClassClose(ClassId id, DeclListId listId);
+        ClassId             scopeClassAnon(DeclListId listId);
         FunctionId          scopeFunctionOpen(IdentifierId id);
         FunctionId          scopeFunctionClose(FunctionId id, ParamListId listId, TypeId returnType);
+        FunctionId          scopeFunctionAnon(ParamListId listId, TypeId returnType);
         ObjectId            scopeObjectAdd(IdentifierId name, TypeId id);
         IdentifierId        identifierCreate();
 
