@@ -107,7 +107,7 @@ NamespaceId Action::scopeNamespaceOpen(IdentifierId id)
 }
 NamespaceId Action::scopeNamespaceOpenV(std::string& namespaceName, Reuse&& /*reuse*/)
 {
-    Scope&          topScope = currentScope.back().get();
+    Scope&          topScope = currentScope.back();
     Namespace&      newNameSpace = getOrAddScope<Namespace>(topScope, namespaceName);
     currentScope.emplace_back(newNameSpace);
 
@@ -121,8 +121,15 @@ NamespaceId Action::scopeNamespaceClose(NamespaceId id, DeclListId listId)
     NamespaceAccess     access(storage, id);
     return scopeNamespaceCloseV(access, DeclListAccess(storage, listId), [&access](){return access.reuse();});
 }
-NamespaceId Action::scopeNamespaceCloseV(Namespace&, DeclList&, Reuse&& reuse)
+NamespaceId Action::scopeNamespaceCloseV(Namespace& ns, DeclList&, Reuse&& reuse)
 {
+    Scope&          topScope = currentScope.back();
+    Namespace*      topNS = dynamic_cast<Namespace*>(&topScope);
+
+    if (&ns != topNS)
+    {
+        error("Internal Error: Scope Note correctly aligned from Namespace");
+    }
     currentScope.pop_back();
     return reuse();;
 }
@@ -134,9 +141,13 @@ ClassId Action::scopeClassOpen(IdentifierId id)
     IdentifierAccess     access(storage, id);
     return scopeClassOpenV(access, [&access](){return access.reuse();});
 }
-ClassId Action::scopeClassOpenV(std::string&, Reuse&& /*reuse*/)
+ClassId Action::scopeClassOpenV(std::string& className, Reuse&& /*reuse*/)
 {
-    return 0;
+    Scope&          topScope = currentScope.back();
+    Class&          newClass = getOrAddScope<Class>(topScope, className);
+    currentScope.emplace_back(newClass);
+
+    return storage.add(ClassRef{newClass});
 }
 // ------------------
 
@@ -146,9 +157,17 @@ ClassId Action::scopeClassClose(ClassId id, DeclListId listId)
     ClassAccess     access(storage, id);
     return scopeClassCloseV(access, DeclListAccess(storage, listId), [&access](){return access.reuse();});
 }
-ClassId Action::scopeClassCloseV(Class& /*cl*/, DeclList& /*list*/, Reuse&& /*reuse*/)
+ClassId Action::scopeClassCloseV(Class& cl, DeclList& /*list*/, Reuse&& reuse)
 {
-    return 0;
+    Scope&          topScope = currentScope.back();
+    Class*          topClass = dynamic_cast<Class*>(&topScope);
+
+    if (&cl != topClass)
+    {
+        error("Internal Error: Scope Note correctly aligned from Class");
+    }
+    currentScope.pop_back();
+    return reuse();
 }
 // ------------------
 
