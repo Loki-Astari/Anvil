@@ -14,6 +14,8 @@ using Int                   = std::size_t;
 using NamespaceList         = std::list<NamespaceRef>;
 using DeclList              = std::list<DeclRef>;
 using ParamList             = std::list<TypeRef>;
+using StatementList         = std::list<StatementRef>;
+using ParamValueList        = std::list<ExpressionRef>;
 using Identifier            = std::string;
 
 template<typename T>
@@ -25,32 +27,46 @@ struct IdTraits
 };
 
 template<>
-struct IdTraits<DeclList>
+struct IdTraits<Identifier>
 {
     static constexpr bool valid = true;
     static constexpr Int defaultStorageId = 1;
+    using AccessType = std::string;
+};
+template<>
+struct IdTraits<DeclList>
+{
+    static constexpr bool valid = true;
+    static constexpr Int defaultStorageId = 2;
     using AccessType = DeclList;
 };
 template<>
 struct IdTraits<NamespaceList>
 {
     static constexpr bool valid = true;
-    static constexpr Int defaultStorageId = 2;
+    static constexpr Int defaultStorageId = 3;
     using AccessType = NamespaceList;
 };
 template<>
 struct IdTraits<ParamList>
 {
     static constexpr bool valid = true;
-    static constexpr Int defaultStorageId = 3;
+    static constexpr Int defaultStorageId = 4;
     using AccessType = ParamList;
 };
 template<>
-struct IdTraits<Identifier>
+struct IdTraits<StatementList>
 {
     static constexpr bool valid = true;
-    static constexpr Int defaultStorageId = 10;
-    using AccessType = std::string;
+    static constexpr Int defaultStorageId = 5;
+    using AccessType = StatementList;
+};
+template<>
+struct IdTraits<ParamValueList>
+{
+    static constexpr bool valid = true;
+    static constexpr Int defaultStorageId = 6;
+    using AccessType = ParamValueList;
 };
 
 
@@ -105,6 +121,8 @@ using VoidId                = Id<Void, false>;
 using DeclListId            = Id<DeclList>;
 using NamespaceListId       = Id<NamespaceList>;
 using ParamListId           = Id<ParamList>;
+using ParamValueListId      = Id<ParamValueList>;
+using StatementListId       = Id<StatementList>;
 using DeclId                = Id<Decl>;
 using ScopeId               = Id<Scope>;
 using NamespaceId           = Id<Namespace>;
@@ -112,11 +130,16 @@ using TypeId                = Id<Type>;
 using ClassId               = Id<Class>;
 using FunctionId            = Id<Function>;
 using ObjectId              = Id<Object>;
+using ObjectInitId          = Id<ObjectInit>;
 using IdentifierId          = Id<Identifier>;
+using StatementId           = Id<Statement>;
+using ExpressionId          = Id<Expression>;
 
 using DeclListAccess        = IdAccess<DeclList>;
 using NamespaceListAccess   = IdAccess<NamespaceList>;
 using ParamListAccess       = IdAccess<ParamList>;
+using ParamValueListAccess  = IdAccess<ParamValueList>;
+using StatementListAccess   = IdAccess<StatementList>;
 using DeclAccess            = IdAccess<Decl>;
 using ScopeAccess           = IdAccess<Scope>;
 using NamespaceAccess       = IdAccess<Namespace>;
@@ -124,7 +147,10 @@ using TypeAccess            = IdAccess<Type>;
 using ClassAccess           = IdAccess<Class>;
 using FunctionAccess        = IdAccess<Function>;
 using ObjectAccess          = IdAccess<Object>;
+using ObjectInitAccess      = IdAccess<ObjectInit>;
 using IdentifierAccess      = IdAccess<Identifier>;
+using StatementAccess       = IdAccess<Statement>;
+using ExpressionAccess      = IdAccess<Expression>;
 
 }
 

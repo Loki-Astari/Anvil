@@ -55,6 +55,10 @@ class Action
         NamespaceListId     listNamespaceAppend(NamespaceListId listId, NamespaceId id);
         ParamListId         listParamCreate();
         ParamListId         listParamAppend(ParamListId listId, TypeId id);
+        ParamValueListId    listParamValueCreate();
+        ParamValueListId    listParamValueAppend(ParamValueListId listId, ExpressionId id);
+        StatementListId     listStatementCreate();
+        StatementListId     listStatementAppend(StatementListId listId, StatementId id);
 
         NamespaceId         scopeNamespaceOpen(IdentifierId id);
         NamespaceId         scopeNamespaceClose(NamespaceId id, DeclListId listId);
@@ -64,8 +68,13 @@ class Action
         FunctionId          scopeFunctionOpen(IdentifierId id);
         FunctionId          scopeFunctionClose(FunctionId id, ParamListId listId, TypeId returnType);
         FunctionId          scopeFunctionAnon(ParamListId listId, TypeId returnType);
-        ObjectId            scopeObjectAdd(IdentifierId name, TypeId id);
+        ObjectId            scopeObjectAdd(IdentifierId name, TypeId id, ObjectInitId init);
         IdentifierId        identifierCreate();
+
+        ObjectInitId        initVariable(ParamValueListId listId);
+        ObjectInitId        initFunction(StatementListId listId);
+
+        StatementId         statmentExpression(ExpressionId);
 
         TypeId              getTypeFromName(IdentifierId);
         TypeId              getTypeFromScope(ScopeId, IdentifierId);
@@ -82,6 +91,50 @@ class Action
             return storage.add<ToStoreType>(ToStoreType{toType});
         }
 
+        // Expression:
+        ExpressionId        expressionAssign(ExpressionId, ExpressionId)                        {return 0;}
+        ExpressionId        expressionAssignMul(ExpressionId, ExpressionId)                     {return 0;}
+        ExpressionId        expressionAssignDiv(ExpressionId, ExpressionId)                     {return 0;}
+        ExpressionId        expressionAssignMod(ExpressionId, ExpressionId)                     {return 0;}
+        ExpressionId        expressionAssignAdd(ExpressionId, ExpressionId)                     {return 0;}
+        ExpressionId        expressionAssignSub(ExpressionId, ExpressionId)                     {return 0;}
+        ExpressionId        expressionAssignLSh(ExpressionId, ExpressionId)                     {return 0;}
+        ExpressionId        expressionAssignRSh(ExpressionId, ExpressionId)                     {return 0;}
+        ExpressionId        expressionAssignAnd(ExpressionId, ExpressionId)                     {return 0;}
+        ExpressionId        expressionAssignXOR(ExpressionId, ExpressionId)                     {return 0;}
+        ExpressionId        expressionAssignOR(ExpressionId, ExpressionId)                      {return 0;}
+        ExpressionId        expressionConditional(ExpressionId, ExpressionId, ExpressionId)     {return 0;}
+        ExpressionId        expressionLogicalOr(ExpressionId, ExpressionId)                     {return 0;}
+        ExpressionId        expressionLogicalAnd(ExpressionId, ExpressionId)                    {return 0;}
+        ExpressionId        expressionInclusiveOr(ExpressionId, ExpressionId)                   {return 0;}
+        ExpressionId        expressionExclusiveOr(ExpressionId, ExpressionId)                   {return 0;}
+        ExpressionId        expressionAnd(ExpressionId, ExpressionId)                           {return 0;}
+        ExpressionId        expressionEqual(ExpressionId, ExpressionId)                         {return 0;}
+        ExpressionId        expressionNotEqual(ExpressionId, ExpressionId)                      {return 0;}
+        ExpressionId        expressionLess(ExpressionId, ExpressionId)                          {return 0;}
+        ExpressionId        expressionGreat(ExpressionId, ExpressionId)                         {return 0;}
+        ExpressionId        expressionLessEqual(ExpressionId, ExpressionId)                     {return 0;}
+        ExpressionId        expressionGreatEqual(ExpressionId, ExpressionId)                    {return 0;}
+        ExpressionId        expressionShiftLeft(ExpressionId, ExpressionId)                     {return 0;}
+        ExpressionId        expressionShiftRight(ExpressionId, ExpressionId)                    {return 0;}
+        ExpressionId        expressionAdd(ExpressionId, ExpressionId)                           {return 0;}
+        ExpressionId        expressionSub(ExpressionId, ExpressionId)                           {return 0;}
+        ExpressionId        expressionMul(ExpressionId, ExpressionId)                           {return 0;}
+        ExpressionId        expressionDiv(ExpressionId, ExpressionId)                           {return 0;}
+        ExpressionId        expressionMod(ExpressionId, ExpressionId)                           {return 0;}
+        ExpressionId        expressionPreInc(ExpressionId)                                      {return 0;}
+        ExpressionId        expressionPreDec(ExpressionId)                                      {return 0;}
+        ExpressionId        expressionPlus(ExpressionId)                                        {return 0;}
+        ExpressionId        expressionNeg(ExpressionId)                                         {return 0;}
+        ExpressionId        expressionOneCompliment(ExpressionId)                               {return 0;}
+        ExpressionId        expressionNot(ExpressionId)                                         {return 0;}
+        ExpressionId        expressionArrayAccess(ExpressionId, ExpressionId)                   {return 0;}
+        ExpressionId        expressionFuncCall(ExpressionId, ParamValueListId)                  {return 0;}
+        ExpressionId        expressionMemberAccess(ExpressionId, IdentifierId)                  {return 0;}
+        ExpressionId        expressionPostInc(ExpressionId)                                     {return 0;}
+        ExpressionId        expressionPostDec(ExpressionId)                                     {return 0;}
+        ExpressionId        expreesionFindObjectByName(IdentifierId)                            {return 0;}
+        ExpressionId        expressionLiteralString()                                           {return 0;}
 
         // Parsing virtual methods
         using Reuse = std::function<Int()>;
@@ -92,6 +145,10 @@ class Action
         virtual NamespaceListId     listNamespaceAppendV(NamespaceList& listId, Namespace& id, Reuse&& reuse);
         virtual ParamListId         listParamCreateV();
         virtual ParamListId         listParamAppendV(ParamList& listId, Type& id, Reuse&& reuse);
+        virtual ParamValueListId    listParamValueCreateV();
+        virtual ParamValueListId    listParamValueAppendV(ParamValueList& listId, Expression& id, Reuse&& reuse);
+        virtual StatementListId     listStatementCreateV();
+        virtual StatementListId     listStatementAppendV(StatementList& listId, Statement& id, Reuse&& reuse);
         virtual NamespaceId         scopeNamespaceOpenV(std::string&, Reuse&& reuse);
         virtual NamespaceId         scopeNamespaceCloseV(Namespace&, DeclList& list, Reuse&& reuse);
         virtual ClassId             scopeClassOpenV(std::string&, Reuse&& reuse);

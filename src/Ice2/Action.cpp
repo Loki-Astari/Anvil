@@ -154,6 +154,56 @@ ParamListId Action::listParamAppendV(ParamList& list, Type& type, Reuse&& reuse)
 }
 // ------------------
 
+ParamValueListId Action::listParamValueCreate()
+{
+    ScopePrinter scope("listParamValueCreate");
+    return listParamValueCreateV();
+}
+ParamValueListId Action::listParamValueCreateV()
+{
+    return storage.add<ParamValueList>(ParamValueList{});
+}
+// ------------------
+
+ParamValueListId Action::listParamValueAppend(ParamValueListId listId, ExpressionId id)
+{
+    ScopePrinter scope("listParamValueAppend");
+    ParamValueListAccess     access(storage, listId);
+
+    return listParamValueAppendV(access, ExpressionAccess(storage, id), [&access](){return access.reuse();});
+}
+ParamValueListId Action::listParamValueAppendV(ParamValueList& list, Expression& type, Reuse&& reuse)
+{
+    list.emplace_back(type);
+    return reuse();
+}
+// ------------------
+
+StatementListId Action::listStatementCreate()
+{
+    ScopePrinter scope("listStatementCreate");
+    return listStatementCreateV();
+}
+StatementListId Action::listStatementCreateV()
+{
+    return storage.add<StatementList>(StatementList{});
+}
+// ------------------
+
+StatementListId Action::listStatementAppend(StatementListId listId, StatementId id)
+{
+    ScopePrinter scope("listStatementAppend");
+    StatementListAccess     access(storage, listId);
+
+    return listStatementAppendV(access, StatementAccess(storage, id), [&access](){return access.reuse();});
+}
+StatementListId Action::listStatementAppendV(StatementList& list, Statement& st, Reuse&& reuse)
+{
+    list.emplace_back(st);
+    return reuse();
+}
+// ------------------
+
 NamespaceId Action::scopeNamespaceOpen(IdentifierId id)
 {
     ScopePrinter scope("scopeNamespaceOpen");
@@ -285,7 +335,7 @@ FunctionId Action::scopeFunctionAnon(ParamListId listId, TypeId returnType)
 
 // ------------------
 
-ObjectId Action::scopeObjectAdd(IdentifierId name, TypeId type)
+ObjectId Action::scopeObjectAdd(IdentifierId name, TypeId type, ObjectInitId /*init*/)
 {
     ScopePrinter scope("scopeObjectAdd");
     IdentifierAccess    nameAccess(storage, name);
@@ -316,6 +366,67 @@ IdentifierId Action::identifierCreateV()
 }
 // ------------------
 
+
+ObjectInitId Action::initVariable(ParamValueListId /*listId*/)
+{
+    return 0;
+}
+ObjectInitId Action::initFunction(StatementListId /*listId*/)
+{
+    return 0;
+}
+StatementId Action::statmentExpression(ExpressionId)
+{
+    return 0;
+}
+
+// Expression Functions
+// ========================
+#if 0
+ExpressionId Action::expressionAssign(ExpressionId, ExpressionId);
+ExpressionId Action::expressionAssignMul(ExpressionId, ExpressionId);
+ExpressionId Action::expressionAssignDiv(ExpressionId, ExpressionId);
+ExpressionId Action::expressionAssignMod(ExpressionId, ExpressionId);
+ExpressionId Action::expressionAssignAdd(ExpressionId, ExpressionId);
+ExpressionId Action::expressionAssignSub(ExpressionId, ExpressionId);
+ExpressionId Action::expressionAssignLSh(ExpressionId, ExpressionId);
+ExpressionId Action::expressionAssignRSh(ExpressionId, ExpressionId);
+ExpressionId Action::expressionAssignAnd(ExpressionId, ExpressionId);
+ExpressionId Action::expressionAssignXOR(ExpressionId, ExpressionId);
+ExpressionId Action::expressionAssignOR(ExpressionId, ExpressionId);
+ExpressionId Action::expressionConditional(ExpressionId, ExpressionId, ExpressionId);
+ExpressionId Action::expressionLogicalOr(ExpressionId, ExpressionId);
+ExpressionId Action::expressionLogicalAnd(ExpressionId, ExpressionId);
+ExpressionId Action::expressionInclusiveOr(ExpressionId, ExpressionId);
+ExpressionId Action::expressionExclusiveOr(ExpressionId, ExpressionId);
+ExpressionId Action::expressionAnd(ExpressionId, ExpressionId);
+ExpressionId Action::expressionEqual(ExpressionId, ExpressionId);
+ExpressionId Action::expressionNotEqual(ExpressionId, ExpressionId);
+ExpressionId Action::expressionLess(ExpressionId, ExpressionId);
+ExpressionId Action::expressionGreat(ExpressionId, ExpressionId);
+ExpressionId Action::expressionLessEqual(ExpressionId, ExpressionId);
+ExpressionId Action::expressionGreatEqual(ExpressionId, ExpressionId);
+ExpressionId Action::expressionShiftLeft(ExpressionId, ExpressionId);
+ExpressionId Action::expressionShiftRight(ExpressionId, ExpressionId);
+ExpressionId Action::expressionAdd(ExpressionId, ExpressionId);
+ExpressionId Action::expressionSub(ExpressionId, ExpressionId);
+ExpressionId Action::expressionMul(ExpressionId, ExpressionId);
+ExpressionId Action::expressionDiv(ExpressionId, ExpressionId);
+ExpressionId Action::expressionMod(ExpressionId, ExpressionId);
+ExpressionId Action::expressionPreInc(ExpressionId);
+ExpressionId Action::expressionPreDec(ExpressionId);
+ExpressionId Action::expressionPlus(ExpressionId);
+ExpressionId Action::expressionNeg(ExpressionId);
+ExpressionId Action::expressionOneCompliment(ExpressionId);
+ExpressionId Action::expressionNot(ExpressionId);
+ExpressionId Action::expressionArrayAccess(ExpressionId, ExpressionId);
+ExpressionId Action::expressionFuncCall(ExpressionId, ExpressionId);
+ExpressionId Action::expressionMemberAccess(ExpressionId, ExpressionId);
+ExpressionId Action::expressionPostInc(ExpressionId);
+ExpressionId Action::expressionPostDec(ExpressionId);
+ExpressionId Action::expreesionFindObjectByName(ExpressionId);
+ExpressionId Action::expressionLiteralString();
+#endif
 
 // Action Utility Functions
 // ========================

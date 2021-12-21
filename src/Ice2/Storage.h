@@ -10,7 +10,7 @@
 namespace ThorsAnvil::Anvil::Ice
 {
 
-using Data = std::variant<Int, DeclList, NamespaceList, ParamList, DeclRef, ScopeRef, NamespaceRef, TypeRef, ClassRef, FunctionRef, ObjectRef, Identifier>;
+using Data = std::variant<Int, DeclList, NamespaceList, ParamList, ParamValueList, StatementList, DeclRef, ScopeRef, NamespaceRef, TypeRef, VoidRef, ClassRef, FunctionRef, ObjectRef, StatementRef, ExpressionRef, ObjectInitRef, Identifier>;
 
 template<typename T>
 class StorageAccess;
@@ -22,19 +22,24 @@ class Storage
     // TODO defaultDecl can we make it another type?
     Namespace           defaultDecl;
     Namespace           defaultNamespace;
-    Class               defaultClass;
     Void                defaultType;
+    Void                defaultVoid;
+    Class               defaultClass;
     Function            defaultFunction;
     Object              defaultObject;
     Identifier          defaultIdentifier;
+    ObjectInit          defaultInit;
+    Statement           defaultStatement;
+    Expression          defaultExpression;
 
     public:
         Storage()
             : nextFree(0)
             , defaultDecl("Invalid Decl")
             , defaultNamespace("Invalid Namespace")
-            , defaultClass("Invalid Class")
             , defaultType("Invalid Type")
+            , defaultVoid("Invalid Void")
+            , defaultClass("Invalid Class")
             , defaultFunction("Invalid Function")
             , defaultObject("Invalid Object", defaultClass)
         {
@@ -42,16 +47,25 @@ class Storage
             // This is because ice.y parser passes back zero for no object returned.
             // So we don't want to confuse a no-object with an object.
             data.emplace_back(0UL);
+            // ---
+            data.emplace_back(Identifier{"Invalid Identifier"});
+            // ----
             data.emplace_back(DeclList{});
             data.emplace_back(NamespaceList{});
             data.emplace_back(ParamList{});
+            data.emplace_back(StatementList{});
+            data.emplace_back(ParamValueList{});
+            // ----
             data.emplace_back(DeclRef{defaultDecl});
             data.emplace_back(NamespaceRef{defaultNamespace});
             data.emplace_back(TypeRef{defaultType});
+            data.emplace_back(VoidRef{defaultVoid});
             data.emplace_back(ClassRef{defaultClass});
             data.emplace_back(FunctionRef{defaultFunction});
             data.emplace_back(ObjectRef{defaultObject});
-            data.emplace_back(Identifier{"Invalid Identifier"});
+            data.emplace_back(ObjectInitRef{defaultInit});
+            data.emplace_back(StatementRef{defaultStatement});
+            data.emplace_back(ExpressionRef{defaultExpression}); // 16
         }
 
         template<typename T>
