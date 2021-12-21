@@ -68,6 +68,7 @@ std::string Action::anonName()
 
 // Parser
 // ========================
+
 VoidId Action::anvilProgram(NamespaceListId id)
 {
     ScopePrinter scope("anvilProgram");
@@ -77,130 +78,6 @@ VoidId Action::anvilProgram(NamespaceListId id)
 VoidId Action::anvilProgramV(NamespaceList& /*list*/, Reuse&& /*reuse*/)
 {
     return 0;
-}
-// ------------------
-
-NamespaceListId Action::listNamespaceCreate()
-{
-    ScopePrinter scope("listNamespaceCreate");
-    return listNamespaceCreateV();
-}
-NamespaceListId Action::listNamespaceCreateV()
-{
-    return storage.add<NamespaceList>(NamespaceList{});
-}
-// ------------------
-
-NamespaceListId Action::listNamespaceAppend(NamespaceListId listId, NamespaceId id)
-{
-    ScopePrinter scope("listNamespaceAppend");
-    NamespaceListAccess    access(storage, listId);
-    return listNamespaceAppendV(access, NamespaceAccess(storage, id), [&access](){return access.reuse();});
-}
-NamespaceListId Action::listNamespaceAppendV(NamespaceList& list, Namespace& ns, Reuse&& reuse)
-{
-    list.emplace_back(ns);
-    return reuse();
-}
-// ------------------
-
-DeclListId Action::listDeclCreate()
-{
-    ScopePrinter scope("listDeclCreate");
-    return listDeclCreateV();
-}
-DeclListId Action::listDeclCreateV()
-{
-    return storage.add<DeclList>(DeclList{});
-}
-// ------------------
-
-DeclListId Action::listDeclAppend(DeclListId listId, DeclId id)
-{
-    ScopePrinter scope("listDeclAppend");
-    DeclListAccess     access(storage, listId);
-
-    return listDeclAppendV(access, DeclAccess(storage, id), [&access](){return access.reuse();});
-}
-DeclListId Action::listDeclAppendV(DeclList& list, Decl& decl, Reuse&& reuse)
-{
-    list.emplace_back(decl);
-    return reuse();
-}
-// ------------------
-
-ParamListId Action::listParamCreate()
-{
-    ScopePrinter scope("listParamCreate");
-    return listParamCreateV();
-}
-ParamListId Action::listParamCreateV()
-{
-    return storage.add<ParamList>(ParamList{});
-}
-// ------------------
-
-ParamListId Action::listParamAppend(ParamListId listId, TypeId id)
-{
-    ScopePrinter scope("listParamAppend");
-    ParamListAccess     access(storage, listId);
-
-    return listParamAppendV(access, TypeAccess(storage, id), [&access](){return access.reuse();});
-}
-ParamListId Action::listParamAppendV(ParamList& list, Type& type, Reuse&& reuse)
-{
-    list.emplace_back(type);
-    return reuse();
-}
-// ------------------
-
-ParamValueListId Action::listParamValueCreate()
-{
-    ScopePrinter scope("listParamValueCreate");
-    return listParamValueCreateV();
-}
-ParamValueListId Action::listParamValueCreateV()
-{
-    return storage.add<ParamValueList>(ParamValueList{});
-}
-// ------------------
-
-ParamValueListId Action::listParamValueAppend(ParamValueListId listId, ExpressionId id)
-{
-    ScopePrinter scope("listParamValueAppend");
-    ParamValueListAccess     access(storage, listId);
-
-    return listParamValueAppendV(access, ExpressionAccess(storage, id), [&access](){return access.reuse();});
-}
-ParamValueListId Action::listParamValueAppendV(ParamValueList& list, Expression& type, Reuse&& reuse)
-{
-    list.emplace_back(type);
-    return reuse();
-}
-// ------------------
-
-StatementListId Action::listStatementCreate()
-{
-    ScopePrinter scope("listStatementCreate");
-    return listStatementCreateV();
-}
-StatementListId Action::listStatementCreateV()
-{
-    return storage.add<StatementList>(StatementList{});
-}
-// ------------------
-
-StatementListId Action::listStatementAppend(StatementListId listId, StatementId id)
-{
-    ScopePrinter scope("listStatementAppend");
-    StatementListAccess     access(storage, listId);
-
-    return listStatementAppendV(access, StatementAccess(storage, id), [&access](){return access.reuse();});
-}
-StatementListId Action::listStatementAppendV(StatementList& list, Statement& st, Reuse&& reuse)
-{
-    list.emplace_back(st);
-    return reuse();
 }
 // ------------------
 
@@ -303,13 +180,13 @@ FunctionId Action::scopeFunctionOpenV(std::string& className, Reuse&& /*reuse*/)
 }
 // ------------------
 
-FunctionId Action::scopeFunctionClose(FunctionId id, ParamListId listId, TypeId returnType)
+FunctionId Action::scopeFunctionClose(FunctionId id, TypeListId listId, TypeId returnType)
 {
     ScopePrinter scope("scopeFunctionClose");
     FunctionAccess      access(storage, id);
-    return scopeFunctionCloseV(access, ParamListAccess(storage, listId), TypeAccess(storage, returnType), [&access](){return access.reuse();});
+    return scopeFunctionCloseV(access, TypeListAccess(storage, listId), TypeAccess(storage, returnType), [&access](){return access.reuse();});
 }
-FunctionId Action::scopeFunctionCloseV(Function& cl, ParamList& /*list*/, Type& /*returnType*/, Reuse&& reuse)
+FunctionId Action::scopeFunctionCloseV(Function& cl, TypeList& /*list*/, Type& /*returnType*/, Reuse&& reuse)
 {
     Scope&          topScope = currentScope.back();
     Function*       topFunction = dynamic_cast<Function*>(&topScope);
@@ -323,7 +200,7 @@ FunctionId Action::scopeFunctionCloseV(Function& cl, ParamList& /*list*/, Type& 
 }
 // ------------------
 
-FunctionId Action::scopeFunctionAnon(ParamListId listId, TypeId returnType)
+FunctionId Action::scopeFunctionAnon(TypeListId listId, TypeId returnType)
 {
     ScopePrinter scope("scopeFunctionAnon");
     std::string     anonN   = anonName();
@@ -367,7 +244,7 @@ IdentifierId Action::identifierCreateV()
 // ------------------
 
 
-ObjectInitId Action::initVariable(ParamValueListId /*listId*/)
+ObjectInitId Action::initVariable(ExpressionListId /*listId*/)
 {
     return 0;
 }
@@ -558,8 +435,14 @@ std::ostream& operator<<(std::ostream& str, Action const& action)
              << "\n";
 }
 
-template struct IdAccess<Namespace>;
 template struct IdAccess<Identifier>;
+template struct IdAccess<Namespace>;
+template struct IdAccess<Decl>;
 template struct IdAccess<Object>;
+template struct IdAccess<Statement>;
+template struct IdAccess<Expression>;
+template struct IdAccess<ExpressionList>;
+template struct IdAccess<StatementList>;
+
 
 }

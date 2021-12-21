@@ -32,8 +32,8 @@ int yylex(void*, ThorsAnvil::Anvil::Ice::Lexer& lexer, ThorsAnvil::Anvil::Ice::A
 using ThorsAnvil::Anvil::Ice::VoidId;
 using ThorsAnvil::Anvil::Ice::DeclListId;
 using ThorsAnvil::Anvil::Ice::NamespaceListId;
-using ThorsAnvil::Anvil::Ice::ParamListId;
-using ThorsAnvil::Anvil::Ice::ParamValueListId;
+using ThorsAnvil::Anvil::Ice::TypeListId;
+using ThorsAnvil::Anvil::Ice::ExpressionListId;
 using ThorsAnvil::Anvil::Ice::StatementListId;
 using ThorsAnvil::Anvil::Ice::DeclId;
 using ThorsAnvil::Anvil::Ice::ScopeId;
@@ -55,14 +55,16 @@ using ThorsAnvil::Anvil::Ice::Class;
 using ThorsAnvil::Anvil::Ice::Function;
 using ThorsAnvil::Anvil::Ice::Object;
 using ThorsAnvil::Anvil::Ice::ObjectInit;
+using ThorsAnvil::Anvil::Ice::Statement;
+using ThorsAnvil::Anvil::Ice::Expression;
 %}
 %union {
     semantic_type(): voidId{0} {};
     VoidId              voidId;
     DeclListId          declListId;
     NamespaceListId     namespaceListId;
-    ParamListId         paramListId;
-    ParamValueListId    paramValueListId;
+    TypeListId          typeListId;
+    ExpressionListId    expressionListId;
     StatementListId     statementListId;
     DeclId              declId;
     NamespaceId         namespaceId;
@@ -110,10 +112,10 @@ using ThorsAnvil::Anvil::Ice::ObjectInit;
 %type   <declListId>            DeclListOpt
 %type   <declListId>            DeclList
 %type   <namespaceListId>       NamespaceList
-%type   <paramListId>           ParamListOpt
-%type   <paramListId>           ParamList
-%type   <paramValueListId>      ParamValueListOpt
-%type   <paramValueListId>      ParamValueList
+%type   <typeListId>            TypeListOpt
+%type   <typeListId>            TypeList
+%type   <expressionListId>      ExpressionListOpt
+%type   <expressionListId>      ExpressionList
 %type   <statementListId>       StatementListOpt
 %type   <statementListId>       StatementList
 %type   <declId>                Decl
@@ -158,31 +160,31 @@ using ThorsAnvil::Anvil::Ice::ObjectInit;
 
 %%
 
-Anvil:                                                                      {$$ = action.anvilProgram(action.listNamespaceCreate());}
+Anvil:                                                                      {$$ = action.anvilProgram(action.listCreate<Namespace>());}
                     |   NamespaceList                                       {$$ = action.anvilProgram($1);}
 
-NamespaceList:          Namespace                                           {$$ = action.listNamespaceAppend(action.listNamespaceCreate(), $1);}
-                    |   NamespaceList Namespace                             {$$ = action.listNamespaceAppend($1, $2);}
+NamespaceList:          Namespace                                           {$$ = action.listAppend<Namespace>(action.listCreate<Namespace>(), $1);}
+                    |   NamespaceList Namespace                             {$$ = action.listAppend<Namespace>($1, $2);}
 
-DeclListOpt:                                                                {$$ = action.listDeclCreate();}
+DeclListOpt:                                                                {$$ = action.listCreate<Decl>();}
                     |   DeclList                                            {$$ = $1;}
-DeclList:               Decl                                                {$$ = action.listDeclAppend(action.listDeclCreate(), $1);}
-                    |   DeclList Decl                                       {$$ = action.listDeclAppend($1, $2);}
+DeclList:               Decl                                                {$$ = action.listAppend<Decl>(action.listCreate<Decl>(), $1);}
+                    |   DeclList Decl                                       {$$ = action.listAppend<Decl>($1, $2);}
 
-ParamListOpt:                                                               {$$ = action.listParamCreate();}
-                    |   ParamList                                           {$$ = $1;}
-ParamList:              Type                                                {$$ = action.listParamAppend(action.listParamCreate(), $1);}
-                    |   ParamList ',' Type                                  {$$ = action.listParamAppend($1, $3);}
+TypeListOpt:                                                                {$$ = action.listCreate<Type>();}
+                    |   TypeList                                            {$$ = $1;}
+TypeList:               Type                                                {$$ = action.listAppend<Type>(action.listCreate<Type>(), $1);}
+                    |   TypeList ',' Type                                   {$$ = action.listAppend<Type>($1, $3);}
 
-ParamValueListOpt:                                                          {$$ = action.listParamValueCreate();}
-                    |   ParamValueList                                      {$$ = $1;}
-ParamValueList:         Expression                                          {$$ = action.listParamValueAppend(action.listParamValueCreate(), $1);}
-                    |   ParamValueList ',' Expression                       {$$ = action.listParamValueAppend($1, $3);}
+ExpressionListOpt:                                                          {$$ = action.listCreate<Expression>();}
+                    |   ExpressionList                                      {$$ = $1;}
+ExpressionList:         Expression                                          {$$ = action.listAppend<Expression>(action.listCreate<Expression>(), $1);}
+                    |   ExpressionList ',' Expression                       {$$ = action.listAppend<Expression>($1, $3);}
 
-StatementListOpt:                                                           {$$ = action.listStatementCreate();}
+StatementListOpt:                                                           {$$ = action.listCreate<Statement>();}
                     |   StatementList                                       {$$ = $1;}
-StatementList:          Statement                                           {$$ = action.listStatementAppend(action.listStatementCreate(), $1);}
-                    |   StatementList Statement                             {$$ = action.listStatementAppend($1, $2);}
+StatementList:          Statement                                           {$$ = action.listAppend<Statement>(action.listCreate<Statement>(), $1);}
+                    |   StatementList Statement                             {$$ = action.listAppend<Statement>($1, $2);}
 
 Namespace:              NamespaceStart '{' DeclListOpt  '}'                 {$$ = action.scopeNamespaceClose($1, $3);}
 NamespaceStart:         NAMESPACE IdentifierNamespace                       {$$ = action.scopeNamespaceOpen($2);}
@@ -196,13 +198,13 @@ Class:                  ClassStart '{' DeclListOpt '}'                      {$$ 
 ClassStart:             CLASS IdentifierType                                {$$ = action.scopeClassOpen($2);}
 ClassAnon:              CLASS '{' DeclListOpt '}'                           {$$ = action.scopeClassAnon($3);}
 
-Function:               FunctionStart '{' ParamListOpt ARROW Type '}'       {$$ = action.scopeFunctionClose($1, $3, $5);}
+Function:               FunctionStart '{' TypeListOpt ARROW Type '}'        {$$ = action.scopeFunctionClose($1, $3, $5);}
 FunctionStart:          FUNC IdentifierType                                 {$$ = action.scopeFunctionOpen($2);}
-FunctionAnon:           FUNC '{' ParamListOpt ARROW Type '}'                {$$ = action.scopeFunctionAnon($3, $5);}
+FunctionAnon:           FUNC '{' TypeListOpt ARROW Type '}'                 {$$ = action.scopeFunctionAnon($3, $5);}
 
 ObjectDecl:             IdentifierObject ':' TypeDecl ObjectInit            {$$ = action.scopeObjectAdd($1, $3, $4);}
-ObjectInit:             ';'                                                 {$$ = action.initVariable(action.listParamValueCreate());}
-                    |   '(' ParamValueListOpt ')' ';'                       {$$ = action.initVariable($2);}
+ObjectInit:             ';'                                                 {$$ = action.initVariable(action.listCreate<Expression>());}
+                    |   '(' ExpressionListOpt ')' ';'                       {$$ = action.initVariable($2);}
                     |   '{' StatementListOpt '}'                            {$$ = action.initFunction($2);}
 
 Statement:              Expression ';'                                      {$$ = action.statmentExpression($1);}
@@ -296,7 +298,7 @@ UnaryExpression:        PostFixExpression                                   {$$ 
 
 PostFixExpression:      PrimaryExpression                                   {$$ = $1;}
                     |   PostFixExpression '[' Expression ']'                {$$ = action.expressionArrayAccess($1, $3);}
-                    |   PostFixExpression '(' ParamValueListOpt ')'         {$$ = action.expressionFuncCall($1, $3);}
+                    |   PostFixExpression '(' ExpressionListOpt ')'         {$$ = action.expressionFuncCall($1, $3);}
                     |   PostFixExpression '.' IdentifierObject              {$$ = action.expressionMemberAccess($1, $3);}
                     |   PostFixExpression OP_INC                            {$$ = action.expressionPostInc($1);}
                     |   PostFixExpression OP_DEC                            {$$ = action.expressionPostDec($1);}

@@ -47,31 +47,55 @@ class Action
         // Public Utility
         std::string         anonName();
 
+        // Creating an maintaining lists.
+        template<typename T>
+        struct ListBuilder
+        {
+            using Ref           = std::reference_wrapper<T>;
+            using ID            = Id<T>;
+            using IDAccess      = IdAccess<T>;
+            using List          = std::list<Ref>;
+            using ListId        = Id<List>;
+            using ListIdAccess  = IdAccess<List>;
+        };
+        template<typename T>
+        typename ListBuilder<T>::ListId listCreate()
+        {
+            using List = typename ListBuilder<T>::List;
+
+            return storage.add<List>(List{});
+        }
+        template<typename T>
+        typename ListBuilder<T>::ListId listAppend(typename ListBuilder<T>::ListId listId, typename ListBuilder<T>::ID id)
+        {
+            using ListIdAccess  = typename ListBuilder<T>::ListIdAccess;
+            using IDAccess      = typename ListBuilder<T>::IDAccess;
+            using List          = typename ListBuilder<T>::List;
+
+            ListIdAccess    listAccess(storage, listId);
+            IDAccess        objectAccess(storage, id);
+
+            List&           list = listAccess;
+            T&              object = objectAccess;
+
+            list.emplace_back(object);
+            return listAccess.reuse();
+        }
+
         // Parsing
         VoidId              anvilProgram(NamespaceListId id);
-        DeclListId          listDeclCreate();
-        DeclListId          listDeclAppend(DeclListId listId, DeclId id);
-        NamespaceListId     listNamespaceCreate();
-        NamespaceListId     listNamespaceAppend(NamespaceListId listId, NamespaceId id);
-        ParamListId         listParamCreate();
-        ParamListId         listParamAppend(ParamListId listId, TypeId id);
-        ParamValueListId    listParamValueCreate();
-        ParamValueListId    listParamValueAppend(ParamValueListId listId, ExpressionId id);
-        StatementListId     listStatementCreate();
-        StatementListId     listStatementAppend(StatementListId listId, StatementId id);
-
         NamespaceId         scopeNamespaceOpen(IdentifierId id);
         NamespaceId         scopeNamespaceClose(NamespaceId id, DeclListId listId);
         ClassId             scopeClassOpen(IdentifierId id);
         ClassId             scopeClassClose(ClassId id, DeclListId listId);
         ClassId             scopeClassAnon(DeclListId listId);
         FunctionId          scopeFunctionOpen(IdentifierId id);
-        FunctionId          scopeFunctionClose(FunctionId id, ParamListId listId, TypeId returnType);
-        FunctionId          scopeFunctionAnon(ParamListId listId, TypeId returnType);
+        FunctionId          scopeFunctionClose(FunctionId id, TypeListId listId, TypeId returnType);
+        FunctionId          scopeFunctionAnon(TypeListId listId, TypeId returnType);
         ObjectId            scopeObjectAdd(IdentifierId name, TypeId id, ObjectInitId init);
         IdentifierId        identifierCreate();
 
-        ObjectInitId        initVariable(ParamValueListId listId);
+        ObjectInitId        initVariable(ExpressionListId listId);
         ObjectInitId        initFunction(StatementListId listId);
 
         StatementId         statmentExpression(ExpressionId);
@@ -129,7 +153,7 @@ class Action
         ExpressionId        expressionOneCompliment(ExpressionId)                               {return 0;}
         ExpressionId        expressionNot(ExpressionId)                                         {return 0;}
         ExpressionId        expressionArrayAccess(ExpressionId, ExpressionId)                   {return 0;}
-        ExpressionId        expressionFuncCall(ExpressionId, ParamValueListId)                  {return 0;}
+        ExpressionId        expressionFuncCall(ExpressionId, ExpressionListId)                  {return 0;}
         ExpressionId        expressionMemberAccess(ExpressionId, IdentifierId)                  {return 0;}
         ExpressionId        expressionPostInc(ExpressionId)                                     {return 0;}
         ExpressionId        expressionPostDec(ExpressionId)                                     {return 0;}
@@ -139,22 +163,12 @@ class Action
         // Parsing virtual methods
         using Reuse = std::function<Int()>;
         virtual VoidId              anvilProgramV(NamespaceList&, Reuse&& reuse);
-        virtual DeclListId          listDeclCreateV();
-        virtual DeclListId          listDeclAppendV(DeclList& list, Decl& decl, Reuse&& reuse);
-        virtual NamespaceListId     listNamespaceCreateV();
-        virtual NamespaceListId     listNamespaceAppendV(NamespaceList& listId, Namespace& id, Reuse&& reuse);
-        virtual ParamListId         listParamCreateV();
-        virtual ParamListId         listParamAppendV(ParamList& listId, Type& id, Reuse&& reuse);
-        virtual ParamValueListId    listParamValueCreateV();
-        virtual ParamValueListId    listParamValueAppendV(ParamValueList& listId, Expression& id, Reuse&& reuse);
-        virtual StatementListId     listStatementCreateV();
-        virtual StatementListId     listStatementAppendV(StatementList& listId, Statement& id, Reuse&& reuse);
         virtual NamespaceId         scopeNamespaceOpenV(std::string&, Reuse&& reuse);
         virtual NamespaceId         scopeNamespaceCloseV(Namespace&, DeclList& list, Reuse&& reuse);
         virtual ClassId             scopeClassOpenV(std::string&, Reuse&& reuse);
         virtual ClassId             scopeClassCloseV(Class&, DeclList& list, Reuse&& reuse);
         virtual FunctionId          scopeFunctionOpenV(std::string& id, Reuse&& reuse);
-        virtual FunctionId          scopeFunctionCloseV(Function& id, ParamList& listId, Type& returnType, Reuse&& reuse);
+        virtual FunctionId          scopeFunctionCloseV(Function& id, TypeList& listId, Type& returnType, Reuse&& reuse);
         virtual ObjectId            scopeObjectAddV(Identifier& name, Type& id);
         virtual IdentifierId        identifierCreateV();
     private:

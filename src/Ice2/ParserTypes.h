@@ -13,9 +13,9 @@ namespace ThorsAnvil::Anvil::Ice
 using Int                   = std::size_t;
 using NamespaceList         = std::list<NamespaceRef>;
 using DeclList              = std::list<DeclRef>;
-using ParamList             = std::list<TypeRef>;
+using TypeList              = std::list<TypeRef>;
 using StatementList         = std::list<StatementRef>;
-using ParamValueList        = std::list<ExpressionRef>;
+using ExpressionList        = std::list<ExpressionRef>;
 using Identifier            = std::string;
 
 template<typename T>
@@ -48,11 +48,11 @@ struct IdTraits<NamespaceList>
     using AccessType = NamespaceList;
 };
 template<>
-struct IdTraits<ParamList>
+struct IdTraits<TypeList>
 {
     static constexpr bool valid = true;
     static constexpr Int defaultStorageId = 4;
-    using AccessType = ParamList;
+    using AccessType = TypeList;
 };
 template<>
 struct IdTraits<StatementList>
@@ -62,11 +62,11 @@ struct IdTraits<StatementList>
     using AccessType = StatementList;
 };
 template<>
-struct IdTraits<ParamValueList>
+struct IdTraits<ExpressionList>
 {
     static constexpr bool valid = true;
     static constexpr Int defaultStorageId = 6;
-    using AccessType = ParamValueList;
+    using AccessType = ExpressionList;
 };
 
 
@@ -120,8 +120,8 @@ struct IdAccess
 using VoidId                = Id<Void, false>;
 using DeclListId            = Id<DeclList>;
 using NamespaceListId       = Id<NamespaceList>;
-using ParamListId           = Id<ParamList>;
-using ParamValueListId      = Id<ParamValueList>;
+using TypeListId            = Id<TypeList>;
+using ExpressionListId      = Id<ExpressionList>;
 using StatementListId       = Id<StatementList>;
 using DeclId                = Id<Decl>;
 using ScopeId               = Id<Scope>;
@@ -137,8 +137,8 @@ using ExpressionId          = Id<Expression>;
 
 using DeclListAccess        = IdAccess<DeclList>;
 using NamespaceListAccess   = IdAccess<NamespaceList>;
-using ParamListAccess       = IdAccess<ParamList>;
-using ParamValueListAccess  = IdAccess<ParamValueList>;
+using TypeListAccess        = IdAccess<TypeList>;
+using ExpressionListAccess  = IdAccess<ExpressionList>;
 using StatementListAccess   = IdAccess<StatementList>;
 using DeclAccess            = IdAccess<Decl>;
 using ScopeAccess           = IdAccess<Scope>;
