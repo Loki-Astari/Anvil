@@ -19,15 +19,29 @@ class Storage
 {
     std::vector<Data>   data;
     Int                 nextFree;
+    // TODO defaultDecl can we make it another type?
+    Namespace           defaultDecl;
+    Namespace           defaultNamespace;
+    Class               defaultClass;
+    Identifier          defaultIdentifier;
 
     public:
         Storage()
             : nextFree(0)
+            , defaultDecl("Invalid Decl")
+            , defaultNamespace("Invalid Namespace")
+            , defaultClass("Invalid Class")
         {
             // We don't use location 0.
             // This is because ice.y parser passes back zero for no object returned.
             // So we don't want to confuse a no-object with an object.
             data.emplace_back(0UL);
+            data.emplace_back(DeclList{});
+            data.emplace_back(NamespaceList{});
+            data.emplace_back(DeclRef{defaultDecl});
+            data.emplace_back(NamespaceRef{defaultNamespace});
+            data.emplace_back(ClassRef{defaultClass});
+            data.emplace_back(Identifier{"Invalid Identifier"});
         }
 
         template<typename T>

@@ -29,9 +29,6 @@ int yylex(void*, ThorsAnvil::Anvil::Ice::Lexer& lexer, ThorsAnvil::Anvil::Ice::A
 %lex-param   {Action& action}
 
 %{
-using ThorsAnvil::Anvil::Ice::ParserType;
-
-
 using ThorsAnvil::Anvil::Ice::VoidId;
 using ThorsAnvil::Anvil::Ice::DeclListId;
 using ThorsAnvil::Anvil::Ice::NamespaceListId;
@@ -39,6 +36,10 @@ using ThorsAnvil::Anvil::Ice::DeclId;
 using ThorsAnvil::Anvil::Ice::NamespaceId;
 using ThorsAnvil::Anvil::Ice::ClassId;
 using ThorsAnvil::Anvil::Ice::IdentifierId;
+// ---
+using ThorsAnvil::Anvil::Ice::Decl;
+using ThorsAnvil::Anvil::Ice::Namespace;
+using ThorsAnvil::Anvil::Ice::Class;
 %}
 %union {
     semantic_type(): voidId{0} {};
@@ -91,8 +92,8 @@ DeclList:               Decl                                    {$$ = action.lis
 Decl:                   NamespaceDecl                           {$$ = $1;}
                     |   ClassDecl                               {$$ = $1;}
 
-NamespaceDecl:          Namespace                               {$$ = action.convert<ParserType::Namespace, ParserType::Decl>($1);}
-ClassDecl:              Class                                   {$$ = action.convert<ParserType::Class, ParserType::Decl>($1);}
+NamespaceDecl:          Namespace                               {$$ = action.convert<Namespace, Decl>($1);}
+ClassDecl:              Class                                   {$$ = action.convert<Class, Decl>($1);}
 
 Class:                  ClassStart '{' DeclListOpt '}'          {$$ = action.scopeClassClose($1, $3);}
 ClassStart:             CLASS IdentifierType                    {$$ = action.scopeClassOpen($2);}

@@ -15,75 +15,38 @@ using NamespaceList         = std::list<NamespaceRef>;
 using DeclList              = std::list<DeclRef>;
 using Identifier            = std::string;
 
-
-enum class ParserType {Void, DeclList, NamespaceList, Decl, Namespace, Class, Identifier};
-
-template<ParserType PT>
-struct IdTraits;
-
-template<>
-struct IdTraits<ParserType::Void>
+template<typename T>
+struct IdTraits
 {
-    static constexpr bool valid = false;
+    static constexpr bool valid = T::valid;
+    static constexpr Int defaultStorageId = T::defaultStorageId;
+    using AccessType = std::reference_wrapper<T>;
 };
+
 template<>
-struct IdTraits<ParserType::DeclList>
+struct IdTraits<DeclList>
 {
     static constexpr bool valid = true;
+    static constexpr Int defaultStorageId = 1;
     using AccessType = DeclList;
-    using ExportType = DeclList;
-    static ExportType& convert(AccessType& object) {return object;}
-    static DeclList defaultUnusedValue;
 };
 template<>
-struct IdTraits<ParserType::NamespaceList>
+struct IdTraits<NamespaceList>
 {
     static constexpr bool valid = true;
+    static constexpr Int defaultStorageId = 2;
     using AccessType = NamespaceList;
-    using ExportType = NamespaceList;
-    static ExportType& convert(AccessType& object) {return object;}
-    static NamespaceList defaultUnusedValue;
 };
 template<>
-struct IdTraits<ParserType::Decl>
+struct IdTraits<Identifier>
 {
     static constexpr bool valid = true;
-    using AccessType = DeclRef;
-    using ExportType = Decl;
-    static ExportType& convert(AccessType& object) {return object.get();}
-    // TODO Make this Void-Decl
-    static Namespace defaultUnusedValue;
-};
-template<>
-struct IdTraits<ParserType::Namespace>
-{
-    static constexpr bool valid = true;
-    using AccessType = NamespaceRef;
-    using ExportType = Namespace;
-    static ExportType& convert(AccessType& object) {return object.get();}
-    static Namespace defaultUnusedValue;
-};
-template<>
-struct IdTraits<ParserType::Class>
-{
-    static constexpr bool valid = true;
-    using AccessType = ClassRef;
-    using ExportType = Class;
-    static ExportType& convert(AccessType& object) {return object.get();}
-    static Class defaultUnusedValue;
-};
-template<>
-struct IdTraits<ParserType::Identifier>
-{
-    static constexpr bool valid = true;
+    static constexpr Int defaultStorageId = 6;
     using AccessType = std::string;
-    using ExportType = AccessType;
-    static ExportType& convert(AccessType& object) {return object;}
-    static std::string defaultUnusedValue;
 };
 
 
-template<ParserType PT, bool valid = true>
+template<typename T, bool valid = true>
 struct Id
 {
     Int value;
@@ -92,8 +55,8 @@ struct Id
     {}
 };
 
-template<ParserType PT>
-struct Id<PT, false>
+template<typename T>
+struct Id<T, false>
 {
     Int value;
     Id(Int v)
@@ -107,12 +70,12 @@ struct Id<PT, false>
 };
 
 class Storage;
-template<ParserType PT>
+template<typename T>
 struct IdAccess
 {
     Storage&    storage;
     Int         index;
-    IdAccess(Storage& storage, Id<PT, IdTraits<PT>::valid> id)
+    IdAccess(Storage& storage, Id<T, IdTraits<T>::valid> id)
         : storage(storage)
         , index(id.value)
     {}
@@ -126,25 +89,24 @@ struct IdAccess
         return result;
     }
 
-    using AccessType = typename IdTraits<PT>::AccessType;
-    using ExportType = typename IdTraits<PT>::ExportType;
-    operator ExportType&() const;
+    using AccessType = typename IdTraits<T>::AccessType;
+    operator T&() const;
 };
 
-using VoidId                = Id<ParserType::Void, false>;
-using DeclListId            = Id<ParserType::DeclList>;
-using NamespaceListId       = Id<ParserType::NamespaceList>;
-using DeclId                = Id<ParserType::Decl>;
-using NamespaceId           = Id<ParserType::Namespace>;
-using ClassId               = Id<ParserType::Class>;
-using IdentifierId          = Id<ParserType::Identifier>;
+using VoidId                = Id<Void, false>;
+using DeclListId            = Id<DeclList>;
+using NamespaceListId       = Id<NamespaceList>;
+using DeclId                = Id<Decl>;
+using NamespaceId           = Id<Namespace>;
+using ClassId               = Id<Class>;
+using IdentifierId          = Id<Identifier>;
 
-using DeclListAccess        = IdAccess<ParserType::DeclList>;
-using NamespaceListAccess   = IdAccess<ParserType::NamespaceList>;
-using DeclAccess            = IdAccess<ParserType::Decl>;
-using NamespaceAccess       = IdAccess<ParserType::Namespace>;
-using ClassAccess           = IdAccess<ParserType::Class>;
-using IdentifierAccess      = IdAccess<ParserType::Identifier>;
+using DeclListAccess        = IdAccess<DeclList>;
+using NamespaceListAccess   = IdAccess<NamespaceList>;
+using DeclAccess            = IdAccess<Decl>;
+using NamespaceAccess       = IdAccess<Namespace>;
+using ClassAccess           = IdAccess<Class>;
+using IdentifierAccess      = IdAccess<Identifier>;
 
 }
 

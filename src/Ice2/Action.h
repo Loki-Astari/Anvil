@@ -56,15 +56,13 @@ class Action
         DeclListId          listDeclAppend(DeclListId listId, DeclId id);
         IdentifierId        identifierCreate();
 
-        template<ParserType From, ParserType To>
+        template<typename From, typename To>
         Id<To> convert(Id<From> id)
         {
-            using FromType = typename IdTraits<From>::ExportType;
-            using ToType = typename IdTraits<To>::ExportType;
             using ToStoreType = typename IdTraits<To>::AccessType;
             IdAccess<From>  access(storage, id);
-            FromType&  fromValue = access;
-            ToType&    toType = dynamic_cast<ToType&>(fromValue);
+            From&  fromValue = access;
+            To&    toType = dynamic_cast<To&>(fromValue);
             return storage.add<ToStoreType>(ToStoreType{toType});
         }
 

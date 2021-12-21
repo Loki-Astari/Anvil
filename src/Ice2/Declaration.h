@@ -12,18 +12,26 @@
 namespace ThorsAnvil::Anvil::Ice
 {
 
-enum class DeclType {Namespace, Class};
+class Decl;
+
+using Int           = std::size_t;
+using MemberStorage = std::map<std::string, std::unique_ptr<Decl>>;
+using MemberIndex   = std::map<std::string, std::size_t>;
+using NameRef       = MemberStorage::const_iterator;
+
+
+enum class DeclType {Void, Namespace, Class};
 class Decl
 {
     public:
         virtual ~Decl() {}
         virtual DeclType declType() const = 0;
         virtual std::string const& declName() const = 0;
+
+        static constexpr bool valid = true;
+        static constexpr Int defaultStorageId = 3;
 };
 
-using MemberStorage = std::map<std::string, std::unique_ptr<Decl>>;
-using MemberIndex   = std::map<std::string, std::size_t>;
-using NameRef = MemberStorage::const_iterator;
 
 class Scope: public Decl
 {
@@ -37,7 +45,7 @@ class Scope: public Decl
         std::pair<bool, NameRef> get(std::string const& name) const;
         template<typename T, typename... Args>
         T& add(Args&&... args);
-        virtual bool storeFunctionsInContainer() const = 0;
+        virtual bool storeFunctionsInContainer() const {return false;}
 
         friend std::ostream& operator<<(std::ostream& str, Scope& data)
         {
@@ -70,7 +78,17 @@ class Namespace: public NamedScope
             : NamedScope(std::move(name))
         {}
         virtual DeclType declType() const override {return DeclType::Namespace;}
-        virtual bool storeFunctionsInContainer() const override {return false;}
+
+        static constexpr bool valid = true;
+        static constexpr Int defaultStorageId = 4;
+};
+
+class Void: public Scope
+{
+    public:
+        virtual DeclType declType() const override {return DeclType::Void;}
+
+        static constexpr bool valid = false;
 };
 
 class Class: public NamedScope
@@ -81,6 +99,9 @@ class Class: public NamedScope
         {}
         virtual DeclType declType() const override {return DeclType::Class;}
         virtual bool storeFunctionsInContainer() const override {return true;}
+
+        static constexpr bool valid = true;
+        static constexpr Int defaultStorageId = 5;
 };
 
 using DeclRef           = std::reference_wrapper<Decl>;

@@ -220,8 +220,8 @@ std::string Action::getCurrentScopeFullName() const
 
 // Storage Access
 // ========================
-template<ParserType PT>
-IdAccess<PT>::~IdAccess()
+template<typename T>
+IdAccess<T>::~IdAccess()
 {
     if (index != 0)
     {
@@ -229,14 +229,11 @@ IdAccess<PT>::~IdAccess()
     }
 }
 
-template<ParserType PT>
-IdAccess<PT>::operator ExportType&() const
+template<typename T>
+IdAccess<T>::operator T&() const
 {
-    if (index == 0)
-    {
-        return IdTraits<PT>::defaultUnusedValue;
-    }
-    return IdTraits<PT>::convert(storage.get<AccessType>(index));
+    Int location = (index != 0) ? index : IdTraits<T>::defaultStorageId;
+    return storage.get<AccessType>(location);
 }
 
 namespace ThorsAnvil::Anvil::Ice
@@ -251,13 +248,7 @@ std::ostream& operator<<(std::ostream& str, Action const& action)
              << "\n";
 }
 
-template struct IdAccess<ParserType::Namespace>;
-template struct IdAccess<ParserType::Identifier>;
+template struct IdAccess<Namespace>;
+template struct IdAccess<Identifier>;
 
-DeclList        IdTraits<ParserType::DeclList>::defaultUnusedValue;
-NamespaceList   IdTraits<ParserType::NamespaceList>::defaultUnusedValue;
-Namespace       IdTraits<ParserType::Decl>::defaultUnusedValue("This is an Invalid Decl");
-Namespace       IdTraits<ParserType::Namespace>::defaultUnusedValue("This Is an Invalid Namespace");
-Class           IdTraits<ParserType::Class>::defaultUnusedValue("This Is an Invalid Class");
-std::string     IdTraits<ParserType::Identifier>::defaultUnusedValue("This Is an Invalid Identifier");
 }
