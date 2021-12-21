@@ -49,7 +49,7 @@ template<>
 struct IdTraits<Identifier>
 {
     static constexpr bool valid = true;
-    static constexpr Int defaultStorageId = 9;
+    static constexpr Int defaultStorageId = 10;
     using AccessType = std::string;
 };
 
@@ -111,6 +111,7 @@ using NamespaceId           = Id<Namespace>;
 using TypeId                = Id<Type>;
 using ClassId               = Id<Class>;
 using FunctionId            = Id<Function>;
+using ObjectId              = Id<Object>;
 using IdentifierId          = Id<Identifier>;
 
 using DeclListAccess        = IdAccess<DeclList>;
@@ -122,6 +123,7 @@ using NamespaceAccess       = IdAccess<Namespace>;
 using TypeAccess            = IdAccess<Type>;
 using ClassAccess           = IdAccess<Class>;
 using FunctionAccess        = IdAccess<Function>;
+using ObjectAccess          = IdAccess<Object>;
 using IdentifierAccess      = IdAccess<Identifier>;
 
 }

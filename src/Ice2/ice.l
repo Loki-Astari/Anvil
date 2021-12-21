@@ -12,7 +12,7 @@
 
 %}
 
-
+IdentifierObject    [a-z][A-Za-z0-9_]*
 IdentifierNS        [A-Z][A-Za-z0-9_]*
 IdentifierType      [A-Z][A-Za-z0-9]{3,}
 
@@ -28,7 +28,11 @@ func                {action.token();return yy::Parser::token::FUNC;}
 ::                  {action.token();return yy::Parser::token::SCOPE;}
 \{                  {action.token();return '{';}
 \}                  {action.token();return '}';}
+:                   {action.token();return ':';}
+;                   {action.token();return ';';}
+,                   {action.token();return ',';}
 
+{IdentifierObject}  {action.token();return yy::Parser::token::IDENTIFIER_OBJECT;}
 {IdentifierType}    {action.token();return yy::Parser::token::IDENTIFIER_TYPE;}
 {IdentifierNS}      {action.token();return yy::Parser::token::IDENTIFIER_NS;}
 {WhiteSpace}        {action.ignoreSpace();/* Ignore */}

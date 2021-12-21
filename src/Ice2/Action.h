@@ -59,6 +59,7 @@ class Action
         ClassId             scopeClassClose(ClassId id, DeclListId listId);
         FunctionId          scopeFunctionOpen(IdentifierId id);
         FunctionId          scopeFunctionClose(FunctionId id, ParamListId listId, TypeId returnType);
+        ObjectId            scopeObjectAdd(IdentifierId name, TypeId id);
         IdentifierId        identifierCreate();
 
         TypeId              getTypeFromName(IdentifierId);
@@ -92,6 +93,7 @@ class Action
         virtual ClassId             scopeClassCloseV(Class&, DeclList& list, Reuse&& reuse);
         virtual FunctionId          scopeFunctionOpenV(std::string& id, Reuse&& reuse);
         virtual FunctionId          scopeFunctionCloseV(Function& id, ParamList& listId, Type& returnType, Reuse&& reuse);
+        virtual ObjectId            scopeObjectAddV(Identifier& name, Type& id);
         virtual IdentifierId        identifierCreateV();
     private:
         void addToLine();

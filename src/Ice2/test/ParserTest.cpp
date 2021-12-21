@@ -172,11 +172,15 @@ namespace Name_Space
     EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 }
 
-#if 0
 TEST(ParserTest,NameTypeObject)
 {
     std::stringstream    result;
     std::stringstream    file = buildStream(R"(
+namespace Std
+{
+    class String {}
+    class Integer {}
+}
 namespace Name_Space
 {
     class ClassName
@@ -192,6 +196,7 @@ namespace Name_Space
     EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 }
 
+#if 0
 TEST(ParserTest,NameVariableAnonTypeArray)
 {
     std::stringstream    result;
@@ -211,6 +216,12 @@ TEST(ParserTest,NameVariableAnonTypeFunc)
 {
     std::stringstream    result;
     std::stringstream    file = buildStream(R"(
+namespace Std
+{
+    class Integer {}
+    class String  {}
+    class Number  {}
+}
 namespace Name_Space
 {
     data : func{Std::Integer, Std::String -> Std::Number};
@@ -255,11 +266,16 @@ namespace Name_Space
 
     EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 }
+#endif
 
 TEST(ParserTest,NameVariableDecl)
 {
     std::stringstream    result;
     std::stringstream    file = buildStream(R"(
+namespace Std
+{
+    class String {}
+}
 namespace Name_Space
 {
     data: Std::String;
@@ -270,6 +286,5 @@ namespace Name_Space
 
     EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 }
-#endif
 
 

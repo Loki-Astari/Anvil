@@ -39,6 +39,7 @@ using ThorsAnvil::Anvil::Ice::NamespaceId;
 using ThorsAnvil::Anvil::Ice::TypeId;
 using ThorsAnvil::Anvil::Ice::ClassId;
 using ThorsAnvil::Anvil::Ice::FunctionId;
+using ThorsAnvil::Anvil::Ice::ObjectId;
 using ThorsAnvil::Anvil::Ice::IdentifierId;
 // ---
 using ThorsAnvil::Anvil::Ice::Decl;
@@ -46,6 +47,7 @@ using ThorsAnvil::Anvil::Ice::Scope;
 using ThorsAnvil::Anvil::Ice::Namespace;
 using ThorsAnvil::Anvil::Ice::Class;
 using ThorsAnvil::Anvil::Ice::Function;
+using ThorsAnvil::Anvil::Ice::Object;
 %}
 %union {
     semantic_type(): voidId{0} {};
@@ -59,6 +61,7 @@ using ThorsAnvil::Anvil::Ice::Function;
     TypeId              typeId;
     ClassId             classId;
     FunctionId          functionId;
+    ObjectId            objectId;
     IdentifierId        identifierId;
 }
 
@@ -69,6 +72,7 @@ using ThorsAnvil::Anvil::Ice::Function;
 %token                          SCOPE
 %token                          IDENTIFIER_NS
 %token                          IDENTIFIER_TYPE
+%token                          IDENTIFIER_OBJECT
 %type   <voidId>                Anvil
 %type   <declListId>            DeclListOpt
 %type   <declListId>            DeclList
@@ -82,11 +86,13 @@ using ThorsAnvil::Anvil::Ice::Function;
 %type   <classId>               ClassStart
 %type   <functionId>            Function
 %type   <functionId>            FunctionStart
-%type   <typeId>                Type
 %type   <scopeId>               ScopedType
+%type   <typeId>                Type
+%type   <objectId>              Object
 %type   <identifierId>          ScopeIdentifier
 %type   <identifierId>          IdentifierNamespace
 %type   <identifierId>          IdentifierType
+%type   <identifierId>          IdentifierObject
 
 
 
@@ -114,12 +120,15 @@ NamespaceStart:         NAMESPACE IdentifierNamespace                       {$$ 
 Decl:                   Namespace                                           {$$ = action.convert<Namespace, Decl>($1);}
                     |   Class                                               {$$ = action.convert<Class, Decl>($1);}
                     |   Function                                            {$$ = action.convert<Function, Decl>($1);}
+                    |   Object                                              {$$ = action.convert<Object, Decl>($1);}
 
 Class:                  ClassStart '{' DeclListOpt '}'                      {$$ = action.scopeClassClose($1, $3);}
 ClassStart:             CLASS IdentifierType                                {$$ = action.scopeClassOpen($2);}
 
 Function:               FunctionStart '{' ParamListOpt ARROW Type '}'       {$$ = action.scopeFunctionClose($1, $3, $5);}
 FunctionStart:          FUNC IdentifierType                                 {$$ = action.scopeFunctionOpen($2);}
+
+Object:                 IdentifierObject ':' Type ';'                       {$$ = action.scopeObjectAdd($1, $3);}
 
 Type:                   IdentifierType                                      {$$ = action.getTypeFromName($1);}
                     |   ScopedType SCOPE IdentifierType                     {$$ = action.getTypeFromScope($1, $3);}
@@ -133,6 +142,7 @@ ScopeIdentifier:        IdentifierNamespace                                 {$$ 
 
 IdentifierNamespace:    IDENTIFIER_NS                                       {$$ = action.identifierCreate();}
 IdentifierType:         IDENTIFIER_TYPE                                     {$$ = action.identifierCreate();}
+IdentifierObject:       IDENTIFIER_OBJECT                                   {$$ = action.identifierCreate();}
 
 %%
 

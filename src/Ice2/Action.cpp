@@ -238,6 +238,26 @@ FunctionId Action::scopeFunctionOpenV(std::string& className, Reuse&& /*reuse*/)
 }
 // ------------------
 
+ObjectId Action::scopeObjectAdd(IdentifierId name, TypeId type)
+{
+    ScopePrinter scope("scopeObjectAdd");
+    IdentifierAccess    nameAccess(storage, name);
+    TypeAccess          typeAccess(storage, type);
+    return scopeObjectAddV(nameAccess, typeAccess);
+}
+ObjectId Action::scopeObjectAddV(Identifier& name, Type& type)
+{
+    Scope&  topScope = currentScope.back();
+    auto find = topScope.get(name);
+    if (find.first)
+    {
+        error("Object Already defined: ", name);
+    }
+    Object& object = topScope.add<Object>(name, type);
+    return storage.add<ObjectRef>(object);
+}
+// ------------------
+
 FunctionId Action::scopeFunctionClose(FunctionId id, ParamListId listId, TypeId returnType)
 {
     ScopePrinter scope("scopeFunctionClose");
@@ -398,5 +418,6 @@ std::ostream& operator<<(std::ostream& str, Action const& action)
 
 template struct IdAccess<Namespace>;
 template struct IdAccess<Identifier>;
+template struct IdAccess<Object>;
 
 }

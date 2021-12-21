@@ -29,10 +29,30 @@ TEST(LexerTest, GetLexemeEmptyStream)
 TEST(LexerTest, ReadSymbolsFile)
 {
 #if 0
-namespace
-class
+-namespace
+-class
 array
 map
+-func
+-objectName
+-TypeName
+-Ns
+-Name_Space
+-::
+-->
+"This is a String"
+-{
+-}
+(
+)
+-:
+-;
+.
+-,
+#endif
+    std::stringstream    file = buildStream(R"(
+namespace
+class
 func
 objectName
 TypeName
@@ -40,27 +60,11 @@ Ns
 Name_Space
 ::
 ->
-"This is a String"
 {
 }
-(
-)
 :
 ;
-.
 ,
-#endif
-    std::stringstream    file = buildStream(R"(
-namespace
-class
-func
-TypeName
-Ns
-Name_Space
-::
-->
-{
-}
 $
     )");
 
@@ -99,11 +103,9 @@ $
     EXPECT_EQ(yy::Parser::token::FUNC, val);
     EXPECT_EQ(lexer.lexem(), "func");
 
-#if 0
     val = lexer.yylexWithActionGo(action);
     EXPECT_EQ(yy::Parser::token::IDENTIFIER_OBJECT, val);
     EXPECT_EQ(lexer.lexem(), "objectName");
-#endif
 
     val = lexer.yylexWithActionGo(action);
     EXPECT_EQ(yy::Parser::token::IDENTIFIER_TYPE, val);
@@ -143,6 +145,7 @@ $
 
     val = lexer.yylexWithActionGo(action);
     EXPECT_EQ(')', val);
+#endif
 
     val = lexer.yylexWithActionGo(action);
     EXPECT_EQ(':', val);
@@ -150,12 +153,13 @@ $
     val = lexer.yylexWithActionGo(action);
     EXPECT_EQ(';', val);
 
+#if 0
     val = lexer.yylexWithActionGo(action);
     EXPECT_EQ('.', val);
+#endif
 
     val = lexer.yylexWithActionGo(action);
     EXPECT_EQ(',', val);
-#endif
 
     EXPECT_THROW_OR_DEBUG(val = lexer.yylexWithActionGo(action), "Invalid Character", output);
 

@@ -20,7 +20,7 @@ using MemberIndex   = std::map<std::string, std::size_t>;
 using NameRef       = MemberStorage::const_iterator;
 
 
-enum class DeclType {Void, Namespace, Class, Function};
+enum class DeclType {Void, Namespace, Class, Function, Object};
 class Decl
 {
     public:
@@ -123,12 +123,29 @@ class Function: public Type
         static constexpr Int defaultStorageId = 7;
 };
 
+class Object: public Decl
+{
+    std::string     name;
+    Type const&     type;
+    public:
+        Object(std::string name, Type const& type)
+            : name(std::move(name))
+            , type(type)
+        {}
+        virtual DeclType declType() const override {return DeclType::Object;}
+        virtual std::string const& declName() const override {return name;}
+
+        static constexpr bool valid = true;
+        static constexpr Int defaultStorageId = 9;
+};
+
 using DeclRef           = std::reference_wrapper<Decl>;
 using ScopeRef          = std::reference_wrapper<Scope>;
 using NamespaceRef      = std::reference_wrapper<Namespace>;
 using TypeRef           = std::reference_wrapper<Type>;
 using ClassRef          = std::reference_wrapper<Class>;
 using FunctionRef       = std::reference_wrapper<Function>;
+using ObjectRef         = std::reference_wrapper<Object>;
 
 using NamespaceDecOrder = std::vector<NamespaceRef>;
 
