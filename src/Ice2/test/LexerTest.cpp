@@ -53,9 +53,12 @@ Name_Space
     std::stringstream    file = buildStream(R"(
 namespace
 class
+func
 TypeName
 Ns
 Name_Space
+::
+->
 {
 }
 $
@@ -90,11 +93,13 @@ $
     val = lexer.yylexWithActionGo(action);
     EXPECT_EQ(yy::Parser::token::MAP, val);
     EXPECT_EQ(lexer.lexem(), "map");
+#endif
 
     val = lexer.yylexWithActionGo(action);
     EXPECT_EQ(yy::Parser::token::FUNC, val);
     EXPECT_EQ(lexer.lexem(), "func");
 
+#if 0
     val = lexer.yylexWithActionGo(action);
     EXPECT_EQ(yy::Parser::token::IDENTIFIER_OBJECT, val);
     EXPECT_EQ(lexer.lexem(), "objectName");
@@ -112,7 +117,6 @@ $
     EXPECT_EQ(yy::Parser::token::IDENTIFIER_NS, val);
     EXPECT_EQ(lexer.lexem(), "Name_Space");
 
-#if 0
     val = lexer.yylexWithActionGo(action);
     EXPECT_EQ(yy::Parser::token::SCOPE, val);
     EXPECT_EQ(lexer.lexem(), "::");
@@ -121,6 +125,7 @@ $
     EXPECT_EQ(yy::Parser::token::ARROW, val);
     EXPECT_EQ(lexer.lexem(), "->");
 
+#if 0
     val = lexer.yylexWithActionGo(action);
     EXPECT_EQ(yy::Parser::token::STRING, val);
     EXPECT_EQ(lexer.lexem(), "\"This is a String\"");

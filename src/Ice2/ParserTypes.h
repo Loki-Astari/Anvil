@@ -13,6 +13,7 @@ namespace ThorsAnvil::Anvil::Ice
 using Int                   = std::size_t;
 using NamespaceList         = std::list<NamespaceRef>;
 using DeclList              = std::list<DeclRef>;
+using ParamList             = std::list<TypeRef>;
 using Identifier            = std::string;
 
 template<typename T>
@@ -38,10 +39,17 @@ struct IdTraits<NamespaceList>
     using AccessType = NamespaceList;
 };
 template<>
+struct IdTraits<ParamList>
+{
+    static constexpr bool valid = true;
+    static constexpr Int defaultStorageId = 3;
+    using AccessType = ParamList;
+};
+template<>
 struct IdTraits<Identifier>
 {
     static constexpr bool valid = true;
-    static constexpr Int defaultStorageId = 6;
+    static constexpr Int defaultStorageId = 9;
     using AccessType = std::string;
 };
 
@@ -96,16 +104,24 @@ struct IdAccess
 using VoidId                = Id<Void, false>;
 using DeclListId            = Id<DeclList>;
 using NamespaceListId       = Id<NamespaceList>;
+using ParamListId           = Id<ParamList>;
 using DeclId                = Id<Decl>;
+using ScopeId               = Id<Scope>;
 using NamespaceId           = Id<Namespace>;
+using TypeId                = Id<Type>;
 using ClassId               = Id<Class>;
+using FunctionId            = Id<Function>;
 using IdentifierId          = Id<Identifier>;
 
 using DeclListAccess        = IdAccess<DeclList>;
 using NamespaceListAccess   = IdAccess<NamespaceList>;
+using ParamListAccess       = IdAccess<ParamList>;
 using DeclAccess            = IdAccess<Decl>;
+using ScopeAccess           = IdAccess<Scope>;
 using NamespaceAccess       = IdAccess<Namespace>;
+using TypeAccess            = IdAccess<Type>;
 using ClassAccess           = IdAccess<Class>;
+using FunctionAccess        = IdAccess<Function>;
 using IdentifierAccess      = IdAccess<Identifier>;
 
 }

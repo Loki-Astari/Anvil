@@ -10,7 +10,7 @@
 namespace ThorsAnvil::Anvil::Ice
 {
 
-using Data = std::variant<Int, DeclList, NamespaceList, DeclRef, NamespaceRef, ClassRef, Identifier>;
+using Data = std::variant<Int, DeclList, NamespaceList, ParamList, DeclRef, ScopeRef, NamespaceRef, TypeRef, ClassRef, FunctionRef, Identifier>;
 
 template<typename T>
 class StorageAccess;
@@ -23,6 +23,8 @@ class Storage
     Namespace           defaultDecl;
     Namespace           defaultNamespace;
     Class               defaultClass;
+    Void                defaultType;
+    Function            defaultFunction;
     Identifier          defaultIdentifier;
 
     public:
@@ -31,6 +33,8 @@ class Storage
             , defaultDecl("Invalid Decl")
             , defaultNamespace("Invalid Namespace")
             , defaultClass("Invalid Class")
+            , defaultType("Invalid Type")
+            , defaultFunction("Invalid Function")
         {
             // We don't use location 0.
             // This is because ice.y parser passes back zero for no object returned.
@@ -38,9 +42,12 @@ class Storage
             data.emplace_back(0UL);
             data.emplace_back(DeclList{});
             data.emplace_back(NamespaceList{});
+            data.emplace_back(ParamList{});
             data.emplace_back(DeclRef{defaultDecl});
             data.emplace_back(NamespaceRef{defaultNamespace});
+            data.emplace_back(TypeRef{defaultType});
             data.emplace_back(ClassRef{defaultClass});
+            data.emplace_back(FunctionRef{defaultFunction});
             data.emplace_back(Identifier{"Invalid Identifier"});
         }
 

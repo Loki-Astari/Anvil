@@ -116,11 +116,17 @@ namespace Name_Space
 
     EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 }
+#endif
 
 TEST(ParserTest,NameTypeFunc)
 {
     std::stringstream    result;
     std::stringstream    file = buildStream(R"(
+namespace Std
+{
+    class Integer {}
+    class String  {}
+}
 namespace Name_Space
 {
     func TypeFunc{Std::Integer -> Std::String}
@@ -132,6 +138,7 @@ namespace Name_Space
     EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 }
 
+#if 0
 TEST(ParserTest,NameTypeMap)
 {
     std::stringstream    result;

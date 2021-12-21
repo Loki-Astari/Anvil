@@ -20,7 +20,7 @@ using MemberIndex   = std::map<std::string, std::size_t>;
 using NameRef       = MemberStorage::const_iterator;
 
 
-enum class DeclType {Void, Namespace, Class};
+enum class DeclType {Void, Namespace, Class, Function};
 class Decl
 {
     public:
@@ -29,7 +29,7 @@ class Decl
         virtual std::string const& declName() const = 0;
 
         static constexpr bool valid = true;
-        static constexpr Int defaultStorageId = 3;
+        static constexpr Int defaultStorageId = 4;
 };
 
 
@@ -80,34 +80,55 @@ class Namespace: public NamedScope
         virtual DeclType declType() const override {return DeclType::Namespace;}
 
         static constexpr bool valid = true;
-        static constexpr Int defaultStorageId = 4;
+        static constexpr Int defaultStorageId = 5;
 };
 
-class Void: public Scope
+class Type: public NamedScope
 {
     public:
+        using NamedScope::NamedScope;
+        static constexpr bool valid = true;
+        static constexpr Int defaultStorageId = 6;
+};
+
+class Void: public Type
+{
+    public:
+        using Type::Type;
         virtual DeclType declType() const override {return DeclType::Void;}
 
         static constexpr bool valid = false;
+        static constexpr Int defaultStorageId = 7;
 };
 
-class Class: public NamedScope
+class Class: public Type
 {
     public:
-        Class(std::string name)
-            : NamedScope(std::move(name))
-        {}
+        using Type::Type;
         virtual DeclType declType() const override {return DeclType::Class;}
         virtual bool storeFunctionsInContainer() const override {return true;}
 
         static constexpr bool valid = true;
-        static constexpr Int defaultStorageId = 5;
+        static constexpr Int defaultStorageId = 8;
+};
+
+class Function: public Type
+{
+    public:
+        using Type::Type;
+        virtual DeclType declType() const override {return DeclType::Function;}
+        virtual bool storeFunctionsInContainer() const override {return true;}
+
+        static constexpr bool valid = true;
+        static constexpr Int defaultStorageId = 7;
 };
 
 using DeclRef           = std::reference_wrapper<Decl>;
 using ScopeRef          = std::reference_wrapper<Scope>;
 using NamespaceRef      = std::reference_wrapper<Namespace>;
+using TypeRef           = std::reference_wrapper<Type>;
 using ClassRef          = std::reference_wrapper<Class>;
+using FunctionRef       = std::reference_wrapper<Function>;
 
 using NamespaceDecOrder = std::vector<NamespaceRef>;
 

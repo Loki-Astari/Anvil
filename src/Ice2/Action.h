@@ -46,15 +46,25 @@ class Action
 
         // Parsing
         VoidId              anvilProgram(NamespaceListId id);
+        DeclListId          listDeclCreate();
+        DeclListId          listDeclAppend(DeclListId listId, DeclId id);
         NamespaceListId     listNamespaceCreate();
         NamespaceListId     listNamespaceAppend(NamespaceListId listId, NamespaceId id);
+        ParamListId         listParamCreate();
+        ParamListId         listParamAppend(ParamListId listId, TypeId id);
+
         NamespaceId         scopeNamespaceOpen(IdentifierId id);
         NamespaceId         scopeNamespaceClose(NamespaceId id, DeclListId listId);
         ClassId             scopeClassOpen(IdentifierId id);
         ClassId             scopeClassClose(ClassId id, DeclListId listId);
-        DeclListId          listDeclCreate();
-        DeclListId          listDeclAppend(DeclListId listId, DeclId id);
+        FunctionId          scopeFunctionOpen(IdentifierId id);
+        FunctionId          scopeFunctionClose(FunctionId id, ParamListId listId, TypeId returnType);
         IdentifierId        identifierCreate();
+
+        TypeId              getTypeFromName(IdentifierId);
+        TypeId              getTypeFromScope(ScopeId, IdentifierId);
+        ScopeId             getScopeFromName(IdentifierId);
+        ScopeId             getScopeFromScope(ScopeId, IdentifierId);
 
         template<typename From, typename To>
         Id<To> convert(Id<From> id)
@@ -70,14 +80,18 @@ class Action
         // Parsing virtual methods
         using Reuse = std::function<Int()>;
         virtual VoidId              anvilProgramV(NamespaceList&, Reuse&& reuse);
+        virtual DeclListId          listDeclCreateV();
+        virtual DeclListId          listDeclAppendV(DeclList& list, Decl& decl, Reuse&& reuse);
         virtual NamespaceListId     listNamespaceCreateV();
         virtual NamespaceListId     listNamespaceAppendV(NamespaceList& listId, Namespace& id, Reuse&& reuse);
+        virtual ParamListId         listParamCreateV();
+        virtual ParamListId         listParamAppendV(ParamList& listId, Type& id, Reuse&& reuse);
         virtual NamespaceId         scopeNamespaceOpenV(std::string&, Reuse&& reuse);
         virtual NamespaceId         scopeNamespaceCloseV(Namespace&, DeclList& list, Reuse&& reuse);
         virtual ClassId             scopeClassOpenV(std::string&, Reuse&& reuse);
         virtual ClassId             scopeClassCloseV(Class&, DeclList& list, Reuse&& reuse);
-        virtual DeclListId          listDeclCreateV();
-        virtual DeclListId          listDeclAppendV(DeclList& list, Decl& decl, Reuse&& reuse);
+        virtual FunctionId          scopeFunctionOpenV(std::string& id, Reuse&& reuse);
+        virtual FunctionId          scopeFunctionCloseV(Function& id, ParamList& listId, Type& returnType, Reuse&& reuse);
         virtual IdentifierId        identifierCreateV();
     private:
         void addToLine();

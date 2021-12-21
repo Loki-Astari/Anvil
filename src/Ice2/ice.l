@@ -23,6 +23,9 @@ NewLine             \n
 
 namespace           {action.token();return yy::Parser::token::NAMESPACE;}
 class               {action.token();return yy::Parser::token::CLASS;}
+func                {action.token();return yy::Parser::token::FUNC;}
+->                  {action.token();return yy::Parser::token::ARROW;}
+::                  {action.token();return yy::Parser::token::SCOPE;}
 \{                  {action.token();return '{';}
 \}                  {action.token();return '}';}
 

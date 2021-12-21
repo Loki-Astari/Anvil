@@ -2,6 +2,7 @@
 #include "Lexer.h"
 #include "Storage.h"
 #include "ParserTypes.h"
+#include "Utility/View.h"
 
 using namespace ThorsAnvil::Anvil::Ice;
 
@@ -99,6 +100,56 @@ NamespaceListId Action::listNamespaceAppendV(NamespaceList& list, Namespace& ns,
 }
 // ------------------
 
+DeclListId Action::listDeclCreate()
+{
+    ScopePrinter scope("listDeclCreate");
+    return listDeclCreateV();
+}
+DeclListId Action::listDeclCreateV()
+{
+    return storage.add<DeclList>(DeclList{});
+}
+// ------------------
+
+DeclListId Action::listDeclAppend(DeclListId listId, DeclId id)
+{
+    ScopePrinter scope("listDeclAppend");
+    DeclListAccess     access(storage, listId);
+
+    return listDeclAppendV(access, DeclAccess(storage, id), [&access](){return access.reuse();});
+}
+DeclListId Action::listDeclAppendV(DeclList& list, Decl& decl, Reuse&& reuse)
+{
+    list.emplace_back(decl);
+    return reuse();
+}
+// ------------------
+
+ParamListId Action::listParamCreate()
+{
+    ScopePrinter scope("listParamCreate");
+    return listParamCreateV();
+}
+ParamListId Action::listParamCreateV()
+{
+    return storage.add<ParamList>(ParamList{});
+}
+// ------------------
+
+ParamListId Action::listParamAppend(ParamListId listId, TypeId id)
+{
+    ScopePrinter scope("listParamAppend");
+    ParamListAccess     access(storage, listId);
+
+    return listParamAppendV(access, TypeAccess(storage, id), [&access](){return access.reuse();});
+}
+ParamListId Action::listParamAppendV(ParamList& list, Type& type, Reuse&& reuse)
+{
+    list.emplace_back(type);
+    return reuse();
+}
+// ------------------
+
 NamespaceId Action::scopeNamespaceOpen(IdentifierId id)
 {
     ScopePrinter scope("scopeNamespaceOpen");
@@ -171,27 +222,38 @@ ClassId Action::scopeClassCloseV(Class& cl, DeclList& /*list*/, Reuse&& reuse)
 }
 // ------------------
 
-DeclListId Action::listDeclCreate()
+FunctionId Action::scopeFunctionOpen(IdentifierId id)
 {
-    ScopePrinter scope("listDeclCreate");
-    return listDeclCreateV();
+    ScopePrinter scope("scopeFunctionOpen");
+    IdentifierAccess    access(storage, id);
+    return scopeFunctionOpenV(access, [&access](){return access.reuse();});
 }
-DeclListId Action::listDeclCreateV()
+FunctionId Action::scopeFunctionOpenV(std::string& className, Reuse&& /*reuse*/)
 {
-    return storage.add<DeclList>(DeclList{});
+    Scope&          topScope = currentScope.back();
+    Function&       newFunction = getOrAddScope<Function>(topScope, className);
+    currentScope.emplace_back(newFunction);
+
+    return storage.add(FunctionRef{newFunction});
 }
 // ------------------
 
-DeclListId Action::listDeclAppend(DeclListId listId, DeclId id)
+FunctionId Action::scopeFunctionClose(FunctionId id, ParamListId listId, TypeId returnType)
 {
-    ScopePrinter scope("listDeclAppend");
-    DeclListAccess     access(storage, listId);
-
-    return listDeclAppendV(access, DeclAccess(storage, id), [&access](){return access.reuse();});
+    ScopePrinter scope("scopeFunctionClose");
+    FunctionAccess      access(storage, id);
+    return scopeFunctionCloseV(access, ParamListAccess(storage, listId), TypeAccess(storage, returnType), [&access](){return access.reuse();});
 }
-DeclListId Action::listDeclAppendV(DeclList& list, Decl& decl, Reuse&& reuse)
+FunctionId Action::scopeFunctionCloseV(Function& cl, ParamList& /*list*/, Type& /*returnType*/, Reuse&& reuse)
 {
-    list.emplace_back(decl);
+    Scope&          topScope = currentScope.back();
+    Function*       topFunction = dynamic_cast<Function*>(&topScope);
+
+    if (&cl != topFunction)
+    {
+        error("Internal Error: Scope Note correctly aligned from Function");
+    }
+    currentScope.pop_back();
     return reuse();
 }
 // ------------------
@@ -236,6 +298,73 @@ std::string Action::getCurrentScopeFullName() const
     return result;
 }
 
+
+// Find something in scope.
+// ========================
+
+TypeId Action::getTypeFromName(IdentifierId id)
+{
+    IdentifierAccess    access(storage, id);
+
+    for (auto const& scope: make_View<Reverse>(currentScope))
+    {
+        auto find = scope.get().get(access);
+        if (find.first)
+        {
+            Decl& decl = *find.second->second;
+            Type& type = dynamic_cast<Type&>(decl);
+            return storage.add<TypeRef>(TypeRef{type});
+        }
+    }
+    error("Invalid Type Name: ", static_cast<std::string>(access));
+}
+
+TypeId Action::getTypeFromScope(ScopeId scopeId, IdentifierId id)
+{
+    ScopeAccess         scopeAccess(storage, scopeId);
+    IdentifierAccess    access(storage, id);
+
+    auto find = static_cast<Scope&>(scopeAccess).get(access);
+    if (find.first)
+    {
+        Decl& decl = *find.second->second;
+        Type& type = dynamic_cast<Type&>(decl);
+        return storage.add<TypeRef>(TypeRef{type});
+    }
+    error("Invalid Type Name: ", static_cast<std::string>(access));
+}
+
+ScopeId Action::getScopeFromName(IdentifierId id)
+{
+    IdentifierAccess    access(storage, id);
+
+    for (auto const& scope: make_View<Reverse>(currentScope))
+    {
+        auto find = scope.get().get(access);
+        if (find.first)
+        {
+            Decl& decl = *find.second->second;
+            Scope& type = dynamic_cast<Scope&>(decl);
+            return storage.add<ScopeRef>(ScopeRef{type});
+        }
+    }
+    error("Invalid Type Name: ", static_cast<std::string>(access));
+}
+
+ScopeId Action::getScopeFromScope(ScopeId scopeId, IdentifierId id)
+{
+    ScopeAccess         scopeAccess(storage, scopeId);
+    IdentifierAccess    access(storage, id);
+
+    auto find = static_cast<Scope&>(scopeAccess).get(access);
+    if (find.first)
+    {
+        Decl& decl = *find.second->second;
+        Scope& type = dynamic_cast<Scope&>(decl);
+        return storage.add<ScopeRef>(ScopeRef{type});
+    }
+    error("Invalid Type Name: ", static_cast<std::string>(access));
+}
 
 // Storage Access
 // ========================
