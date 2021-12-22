@@ -4,6 +4,7 @@
 #include "ParserTypes.h"
 #include "Declaration.h"
 #include "Storage.h"
+#include "Utility/View.h"
 
 #include <iostream>
 #include <sstream>
@@ -100,10 +101,38 @@ class Action
 
         StatementId         statmentExpression(ExpressionId);
 
-        TypeId              getTypeFromName(IdentifierId);
-        TypeId              getTypeFromScope(ScopeId, IdentifierId);
-        ScopeId             getScopeFromName(IdentifierId);
-        ScopeId             getScopeFromScope(ScopeId, IdentifierId);
+        template<typename T, typename V>
+        Id<T> getNameFromView(IdentifierId id, V view)
+        {
+            using Ref = std::reference_wrapper<T>;
+            //ScopePrinter scope("getTypeFromName");
+            IdentifierAccess    access(storage, id);
+
+            for (auto const& scope: view)
+            {
+                auto find = scope.get().get(access);
+                if (find.first)
+                {
+                    Decl& decl = *find.second->second;
+                    T& value = dynamic_cast<T&>(decl);
+                    return storage.add<Ref>(Ref{value});
+                }
+            }
+            error("Invalid Type Name: ", static_cast<std::string>(access));
+        }
+
+        template<typename T>
+        Id<T> getNameFromScopeStack(IdentifierId id)
+        {
+            return getNameFromView<T>(id, make_View<Reverse>(currentScope));
+        }
+        template<typename T>
+        Id<T> getNameFromScope(ScopeId scopeId, IdentifierId id)
+        {
+            ScopeAccess     scopeAccess(storage, scopeId);
+            ScopeRef        scope = ScopeRef(scopeAccess);
+            return getNameFromView<T>(id, make_View<Reverse>(&scope, &scope+1));
+        }
 
         template<typename From, typename To>
         Id<To> convert(Id<From> id)

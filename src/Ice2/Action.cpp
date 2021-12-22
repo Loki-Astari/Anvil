@@ -333,78 +333,6 @@ std::string Action::getCurrentScopeFullName() const
     return result;
 }
 
-
-// Find something in scope.
-// ========================
-
-TypeId Action::getTypeFromName(IdentifierId id)
-{
-    ScopePrinter scope("getTypeFromName");
-    IdentifierAccess    access(storage, id);
-
-    for (auto const& scope: make_View<Reverse>(currentScope))
-    {
-        auto find = scope.get().get(access);
-        if (find.first)
-        {
-            Decl& decl = *find.second->second;
-            Type& type = dynamic_cast<Type&>(decl);
-            return storage.add<TypeRef>(TypeRef{type});
-        }
-    }
-    error("Invalid Type Name: ", static_cast<std::string>(access));
-}
-
-TypeId Action::getTypeFromScope(ScopeId scopeId, IdentifierId id)
-{
-    ScopePrinter scope("getTypeFromScope");
-    ScopeAccess         scopeAccess(storage, scopeId);
-    IdentifierAccess    access(storage, id);
-
-    auto find = static_cast<Scope&>(scopeAccess).get(access);
-    if (find.first)
-    {
-        Decl& decl = *find.second->second;
-        Type& type = dynamic_cast<Type&>(decl);
-        return storage.add<TypeRef>(TypeRef{type});
-    }
-    error("Invalid Type Name: ", static_cast<std::string>(access));
-}
-
-ScopeId Action::getScopeFromName(IdentifierId id)
-{
-    ScopePrinter scope("getScopeFromName");
-    IdentifierAccess    access(storage, id);
-
-    for (auto const& scope: make_View<Reverse>(currentScope))
-    {
-        auto find = scope.get().get(access);
-        if (find.first)
-        {
-            Decl& decl = *find.second->second;
-            Scope& type = dynamic_cast<Scope&>(decl);
-            return storage.add<ScopeRef>(ScopeRef{type});
-        }
-    }
-    error("Invalid Type Name: ", static_cast<std::string>(access));
-}
-
-ScopeId Action::getScopeFromScope(ScopeId scopeId, IdentifierId id)
-{
-    ScopePrinter scope("getScopeFromScope");
-    ScopeAccess         scopeAccess(storage, scopeId);
-    IdentifierAccess    access(storage, id);
-
-    auto find = static_cast<Scope&>(scopeAccess).get(access);
-    if (find.first)
-    {
-        Decl& decl = *find.second->second;
-        Scope& type = dynamic_cast<Scope&>(decl);
-        return storage.add<ScopeRef>(ScopeRef{type});
-    }
-    error("Invalid Type Name: ", static_cast<std::string>(access));
-}
-
 // Storage Access
 // ========================
 template<typename T>
@@ -438,6 +366,7 @@ std::ostream& operator<<(std::ostream& str, Action const& action)
 template struct IdAccess<Identifier>;
 template struct IdAccess<Namespace>;
 template struct IdAccess<Decl>;
+template struct IdAccess<Scope>;
 template struct IdAccess<Object>;
 template struct IdAccess<Statement>;
 template struct IdAccess<Expression>;

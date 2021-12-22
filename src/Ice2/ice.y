@@ -215,11 +215,11 @@ TypeDecl:               Type                                                {$$ 
 AnonType:               ClassAnon                                           {$$ = action.convert<Class, Type>($1);}
                     |   FunctionAnon                                        {$$ = action.convert<Function, Type>($1);}
 
-Type:                   IdentifierType                                      {$$ = action.getTypeFromName($1);}
-                    |   ScopedType SCOPE IdentifierType                     {$$ = action.getTypeFromScope($1, $3);}
+Type:                   IdentifierType                                      {$$ = action.getNameFromScopeStack<Type>($1);}
+                    |   ScopedType SCOPE IdentifierType                     {$$ = action.getNameFromScope<Type>($1, $3);}
 
-ScopedType:             ScopeIdentifier                                     {$$ = action.getScopeFromName($1);}
-                    |   ScopedType SCOPE ScopeIdentifier                    {$$ = action.getScopeFromScope($1, $3);}
+ScopedType:             ScopeIdentifier                                     {$$ = action.getNameFromScopeStack<Scope>($1);}
+                    |   ScopedType SCOPE ScopeIdentifier                    {$$ = action.getNameFromScope<Scope>($1, $3);}
 
 ScopeIdentifier:        IdentifierNamespace                                 {$$ = $1;}
                     |   IdentifierType                                      {$$ = $1;}
