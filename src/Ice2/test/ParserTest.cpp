@@ -138,6 +138,139 @@ namespace Name_Space
     EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 }
 
+TEST(ParserTest,ReopenStdToAddMoreInfo)
+{
+    std::stringstream    result;
+    std::stringstream    file = buildStream(R"(
+namespace Std
+{
+    class Integer {}
+}
+namespace Std
+{
+    class String  {}
+}
+namespace Name_Space
+{
+    func TypeFunc{Std::Integer -> Std::String}
+}
+    )");
+
+    ParserCompiler  compiler(file, result);
+
+    EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
+}
+
+TEST(ParserTest,NestedNamespace)
+{
+    std::stringstream    result;
+    std::stringstream    file = buildStream(R"(
+namespace Std
+{
+    class Integer {}
+    namespace Ext
+    {
+        class String  {}
+    }
+}
+namespace Name_Space
+{
+    func TypeFunc{Std::Integer -> Std::Ext::String}
+}
+    )");
+
+    ParserCompiler  compiler(file, result);
+
+    EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
+}
+
+TEST(ParserTest,ReopenNameSpaceToAddMoreInfo)
+{
+    std::stringstream    result;
+    std::stringstream    file = buildStream(R"(
+namespace Std
+{
+    class Integer {}
+}
+namespace Name_Space
+{
+    class String  {}
+}
+namespace Name_Space
+{
+    func TypeFunc{Std::Integer -> String}
+}
+    )");
+
+    ParserCompiler  compiler(file, result);
+
+    EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
+}
+
+TEST(ParserTest,InvalidNamespaceName)
+{
+    std::stringstream    result;
+    std::stringstream    file = buildStream(R"(
+namespace Name_Space
+{
+    func TypeFunc{Std::Integer -> Std::String}
+}
+    )");
+
+    ParserCompiler  compiler(file, result);
+    auto action = [&](){compiler.compile();};
+    EXPECT_THROW_OR_DEBUG(action(), "Invalid Type Name:", result);
+}
+
+TEST(ParserTest,InvalidNamespaceInNamespace)
+{
+    std::stringstream    result;
+    std::stringstream    file = buildStream(R"(
+namespace Std
+{
+}
+namespace Name_Space
+{
+    func TypeFunc{Std::Ext::Integer -> Std::String}
+}
+    )");
+
+    ParserCompiler  compiler(file, result);
+    auto action = [&](){compiler.compile();};
+    EXPECT_THROW_OR_DEBUG(action(), "Invalid Type Name:", result);
+}
+
+TEST(ParserTest,InvalidType)
+{
+    std::stringstream    result;
+    std::stringstream    file = buildStream(R"(
+namespace Name_Space
+{
+    func TypeFunc{Integer -> Std::String}
+}
+    )");
+
+    ParserCompiler  compiler(file, result);
+    auto action = [&](){compiler.compile();};
+    EXPECT_THROW_OR_DEBUG(action(), "Invalid Type Name:", result);
+}
+
+TEST(ParserTest,InvalidTypeInScope)
+{
+    std::stringstream    result;
+    std::stringstream    file = buildStream(R"(
+namespace Std {}
+namespace Name_Space
+{
+    func TypeFunc{Std::Integer -> Std::String}
+}
+    )");
+
+    ParserCompiler  compiler(file, result);
+    auto action = [&](){compiler.compile();};
+    EXPECT_THROW_OR_DEBUG(action(), "Invalid Type Name:", result);
+}
+
 #if 0
 TEST(ParserTest,NameTypeMap)
 {
