@@ -145,49 +145,49 @@ class Action
         }
 
         // Expression:
-        ExpressionId        expressionAssign(ExpressionId, ExpressionId)                        {return 0;}
-        ExpressionId        expressionAssignMul(ExpressionId, ExpressionId)                     {return 0;}
-        ExpressionId        expressionAssignDiv(ExpressionId, ExpressionId)                     {return 0;}
-        ExpressionId        expressionAssignMod(ExpressionId, ExpressionId)                     {return 0;}
-        ExpressionId        expressionAssignAdd(ExpressionId, ExpressionId)                     {return 0;}
-        ExpressionId        expressionAssignSub(ExpressionId, ExpressionId)                     {return 0;}
-        ExpressionId        expressionAssignLSh(ExpressionId, ExpressionId)                     {return 0;}
-        ExpressionId        expressionAssignRSh(ExpressionId, ExpressionId)                     {return 0;}
-        ExpressionId        expressionAssignAnd(ExpressionId, ExpressionId)                     {return 0;}
-        ExpressionId        expressionAssignXOR(ExpressionId, ExpressionId)                     {return 0;}
-        ExpressionId        expressionAssignOR(ExpressionId, ExpressionId)                      {return 0;}
-        ExpressionId        expressionConditional(ExpressionId, ExpressionId, ExpressionId)     {return 0;}
-        ExpressionId        expressionLogicalOr(ExpressionId, ExpressionId)                     {return 0;}
-        ExpressionId        expressionLogicalAnd(ExpressionId, ExpressionId)                    {return 0;}
-        ExpressionId        expressionInclusiveOr(ExpressionId, ExpressionId)                   {return 0;}
-        ExpressionId        expressionExclusiveOr(ExpressionId, ExpressionId)                   {return 0;}
-        ExpressionId        expressionAnd(ExpressionId, ExpressionId)                           {return 0;}
-        ExpressionId        expressionEqual(ExpressionId, ExpressionId)                         {return 0;}
-        ExpressionId        expressionNotEqual(ExpressionId, ExpressionId)                      {return 0;}
-        ExpressionId        expressionLess(ExpressionId, ExpressionId)                          {return 0;}
-        ExpressionId        expressionGreat(ExpressionId, ExpressionId)                         {return 0;}
-        ExpressionId        expressionLessEqual(ExpressionId, ExpressionId)                     {return 0;}
-        ExpressionId        expressionGreatEqual(ExpressionId, ExpressionId)                    {return 0;}
-        ExpressionId        expressionShiftLeft(ExpressionId, ExpressionId)                     {return 0;}
-        ExpressionId        expressionShiftRight(ExpressionId, ExpressionId)                    {return 0;}
-        ExpressionId        expressionAdd(ExpressionId, ExpressionId)                           {return 0;}
-        ExpressionId        expressionSub(ExpressionId, ExpressionId)                           {return 0;}
-        ExpressionId        expressionMul(ExpressionId, ExpressionId)                           {return 0;}
-        ExpressionId        expressionDiv(ExpressionId, ExpressionId)                           {return 0;}
-        ExpressionId        expressionMod(ExpressionId, ExpressionId)                           {return 0;}
-        ExpressionId        expressionPreInc(ExpressionId)                                      {return 0;}
-        ExpressionId        expressionPreDec(ExpressionId)                                      {return 0;}
-        ExpressionId        expressionPlus(ExpressionId)                                        {return 0;}
-        ExpressionId        expressionNeg(ExpressionId)                                         {return 0;}
-        ExpressionId        expressionOneCompliment(ExpressionId)                               {return 0;}
-        ExpressionId        expressionNot(ExpressionId)                                         {return 0;}
-        ExpressionId        expressionArrayAccess(ExpressionId, ExpressionId)                   {return 0;}
-        ExpressionId        expressionFuncCall(ExpressionId, ExpressionListId)                  {return 0;}
-        ExpressionId        expressionMemberAccess(ExpressionId, IdentifierId)                  {return 0;}
-        ExpressionId        expressionPostInc(ExpressionId)                                     {return 0;}
-        ExpressionId        expressionPostDec(ExpressionId)                                     {return 0;}
-        ExpressionId        expreesionFindObjectByName(IdentifierId)                            {return 0;}
-        ExpressionId        expressionLiteralString()                                           {return 0;}
+        ExpressionId        expressionAssign(ExpressionId, ExpressionId)                        {error("Not Implemented: expressionAssign");}
+        ExpressionId        expressionAssignMul(ExpressionId, ExpressionId)                     {error("Not Implemented: expressionAssignMul");}
+        ExpressionId        expressionAssignDiv(ExpressionId, ExpressionId)                     {error("Not Implemented: expressionAssignDiv");}
+        ExpressionId        expressionAssignMod(ExpressionId, ExpressionId)                     {error("Not Implemented: expressionAssignMod");}
+        ExpressionId        expressionAssignAdd(ExpressionId, ExpressionId)                     {error("Not Implemented: expressionAssignAdd");}
+        ExpressionId        expressionAssignSub(ExpressionId, ExpressionId)                     {error("Not Implemented: expressionAssignSub");}
+        ExpressionId        expressionAssignLSh(ExpressionId, ExpressionId)                     {error("Not Implemented: expressionAssignLSh");}
+        ExpressionId        expressionAssignRSh(ExpressionId, ExpressionId)                     {error("Not Implemented: expressionAssignRSh");}
+        ExpressionId        expressionAssignAnd(ExpressionId, ExpressionId)                     {error("Not Implemented: expressionAssignAnd");}
+        ExpressionId        expressionAssignXOR(ExpressionId, ExpressionId)                     {error("Not Implemented: expressionAssignXOR");}
+        ExpressionId        expressionAssignOR(ExpressionId, ExpressionId)                      {error("Not Implemented: expressionAssignOR");}
+        ExpressionId        expressionConditional(ExpressionId, ExpressionId, ExpressionId)     {error("Not Implemented: expressionConditional");}
+        ExpressionId        expressionLogicalOr(ExpressionId, ExpressionId)                     {error("Not Implemented: expressionLogicalOr");}
+        ExpressionId        expressionLogicalAnd(ExpressionId, ExpressionId)                    {error("Not Implemented: expressionLogicalAnd");}
+        ExpressionId        expressionInclusiveOr(ExpressionId, ExpressionId)                   {error("Not Implemented: expressionInclusiveOr");}
+        ExpressionId        expressionExclusiveOr(ExpressionId, ExpressionId)                   {error("Not Implemented: expressionExclusiveOr");}
+        ExpressionId        expressionAnd(ExpressionId, ExpressionId)                           {error("Not Implemented: expressionAnd");}
+        ExpressionId        expressionEqual(ExpressionId, ExpressionId)                         {error("Not Implemented: expressionEqual");}
+        ExpressionId        expressionNotEqual(ExpressionId, ExpressionId)                      {error("Not Implemented: expressionNotEqual");}
+        ExpressionId        expressionLess(ExpressionId, ExpressionId)                          {error("Not Implemented: expressionLess");}
+        ExpressionId        expressionGreat(ExpressionId, ExpressionId)                         {error("Not Implemented: expressionGreat");}
+        ExpressionId        expressionLessEqual(ExpressionId, ExpressionId)                     {error("Not Implemented: expressionLessEqual");}
+        ExpressionId        expressionGreatEqual(ExpressionId, ExpressionId)                    {error("Not Implemented: expressionGreatEqual");}
+        ExpressionId        expressionShiftLeft(ExpressionId, ExpressionId)                     {error("Not Implemented: expressionShiftLeft");}
+        ExpressionId        expressionShiftRight(ExpressionId, ExpressionId)                    {error("Not Implemented: expressionShiftRight");}
+        ExpressionId        expressionAdd(ExpressionId, ExpressionId)                           {error("Not Implemented: expressionAdd");}
+        ExpressionId        expressionSub(ExpressionId, ExpressionId)                           {error("Not Implemented: expressionSub");}
+        ExpressionId        expressionMul(ExpressionId, ExpressionId)                           {error("Not Implemented: expressionMul");}
+        ExpressionId        expressionDiv(ExpressionId, ExpressionId)                           {error("Not Implemented: expressionDiv");}
+        ExpressionId        expressionMod(ExpressionId, ExpressionId)                           {error("Not Implemented: expressionMod");}
+        ExpressionId        expressionPreInc(ExpressionId)                                      {error("Not Implemented: expressionPreInc");}
+        ExpressionId        expressionPreDec(ExpressionId)                                      {error("Not Implemented: expressionPreDec");}
+        ExpressionId        expressionPlus(ExpressionId)                                        {error("Not Implemented: expressionPlus");}
+        ExpressionId        expressionNeg(ExpressionId)                                         {error("Not Implemented: expressionNeg");}
+        ExpressionId        expressionOneCompliment(ExpressionId)                               {error("Not Implemented: expressionOneCompliment");}
+        ExpressionId        expressionNot(ExpressionId)                                         {error("Not Implemented: expressionNot");}
+        ExpressionId        expressionArrayAccess(ExpressionId, ExpressionId)                   {error("Not Implemented: expressionArrayAccess");}
+        ExpressionId        expressionFuncCall(ExpressionId, ExpressionListId)                  {error("Not Implemented: expressionFuncCall");}
+        ExpressionId        expressionMemberAccess(ExpressionId, IdentifierId)                  {error("Not Implemented: expressionMemberAccess");}
+        ExpressionId        expressionPostInc(ExpressionId)                                     {error("Not Implemented: expressionPostInc");}
+        ExpressionId        expressionPostDec(ExpressionId)                                     {error("Not Implemented: expressionPostDec");}
+        ExpressionId        expreesionFindObjectByName(IdentifierId)                            {error("Not Implemented: expreesionFindObjectByName");}
+        ExpressionId        expressionLiteralString()                                           {error("Not Implemented: expressionLiteralString");}
 
         // Parsing virtual methods
         using Reuse = std::function<Int()>;
