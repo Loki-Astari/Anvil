@@ -29,26 +29,8 @@ TEST(LexerTest, GetLexemeEmptyStream)
 TEST(LexerTest, ReadSymbolsFile)
 {
 #if 0
--namespace
--class
 array
 map
--func
--objectName
--TypeName
--Ns
--Name_Space
--::
--->
-"This is a String"
--{
--}
-(
-)
--:
--;
-.
--,
 #endif
     std::stringstream    file = buildStream(R"(
 namespace
@@ -60,11 +42,51 @@ Ns
 Name_Space
 ::
 ->
+"This is a String"
 {
 }
+(
+)
 :
 ;
+.
 ,
+[
+]
+=
+*=
+/=
+%=
++=
+-=
+<<=
+>>=
+&=
+^=
+|=
+?
+&&
+||
+|
+^
+&
+!=
+==
+<
+>
+<=
+>=
+<<
+>>
++
+-
+*
+/
+%
+++
+--
+~
+!
 $
     )");
 
@@ -127,11 +149,9 @@ $
     EXPECT_EQ(yy::Parser::token::ARROW, val);
     EXPECT_EQ(lexer.lexem(), "->");
 
-#if 0
     val = lexer.yylexWithActionGo(action);
-    EXPECT_EQ(yy::Parser::token::STRING, val);
+    EXPECT_EQ(yy::Parser::token::LITERAL_STRING, val);
     EXPECT_EQ(lexer.lexem(), "\"This is a String\"");
-#endif
 
     val = lexer.yylexWithActionGo(action);
     EXPECT_EQ('{', val);
@@ -139,13 +159,11 @@ $
     val = lexer.yylexWithActionGo(action);
     EXPECT_EQ('}', val);
 
-#if 0
     val = lexer.yylexWithActionGo(action);
     EXPECT_EQ('(', val);
 
     val = lexer.yylexWithActionGo(action);
     EXPECT_EQ(')', val);
-#endif
 
     val = lexer.yylexWithActionGo(action);
     EXPECT_EQ(':', val);
@@ -153,13 +171,119 @@ $
     val = lexer.yylexWithActionGo(action);
     EXPECT_EQ(';', val);
 
-#if 0
     val = lexer.yylexWithActionGo(action);
     EXPECT_EQ('.', val);
-#endif
 
     val = lexer.yylexWithActionGo(action);
     EXPECT_EQ(',', val);
+
+    val = lexer.yylexWithActionGo(action);
+    EXPECT_EQ('[', val);
+
+    val = lexer.yylexWithActionGo(action);
+    EXPECT_EQ(']', val);
+
+    val = lexer.yylexWithActionGo(action);
+    EXPECT_EQ('=', val);
+
+    val = lexer.yylexWithActionGo(action);
+    EXPECT_EQ(yy::Parser::token::OP_ASSIGN_MUL, val);
+
+    val = lexer.yylexWithActionGo(action);
+    EXPECT_EQ(yy::Parser::token::OP_ASSIGN_DIV, val);
+
+    val = lexer.yylexWithActionGo(action);
+    EXPECT_EQ(yy::Parser::token::OP_ASSIGN_MOD, val);
+
+    val = lexer.yylexWithActionGo(action);
+    EXPECT_EQ(yy::Parser::token::OP_ASSIGN_ADD, val);
+
+    val = lexer.yylexWithActionGo(action);
+    EXPECT_EQ(yy::Parser::token::OP_ASSIGN_SUB, val);
+
+    val = lexer.yylexWithActionGo(action);
+    EXPECT_EQ(yy::Parser::token::OP_ASSIGN_L, val);
+
+    val = lexer.yylexWithActionGo(action);
+    EXPECT_EQ(yy::Parser::token::OP_ASSIGN_R, val);
+
+    val = lexer.yylexWithActionGo(action);
+    EXPECT_EQ(yy::Parser::token::OP_ASSIGN_AND, val);
+
+    val = lexer.yylexWithActionGo(action);
+    EXPECT_EQ(yy::Parser::token::OP_ASSIGN_XOR, val);
+
+    val = lexer.yylexWithActionGo(action);
+    EXPECT_EQ(yy::Parser::token::OP_ASSIGN_OR, val);
+
+    val = lexer.yylexWithActionGo(action);
+    EXPECT_EQ('?', val);
+
+    val = lexer.yylexWithActionGo(action);
+    EXPECT_EQ(yy::Parser::token::OP_AND, val);
+
+    val = lexer.yylexWithActionGo(action);
+    EXPECT_EQ(yy::Parser::token::OP_OR, val);
+
+    val = lexer.yylexWithActionGo(action);
+    EXPECT_EQ('|', val);
+
+    val = lexer.yylexWithActionGo(action);
+    EXPECT_EQ('^', val);
+
+    val = lexer.yylexWithActionGo(action);
+    EXPECT_EQ('&', val);
+
+    val = lexer.yylexWithActionGo(action);
+    EXPECT_EQ(yy::Parser::token::OP_NE, val);
+
+    val = lexer.yylexWithActionGo(action);
+    EXPECT_EQ(yy::Parser::token::OP_EQ, val);
+
+    val = lexer.yylexWithActionGo(action);
+    EXPECT_EQ('<', val);
+
+    val = lexer.yylexWithActionGo(action);
+    EXPECT_EQ('>', val);
+
+    val = lexer.yylexWithActionGo(action);
+    EXPECT_EQ(yy::Parser::token::OP_LE, val);
+
+    val = lexer.yylexWithActionGo(action);
+    EXPECT_EQ(yy::Parser::token::OP_GE, val);
+
+    val = lexer.yylexWithActionGo(action);
+    EXPECT_EQ(yy::Parser::token::OP_L_SHIFT, val);
+
+    val = lexer.yylexWithActionGo(action);
+    EXPECT_EQ(yy::Parser::token::OP_R_SHIFT, val);
+
+    val = lexer.yylexWithActionGo(action);
+    EXPECT_EQ('+', val);
+
+    val = lexer.yylexWithActionGo(action);
+    EXPECT_EQ('-', val);
+
+    val = lexer.yylexWithActionGo(action);
+    EXPECT_EQ('*', val);
+
+    val = lexer.yylexWithActionGo(action);
+    EXPECT_EQ('/', val);
+
+    val = lexer.yylexWithActionGo(action);
+    EXPECT_EQ('%', val);
+
+    val = lexer.yylexWithActionGo(action);
+    EXPECT_EQ(yy::Parser::token::OP_INC, val);
+
+    val = lexer.yylexWithActionGo(action);
+    EXPECT_EQ(yy::Parser::token::OP_DEC, val);
+
+    val = lexer.yylexWithActionGo(action);
+    EXPECT_EQ('~', val);
+
+    val = lexer.yylexWithActionGo(action);
+    EXPECT_EQ('!', val);
 
     EXPECT_THROW_OR_DEBUG(val = lexer.yylexWithActionGo(action), "Invalid Character", output);
 
