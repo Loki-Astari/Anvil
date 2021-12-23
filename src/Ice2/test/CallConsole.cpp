@@ -44,8 +44,16 @@ namespace Sys
 {
     class Console
     {
+        library  : Void;
+        function : Void;
+
         func Print{Std::String -> Void}
         print : Print {
+            <--
+                ADDR LRR Expr-1 = This + 1
+                ADDR LRR Expr-2 = FramePointer - 5
+                CMD Import Call Expr-1 Expr-1
+            -->
         }
     }
     console : Console;

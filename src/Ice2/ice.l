@@ -21,7 +21,16 @@ LiteralInteger      ([1-9][0-9]+)|(0)
 WhiteSpace          [ \t\r]+
 NewLine             \n
 
+AssembleyStart      <--
+AssembleyEnd        -->
+
+%x      ASSEMBLEY
 %%
+{AssembleyStart}            {BEGIN(ASSEMBLEY);  action.token(); return yy::Parser::token::ASSEMBLEY_START;}
+<ASSEMBLEY>{AssembleyEnd}   {BEGIN(INITIAL);    action.token(); return yy::Parser::token::ASSEMBLEY_END;}
+<ASSEMBLEY>[^\-\n]          {                   action.token(); return yy::Parser::token::ASSEMBLEY_LINE;}
+<ASSEMBLEY>-                {                   action.token(); return yy::Parser::token::ASSEMBLEY_LINE;}
+<ASSEMBLEY>\n               {                   action.newLine(); return yy::Parser::token::ASSEMBLEY_LINE;}
 
 namespace           {action.token();return yy::Parser::token::NAMESPACE;}
 class               {action.token();return yy::Parser::token::CLASS;}

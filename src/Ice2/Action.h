@@ -100,6 +100,7 @@ class Action
 
         StatementId         statmentExpression(ExpressionId id)                             {return addObjectToScope1<StatementExpression, Expression>(id);}
         StatementId         statmentReturn(ExpressionId id)                                 {return addObjectToScope1<StatementReturn, Expression>(id);}
+        StatementId         statmentAssembley(Id<std::string> id)                           {return addObjectToScope1<StatementAssembley, std::string>(id);}
 
         template<typename T, typename V>
         Id<T> getNameFromView(IdentifierId id, V view)
@@ -229,6 +230,9 @@ class Action
         ExpressionId        expressionLiteralString();
         ExpressionId        expressionLiteralInt();
 
+        // Assembley String Builder
+        Id<std::string>     assemblyInit();
+        void                assembleyAppend(Id<std::string> id);
         // Parsing virtual methods
         using Reuse = std::function<Int()>;
         virtual VoidId              anvilProgramV(NamespaceList&, Reuse&& reuse);

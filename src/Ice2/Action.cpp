@@ -347,6 +347,20 @@ std::string Action::getCurrentScopeFullName() const
     return result;
 }
 
+Id<std::string> Action::assemblyInit()
+{
+    std::string_view    view = lexer.lexem();
+    std::string         token(std::begin(view), std::end(view));
+    return storage.add<std::string>(std::move(token));
+}
+
+void Action::assembleyAppend(Id<std::string> id)
+{
+    std::string&        assembley = storage.get<std::string>(id.value);
+    std::string_view    view = lexer.lexem();
+    assembley.insert(std::begin(assembley), std::begin(view), std::end(view));
+}
+
 // Storage Access
 // ========================
 template<typename T>

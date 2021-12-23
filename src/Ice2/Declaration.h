@@ -226,6 +226,17 @@ class StatementReturn: public Statement
         {}
 };
 
+class StatementAssembley: public Statement
+{
+    std::string     assembley;
+    public:
+        using Base = Statement;
+        StatementAssembley(ActionRef action, std::string& assembley)
+            : Statement(action)
+            , assembley(assembley)
+        {}
+};
+
 class Expression: public Decl
 {
     public:

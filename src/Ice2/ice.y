@@ -57,6 +57,7 @@ using ThorsAnvil::Anvil::Ice::Object;
 using ThorsAnvil::Anvil::Ice::ObjectInit;
 using ThorsAnvil::Anvil::Ice::Statement;
 using ThorsAnvil::Anvil::Ice::Expression;
+using ThorsAnvil::Anvil::Ice::Id;
 %}
 %union {
     semantic_type(): voidId{0} {};
@@ -77,8 +78,12 @@ using ThorsAnvil::Anvil::Ice::Expression;
     ObjectInitId        objectInitId;
     StatementId         statementId;
     ExpressionId        expressionId;
+    Id<std::string>     assembley;
 }
 
+%token                          ASSEMBLEY_START
+%token                          ASSEMBLEY_END
+%token                          ASSEMBLEY_LINE
 %token                          NAMESPACE
 %token                          CLASS
 %token                          RETURN
@@ -159,6 +164,9 @@ using ThorsAnvil::Anvil::Ice::Expression;
 %type   <expressionId>          PostFixExpression
 %type   <expressionId>          PrimaryExpression
 %type   <expressionId>          Literal
+%type   <assembley>             Assembley
+%type   <assembley>             AssembleyLines
+
 
 
 %%
@@ -212,6 +220,7 @@ ObjectInit:             ';'                                                 {$$ 
 
 Statement:              Expression ';'                                      {$$ = action.statmentExpression($1);}
                     |   RETURN Expression ';'                               {$$ = action.statmentReturn($2);}
+                    |   Assembley                                           {$$ = action.statmentAssembley($1);}
 
 TypeDecl:               Type                                                {$$ = $1;}
                     |   AnonType                                            {$$ = $1;}
@@ -317,7 +326,9 @@ PrimaryExpression:      Object                                              {$$ 
 Literal:                LITERAL_STRING                                      {$$ = action.expressionLiteralString();}
                     |   LITERAL_INTEGER                                     {$$ = action.expressionLiteralInt();}
 
-
+Assembley:              ASSEMBLEY_START AssembleyLines ASSEMBLEY_END        {$$ = $2;}
+AssembleyLines:         ASSEMBLEY_LINE                                      {$$ = action.assemblyInit();}
+                    |   AssembleyLines ASSEMBLEY_LINE                       {$$ = $1; action.assembleyAppend($$);}
 
 %%
 
