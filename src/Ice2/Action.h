@@ -29,6 +29,22 @@ class Action
     std::size_t             lineNo;
     std::size_t             offset;
     public:
+        // Creating an maintaining lists.
+        template<typename T> using Ref              = std::reference_wrapper<T>;
+        template<typename T> using List             = std::list<Ref<T>>;
+        template<typename T> using ListId           = Id<List<T>>;
+        template<typename T> using ListAccess       = IdAccess<List<T>>;
+        template<typename T> using Base             = typename T::Base;
+        /*
+        struct ParserInfo
+        {
+            using Ref           = std::reference_wrapper<T>;
+            using ID            = Id<T>;
+            using IDAccess      = IdAccess<T>;
+            using List          = std::list<Ref>;
+            using ListId        = Id<List>;
+            using ListIdAccess  = IdAccess<List>;
+        };*/
         Action(Lexer& lexer, Scope& globalScope, Storage& storage, std::ostream& output = std::cerr);
         virtual ~Action();
 
@@ -48,35 +64,18 @@ class Action
         // Public Utility
         std::string         anonName();
 
-        // Creating an maintaining lists.
         template<typename T>
-        struct ListBuilder
+        ListId<T> listCreate()
         {
-            using Ref           = std::reference_wrapper<T>;
-            using ID            = Id<T>;
-            using IDAccess      = IdAccess<T>;
-            using List          = std::list<Ref>;
-            using ListId        = Id<List>;
-            using ListIdAccess  = IdAccess<List>;
-        };
-        template<typename T>
-        typename ListBuilder<T>::ListId listCreate()
-        {
-            using List = typename ListBuilder<T>::List;
-
-            return storage.add<List>(List{});
+            return storage.add<List<T>>(List<T>{});
         }
         template<typename T>
-        typename ListBuilder<T>::ListId listAppend(typename ListBuilder<T>::ListId listId, typename ListBuilder<T>::ID id)
+        ListId<T> listAppend(ListId<T> listId, Id<T> id)
         {
-            using ListIdAccess  = typename ListBuilder<T>::ListIdAccess;
-            using IDAccess      = typename ListBuilder<T>::IDAccess;
-            using List          = typename ListBuilder<T>::List;
+            ListAccess<T>   listAccess(storage, listId);
+            IdAccess<T>     objectAccess(storage, id);
 
-            ListIdAccess    listAccess(storage, listId);
-            IDAccess        objectAccess(storage, id);
-
-            List&           list = listAccess;
+            List<T>&        list = listAccess;
             T&              object = objectAccess;
 
             list.emplace_back(object);
@@ -99,7 +98,8 @@ class Action
         ObjectInitId        initVariable(ExpressionListId listId);
         ObjectInitId        initFunction(StatementListId listId);
 
-        StatementId         statmentExpression(ExpressionId);
+        StatementId         statmentExpression(ExpressionId id)                             {return addObjectToScope1<StatementExpression, Expression>(id);}
+        StatementId         statmentReturn(ExpressionId id)                                 {return addObjectToScope1<StatementReturn, Expression>(id);}
 
         template<typename T, typename V>
         Id<T> getNameFromView(IdentifierId id, V view)
@@ -124,6 +124,12 @@ class Action
         template<typename T>
         Id<T> getNameFromScopeStack(IdentifierId id)
         {
+            if (storage.get<Identifier>(id.value) == "::")
+            {
+                Scope&  global = currentScope.front();
+                T& result = dynamic_cast<T&>(global);
+                return storage.add<Ref<T>>(result);
+            }
             return getNameFromView<T>(id, make_View<Reverse>(currentScope));
         }
         template<typename T>
@@ -133,6 +139,39 @@ class Action
             ScopeRef        scope = ScopeRef(scopeAccess);
             return getNameFromView<T>(id, make_View<Reverse>(&scope, &scope+1));
         }
+        // -------
+
+        template<typename T, typename V>
+        T& getRefFromView(Identifier const& id, V view)
+        {
+            for (auto const& scope: view)
+            {
+                auto find = scope.get().get(id);
+                if (find.first)
+                {
+                    Decl& decl = *find.second->second;
+                    T& value = dynamic_cast<T&>(decl);
+                    return value;
+                }
+            }
+            error("Invalid Type Name: ", id);
+        }
+        template<typename T>
+        T& getRefFromScopeStack(Identifier const& id)
+        {
+            if (id == "::")
+            {
+                Scope&  global = currentScope.front();
+                return dynamic_cast<T&>(global);
+            }
+            return getRefFromView<T>(id, make_View<Reverse>(currentScope));
+        }
+        template<typename T>
+        T& getRefFromScope(ScopeRef const& scope, Identifier const& id)
+        {
+            return getRefFromView<T>(id, make_View<Reverse>(&scope, &scope+1));
+        }
+        // --------
 
         template<typename From, typename To>
         Id<To> convert(Id<From> id)
@@ -182,12 +221,13 @@ class Action
         ExpressionId        expressionOneCompliment(ExpressionId)                               {error("Not Implemented: expressionOneCompliment");}
         ExpressionId        expressionNot(ExpressionId)                                         {error("Not Implemented: expressionNot");}
         ExpressionId        expressionArrayAccess(ExpressionId, ExpressionId)                   {error("Not Implemented: expressionArrayAccess");}
-        ExpressionId        expressionFuncCall(ExpressionId, ExpressionListId)                  {error("Not Implemented: expressionFuncCall");}
-        ExpressionId        expressionMemberAccess(ExpressionId, IdentifierId)                  {error("Not Implemented: expressionMemberAccess");}
+        ExpressionId        expressionFuncCall(ExpressionId id, ExpressionListId list)      {return addObjectToScope2<ExpressionFuncCall, Expression, ExpressionList>(id, list);}
+        ExpressionId        expressionMemberAccess(ExpressionId id, IdentifierId mem)       {return addObjectToScope2<ExpressionMemberAccess, Expression, Identifier>(id, mem);}
         ExpressionId        expressionPostInc(ExpressionId)                                     {error("Not Implemented: expressionPostInc");}
         ExpressionId        expressionPostDec(ExpressionId)                                     {error("Not Implemented: expressionPostDec");}
-        ExpressionId        expreesionFindObjectByName(IdentifierId)                            {error("Not Implemented: expreesionFindObjectByName");}
-        ExpressionId        expressionLiteralString()                                           {error("Not Implemented: expressionLiteralString");}
+        ExpressionId        expressionObject(ObjectId id)                                   {return addObjectToScope1<ExpressionObject, Object>(id);}
+        ExpressionId        expressionLiteralString();
+        ExpressionId        expressionLiteralInt();
 
         // Parsing virtual methods
         using Reuse = std::function<Int()>;
@@ -204,6 +244,28 @@ class Action
         void addToLine();
         void resetLine();
 
+        template<typename Dst, typename Param1>
+        Id<Base<Dst>> addObjectToScope1(Id<Param1> id)
+        {
+            IdAccess<Param1>    param1Access(storage, id);
+            Param1&             param1 = param1Access;
+
+            Scope&     topScope = currentScope.back();
+            Base<Dst>& result   = topScope.add<Dst>(*this, param1);
+            return storage.add(Ref<Base<Dst>>{result});
+        }
+        template<typename Dst, typename Param1, typename Param2>
+        Id<Base<Dst>> addObjectToScope2(Id<Param1> id1, Id<Param2> id2)
+        {
+            IdAccess<Param1>    param1Access(storage, id1);
+            IdAccess<Param2>    param2Access(storage, id2);
+            Param1&             param1 = param1Access;
+            Param2&             param2 = param2Access;
+
+            Scope&     topScope = currentScope.back();
+            Base<Dst>& result   = topScope.add<Dst>(*this, param1, param2);
+            return storage.add(Ref<Base<Dst>>{result});
+        }
         template<typename T>
         T& getOrAddScope(Scope& topScope, std::string const& scopeName);
         std::string getCurrentScopeFullName() const;

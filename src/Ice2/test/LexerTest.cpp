@@ -96,7 +96,7 @@ $
     std::stringstream   output;
 
     Lexer           lexer(file);
-    Namespace       globalScope("Global");;
+    Namespace       globalScope(ThorsAnvil::Anvil::Ice::ActionRef{}, "Global");;
     Storage         storage;
     Action          action(lexer, globalScope, storage, output);
 

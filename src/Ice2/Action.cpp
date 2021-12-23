@@ -4,6 +4,8 @@
 #include "ParserTypes.h"
 #include "Utility/View.h"
 
+#include <cstdlib>
+
 using namespace ThorsAnvil::Anvil::Ice;
 
 struct ScopePrinter
@@ -29,6 +31,7 @@ Action::Action(Lexer& lexer, Scope& globalScope, Storage& storage, std::ostream&
     , offset(0)
 {
     currentScope.emplace_back(globalScope);
+    globalScope.add<Void>(*this, "Void");
 }
 
 Action::~Action()
@@ -186,7 +189,7 @@ FunctionId Action::scopeFunctionClose(FunctionId id, TypeListId listId, TypeId r
     FunctionAccess      access(storage, id);
     return scopeFunctionCloseV(access, TypeListAccess(storage, listId), TypeAccess(storage, returnType), [&access](){return access.reuse();});
 }
-FunctionId Action::scopeFunctionCloseV(Function& cl, TypeList& /*list*/, Type& /*returnType*/, Reuse&& reuse)
+FunctionId Action::scopeFunctionCloseV(Function& cl, TypeList& list, Type& returnType, Reuse&& reuse)
 {
     Scope&          topScope = currentScope.back();
     Function*       topFunction = dynamic_cast<Function*>(&topScope);
@@ -195,6 +198,7 @@ FunctionId Action::scopeFunctionCloseV(Function& cl, TypeList& /*list*/, Type& /
     {
         error("Internal Error: Scope Note correctly aligned from Function");
     }
+    topFunction->addOverload(this, std::move(list), returnType);
     currentScope.pop_back();
     return reuse();
 }
@@ -227,7 +231,7 @@ ObjectId Action::scopeObjectAddV(Identifier& name, Type& type)
     {
         error("Object Already defined: ", name);
     }
-    Object& object = topScope.add<Object>(name, type);
+    Object& object = topScope.add<Object>(*this, name, type);
     return storage.add<ObjectRef>(object);
 }
 // ------------------
@@ -249,10 +253,6 @@ ObjectInitId Action::initVariable(ExpressionListId /*listId*/)
     return 0;
 }
 ObjectInitId Action::initFunction(StatementListId /*listId*/)
-{
-    return 0;
-}
-StatementId Action::statmentExpression(ExpressionId)
 {
     return 0;
 }
@@ -301,9 +301,23 @@ ExpressionId Action::expressionFuncCall(ExpressionId, ExpressionId);
 ExpressionId Action::expressionMemberAccess(ExpressionId, ExpressionId);
 ExpressionId Action::expressionPostInc(ExpressionId);
 ExpressionId Action::expressionPostDec(ExpressionId);
-ExpressionId Action::expreesionFindObjectByName(ExpressionId);
-ExpressionId Action::expressionLiteralString();
 #endif
+ExpressionId Action::expressionLiteralString()
+{
+    std::string_view    view    = lexer.lexem();
+    Identifier          literal = std::string(std::begin(view), std::end(view));
+    IdentifierId        id      = storage.add<Identifier>(std::move(literal));
+    return addObjectToScope1<ExpressionLiteral<std::string>, Identifier>(id);
+}
+ExpressionId Action::expressionLiteralInt()
+{
+    std::string_view    view    = lexer.lexem();
+    char const*         begView = std::begin(view);
+    char const*         endView = std::end(view);
+    Int                 literal = std::strtol(begView, const_cast<char**>(&endView), 10);
+    IntId               id      = storage.add<Int>(std::move(literal));
+    return addObjectToScope1<ExpressionLiteral<Int>, Int>(id);
+}
 
 // Action Utility Functions
 // ========================
@@ -316,7 +330,7 @@ T& Action::getOrAddScope(Scope& topScope, std::string const& scopeName)
         Decl*       foundDeclWithSameName = find.second->second.get();
         return dynamic_cast<T&>(*foundDeclWithSameName);
     }
-    T& addedScope = topScope.add<T>(scopeName);
+    T& addedScope = topScope.add<T>(*this, scopeName);
     addedScope.setPath(getCurrentScopeFullName());
     return addedScope;
 }

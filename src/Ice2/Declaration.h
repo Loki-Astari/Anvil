@@ -3,6 +3,7 @@
 
 #include <functional>
 #include <vector>
+#include <list>
 #include <map>
 #include <string>
 #include <memory>
@@ -12,24 +13,64 @@
 namespace ThorsAnvil::Anvil::Ice
 {
 
+class Action;
 class Decl;
-
-using Int           = std::size_t;
-using MemberStorage = std::map<std::string, std::unique_ptr<Decl>>;
-using MemberIndex   = std::map<std::string, std::size_t>;
-using NameRef       = MemberStorage::const_iterator;
-
+class Scope;
+class Namespace;
+class Type;
+class Void;
+class Class;
+class Function;
+class Object;
+class ObjectInit;
+class Statement;
+class Expression;
 
 enum class DeclType {Void, Namespace, Class, Function, Object, ObjectInit, Statement, Expression};
+
+using Int               = std::size_t;
+using Identifier        = std::string;
+using MemberStorage     = std::map<std::string, std::unique_ptr<Decl>>;
+using MemberIndex       = std::map<std::string, std::size_t>;
+using NameRef           = MemberStorage::const_iterator;
+
+using ActionRef         = Action*;      // Pointer because Storage uses nullptr
+
+using DeclRef           = std::reference_wrapper<Decl>;
+using ScopeRef          = std::reference_wrapper<Scope>;
+using NamespaceRef      = std::reference_wrapper<Namespace>;
+using TypeRef           = std::reference_wrapper<Type>;
+using TypeList          = std::list<TypeRef>;
+using VoidRef           = std::reference_wrapper<Void>;
+using ClassRef          = std::reference_wrapper<Class>;
+using FunctionRef       = std::reference_wrapper<Function>;
+using ObjectRef         = std::reference_wrapper<Object>;
+using ObjectInitRef     = std::reference_wrapper<ObjectInit>;
+using StatementRef      = std::reference_wrapper<Statement>;
+using ExpressionRef     = std::reference_wrapper<Expression>;
+using ExpressionList    = std::list<ExpressionRef>;
+
+using NamespaceDecOrder = std::vector<NamespaceRef>;
+
+inline bool operator<(TypeRef const& lhs, TypeRef const& rhs)
+{
+    return &lhs.get() < &rhs.get();
+}
+inline bool operator==(TypeRef const& lhs, TypeRef const& rhs)
+{
+    return &lhs.get() == &rhs.get();
+}
+
 class Decl
 {
     public:
+        Decl(ActionRef /*action*/) {}
         virtual ~Decl() {}
         virtual DeclType declType() const = 0;
-        virtual std::string const& declName() const = 0;
+        virtual std::string const& declName() const;
 
         static constexpr bool valid = true;
-        static constexpr Int defaultStorageId = 7;
+        static constexpr Int defaultStorageId = 8;
 };
 
 
@@ -40,49 +81,19 @@ class Scope: public Decl
     std::size_t     nextObjectId;
     std::size_t     anonNameCount;
     public:
-        Scope()
-            : nextObjectId(0)
-            , anonNameCount(0)
-        {}
+        Scope(ActionRef);
+
         std::pair<bool, NameRef> get(std::string const& name) const;
         template<typename T, typename... Args>
-        T& add(Args&&... args);
+        T& add(Action& action, Args&&... args);
         virtual bool storeFunctionsInContainer() const {return false;}
 
-        friend std::ostream& operator<<(std::ostream& str, Scope& data)
-        {
-            str << "\n\n\n===================\n";
-            for (auto const& member: data.members)
-            {
-                str << member.first << " : " << member.second->declName() << "\n";
-            }
-            str << "===================\n\n\n";
-            return str;
-        }
-        std::string anonName()
-        {
-            // 64 bit Size: Convert to hex => 16 bit
-            // Prefix with dollar => 17bit
-            std::string name(17, '$');
-            generateHexName(name, anonNameCount);
-            ++anonNameCount;
-            return name;
-        }
-    private:
-        char hex(std::size_t halfByte)
-        {
-            return halfByte < 10
-                        ? '0' + halfByte
-                        : 'a' + (halfByte - 10);
-        }
-        void generateHexName(std::string& name, std::size_t count)
-        {
-            for (int loop = 0; loop < 16; ++loop)
-            {
-                name[loop+1] = hex((count >> (loop * 4)) & 0xF);
-            }
-        }
+        friend std::ostream& operator<<(std::ostream& str, Scope& data);
 
+        std::string anonName();
+    private:
+        char hex(std::size_t halfByte);
+        void generateHexName(std::string& name, std::size_t count);
 };
 
 class NamedScope: public Scope
@@ -90,8 +101,9 @@ class NamedScope: public Scope
     std::string name;
     std::string fullName;
     public:
-        NamedScope(std::string name)
-            : name(std::move(name))
+        NamedScope(ActionRef action, std::string name)
+            : Scope(action)
+            , name(std::move(name))
         {}
         virtual std::string const& declName() const override {return name;}
         void setPath(std::string path) {fullName = std::move(path);}
@@ -100,13 +112,13 @@ class NamedScope: public Scope
 class Namespace: public NamedScope
 {
     public:
-        Namespace(std::string name)
-            : NamedScope(std::move(name))
+        Namespace(ActionRef action, std::string name)
+            : NamedScope(action, std::move(name))
         {}
         virtual DeclType declType() const override {return DeclType::Namespace;}
 
         static constexpr bool valid = true;
-        static constexpr Int defaultStorageId = 8;
+        static constexpr Int defaultStorageId = 9;
 };
 
 class Type: public NamedScope
@@ -114,7 +126,7 @@ class Type: public NamedScope
     public:
         using NamedScope::NamedScope;
         static constexpr bool valid = true;
-        static constexpr Int defaultStorageId = 9;
+        static constexpr Int defaultStorageId = 10;
 };
 
 class Void: public Type
@@ -124,7 +136,7 @@ class Void: public Type
         virtual DeclType declType() const override {return DeclType::Void;}
 
         static constexpr bool valid = false;
-        static constexpr Int defaultStorageId = 10;
+        static constexpr Int defaultStorageId = 11;
 };
 
 class Class: public Type
@@ -135,18 +147,22 @@ class Class: public Type
         virtual bool storeFunctionsInContainer() const override {return true;}
 
         static constexpr bool valid = true;
-        static constexpr Int defaultStorageId = 11;
+        static constexpr Int defaultStorageId = 12;
 };
 
 class Function: public Type
 {
+    std::map<TypeList, TypeRef>   overload;
     public:
         using Type::Type;
         virtual DeclType declType() const override {return DeclType::Function;}
         virtual bool storeFunctionsInContainer() const override {return true;}
 
         static constexpr bool valid = true;
-        static constexpr Int defaultStorageId = 12;
+        static constexpr Int defaultStorageId = 13;
+
+        void addOverload(ActionRef action, TypeList&& list, Type& returnType);
+        Type const& getReturnType(ActionRef action, ExpressionList const& params) const;
 };
 
 class Object: public Decl
@@ -154,63 +170,151 @@ class Object: public Decl
     std::string     name;
     Type const&     type;
     public:
-        Object(std::string name, Type const& type)
-            : name(std::move(name))
+        Object(ActionRef action, std::string name, Type const& type)
+            : Decl(action)
+            , name(std::move(name))
             , type(type)
         {}
         virtual DeclType declType() const override {return DeclType::Object;}
         virtual std::string const& declName() const override {return name;}
 
-        static constexpr bool valid = true;
-        static constexpr Int defaultStorageId = 13;
-};
-
-class ObjectInit: public Decl
-{
-    std::string name = "ObjectInit";
-    public:
-        virtual DeclType declType() const override {return DeclType::ObjectInit;}
-        virtual std::string const& declName() const override {return name;}
+        Type const& getType() const {return type;}
 
         static constexpr bool valid = true;
         static constexpr Int defaultStorageId = 14;
 };
 
-class Statement: public Decl
+class ObjectInit: public Decl
 {
-    std::string name = "Statement";
     public:
-        virtual DeclType declType() const override {return DeclType::Statement;}
-        virtual std::string const& declName() const override {return name;}
+        using Decl::Decl;
+        virtual DeclType declType() const override {return DeclType::ObjectInit;}
 
         static constexpr bool valid = true;
         static constexpr Int defaultStorageId = 15;
 };
 
-class Expression: public Decl
+class Statement: public Decl
 {
-    std::string name = "Expression";
     public:
-        virtual DeclType declType() const override {return DeclType::Expression;}
-        virtual std::string const& declName() const override {return name;}
+        using Decl::Decl;
+        virtual DeclType declType() const override {return DeclType::Statement;}
 
         static constexpr bool valid = true;
         static constexpr Int defaultStorageId = 16;
 };
 
-using DeclRef           = std::reference_wrapper<Decl>;
-using ScopeRef          = std::reference_wrapper<Scope>;
-using NamespaceRef      = std::reference_wrapper<Namespace>;
-using TypeRef           = std::reference_wrapper<Type>;
-using VoidRef           = std::reference_wrapper<Void>;
-using ClassRef          = std::reference_wrapper<Class>;
-using FunctionRef       = std::reference_wrapper<Function>;
-using ObjectRef         = std::reference_wrapper<Object>;
-using ObjectInitRef     = std::reference_wrapper<ObjectInit>;
-using StatementRef      = std::reference_wrapper<Statement>;
-using ExpressionRef     = std::reference_wrapper<Expression>;
+class StatementExpression: public Statement
+{
+    Expression&     expression;
+    public:
+        using Base = Statement;
+        StatementExpression(ActionRef action, Expression& expression)
+            : Statement(action)
+            , expression(expression)
+        {}
+};
 
-using NamespaceDecOrder = std::vector<NamespaceRef>;
+class StatementReturn: public Statement
+{
+    Expression&     expression;
+    public:
+        using Base = Statement;
+        StatementReturn(ActionRef action, Expression& expression)
+            : Statement(action)
+            , expression(expression)
+        {}
+};
+
+class Expression: public Decl
+{
+    public:
+        using Decl::Decl;
+        virtual DeclType declType() const override {return DeclType::Expression;}
+
+        static constexpr bool valid = true;
+        static constexpr Int defaultStorageId = 17;
+        virtual Type const& getType() const = 0;
+};
+
+class ExpressionObject: public Expression
+{
+    Object&     object;
+    public:
+        using Base = Expression;
+        ExpressionObject(ActionRef action, Object& object)
+            : Expression(action)
+            , object(object)
+        {}
+        virtual Type const& getType() const override {return object.getType();}
+};
+
+class ExpressionMemberAccess: public Expression
+{
+    Expression& src;
+    Object&     member;
+    public:
+        using Base = Expression;
+        ExpressionMemberAccess(ActionRef action, Expression& src, Identifier& memberName)
+            : Expression(action)
+            , src(src)
+            , member(findMember(action, src, memberName))
+        {}
+        virtual Type const& getType() const override {return member.getType();}
+    private:
+        Object& findMember(ActionRef action, Expression& src, Identifier& memberName);
+};
+
+template<typename T>
+struct ExpressionLiteralTypeName;
+
+template<>
+struct ExpressionLiteralTypeName<std::string>
+{
+    static const std::string standardName;
+};
+template<>
+struct ExpressionLiteralTypeName<Int>
+{
+    static const std::string standardName;
+};
+
+
+template<typename T>
+class ExpressionLiteral: public Expression
+{
+    T literal;
+    Type const& type;
+    public:
+        using Base = Expression;
+        ExpressionLiteral(ActionRef action, T& literal)
+            : Expression(action)
+            , literal(literal)
+            , type(findType(action))
+        {}
+        virtual Type const& getType() const override {return type;}
+    private:
+        Type const& findType(ActionRef action);
+};
+
+class ExpressionFuncCall: public Expression
+{
+    Expression&     funcObject;
+    ExpressionList  params;
+    Type const&     type;
+    public:
+        using Base = Expression;
+        ExpressionFuncCall(ActionRef action, Expression& funcObject, ExpressionList& params)
+            : Expression(action)
+            , funcObject(funcObject)
+            , params(params)
+            , type(findType(action))
+        {}
+        virtual Type const& getType() const override {return type;}
+    private:
+        Type const& findType(ActionRef action);
+};
+
 
 // Included from Declaration.h
 
@@ -240,13 +344,18 @@ bool doesDeclNeedRuntimeStorage<Object>(Scope& scope, Decl const& decl)
 */
 
 template<typename T, typename... Args>
-inline T& Scope::add(Args&&... args)
+inline T& Scope::add(Action& action, Args&&... args)
 {
-    std::unique_ptr<Decl> decl(new T(args...));
-    auto& location = members[decl->declName()];
+    std::unique_ptr<Decl> decl(new T(&action, args...));
+    std::string  index = decl->declName();
+    if (index == "")
+    {
+        index = anonName();
+    }
+    auto& location = members[index];
     if (doesDeclNeedRuntimeStorage<T>(*this, *decl))
     {
-        objectId[decl->declName()] = nextObjectId++;
+        objectId[index] = nextObjectId++;
     }
     location = std::move(decl);
     return dynamic_cast<T&>(*location);

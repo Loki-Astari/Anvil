@@ -30,23 +30,28 @@ class Storage
     Identifier          defaultIdentifier;
     ObjectInit          defaultInit;
     Statement           defaultStatement;
-    Expression          defaultExpression;
+    ExpressionObject    defaultExpression;
 
     public:
         Storage()
             : nextFree(0)
-            , defaultDecl("Invalid Decl")
-            , defaultNamespace("Invalid Namespace")
-            , defaultType("Invalid Type")
-            , defaultVoid("Invalid Void")
-            , defaultClass("Invalid Class")
-            , defaultFunction("Invalid Function")
-            , defaultObject("Invalid Object", defaultClass)
+            , defaultDecl(ActionRef{}, "Invalid Decl")
+            , defaultNamespace(ActionRef{}, "Invalid Namespace")
+            , defaultType(ActionRef{}, "Invalid Type")
+            , defaultVoid(ActionRef{}, "Invalid Void")
+            , defaultClass(ActionRef{}, "Invalid Class")
+            , defaultFunction(ActionRef{}, "Invalid Function")
+            , defaultObject(ActionRef{}, "Invalid Object", defaultClass)
+            , defaultInit(ActionRef{})
+            , defaultStatement(ActionRef{})
+            , defaultExpression(ActionRef{}, defaultObject)
         {
             // We don't use location 0.
             // This is because ice.y parser passes back zero for no object returned.
             // So we don't want to confuse a no-object with an object.
             data.emplace_back(0UL);
+            // ---
+            data.emplace_back(Int{0});
             // ---
             data.emplace_back(Identifier{"Invalid Identifier"});
             // ----

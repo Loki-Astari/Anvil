@@ -81,6 +81,7 @@ using ThorsAnvil::Anvil::Ice::Expression;
 
 %token                          NAMESPACE
 %token                          CLASS
+%token                          RETURN
 %token                          FUNC
 %token                          ARROW
 %token                          SCOPE
@@ -88,6 +89,7 @@ using ThorsAnvil::Anvil::Ice::Expression;
 %token                          IDENTIFIER_TYPE
 %token                          IDENTIFIER_OBJECT
 %token                          LITERAL_STRING
+%token                          LITERAL_INTEGER
 %token                          OP_ASSIGN_MUL
 %token                          OP_ASSIGN_DIV
 %token                          OP_ASSIGN_MOD
@@ -132,6 +134,7 @@ using ThorsAnvil::Anvil::Ice::Expression;
 %type   <typeId>                AnonType
 %type   <typeId>                Type
 %type   <objectId>              ObjectDecl
+%type   <objectId>              Object
 %type   <identifierId>          ScopeIdentifier
 %type   <identifierId>          IdentifierNamespace
 %type   <identifierId>          IdentifierType
@@ -208,6 +211,7 @@ ObjectInit:             ';'                                                 {$$ 
                     |   '{' StatementListOpt '}'                            {$$ = action.initFunction($2);}
 
 Statement:              Expression ';'                                      {$$ = action.statmentExpression($1);}
+                    |   RETURN Expression ';'                               {$$ = action.statmentReturn($2);}
 
 TypeDecl:               Type                                                {$$ = $1;}
                     |   AnonType                                            {$$ = $1;}
@@ -217,6 +221,9 @@ AnonType:               ClassAnon                                           {$$ 
 
 Type:                   IdentifierType                                      {$$ = action.getNameFromScopeStack<Type>($1);}
                     |   ScopedType SCOPE IdentifierType                     {$$ = action.getNameFromScope<Type>($1, $3);}
+
+Object:                 IdentifierObject                                    {$$ = action.getNameFromScopeStack<Object>($1);}
+                    |   ScopedType SCOPE IdentifierObject                   {$$ = action.getNameFromScope<Object>($1, $3);}
 
 ScopedType:             ScopeIdentifier                                     {$$ = action.getNameFromScopeStack<Scope>($1);}
                     |   ScopedType SCOPE ScopeIdentifier                    {$$ = action.getNameFromScope<Scope>($1, $3);}
@@ -303,11 +310,12 @@ PostFixExpression:      PrimaryExpression                                   {$$ 
                     |   PostFixExpression OP_INC                            {$$ = action.expressionPostInc($1);}
                     |   PostFixExpression OP_DEC                            {$$ = action.expressionPostDec($1);}
 
-PrimaryExpression:      IdentifierObject                                    {$$ = action.expreesionFindObjectByName($1);}
+PrimaryExpression:      Object                                              {$$ = action.expressionObject($1);}
                     |   Literal                                             {$$ = $1;}
                     |   '(' Expression ')'                                  {$$ = $2;}
 
 Literal:                LITERAL_STRING                                      {$$ = action.expressionLiteralString();}
+                    |   LITERAL_INTEGER                                     {$$ = action.expressionLiteralInt();}
 
 
 

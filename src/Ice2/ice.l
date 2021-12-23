@@ -16,6 +16,7 @@ IdentifierObject    [a-z][A-Za-z0-9_]*
 IdentifierNS        [A-Z][A-Za-z0-9_]*
 IdentifierType      [A-Z][A-Za-z0-9]{3,}
 LiteralString       \"[^"]*\"
+LiteralInteger      ([1-9][0-9]+)|(0)
 
 WhiteSpace          [ \t\r]+
 NewLine             \n
@@ -25,6 +26,7 @@ NewLine             \n
 namespace           {action.token();return yy::Parser::token::NAMESPACE;}
 class               {action.token();return yy::Parser::token::CLASS;}
 func                {action.token();return yy::Parser::token::FUNC;}
+return              {action.token();return yy::Parser::token::RETURN;}
 ->                  {action.token();return yy::Parser::token::ARROW;}
 ::                  {action.token();return yy::Parser::token::SCOPE;}
 \{                  {action.token();return '{';}
@@ -74,6 +76,7 @@ func                {action.token();return yy::Parser::token::FUNC;}
 
 
 {LiteralString}     {action.token();return yy::Parser::token::LITERAL_STRING;}
+{LiteralInteger}    {action.token();return yy::Parser::token::LITERAL_INTEGER;}
 
 
 {IdentifierObject}  {action.token();return yy::Parser::token::IDENTIFIER_OBJECT;}

@@ -19,7 +19,7 @@ struct ParserCompiler
 
     ParserCompiler(std::istream& input, std::ostream& output)
         : lexer(input, output)
-        , globalScope("GlobalScope")
+        , globalScope(ThorsAnvil::Anvil::Ice::ActionRef{}, "GlobalScope")
         , action(lexer, globalScope, storage, output)
         , parser(lexer, action)
     {}

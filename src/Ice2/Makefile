@@ -13,6 +13,7 @@ Ice_LDLIBS					= -lfl
 
 %/ice.tab.o:				FILE_WARNING_FLAGS += -Wno-uninitialized-const-reference
 %/ice.lex.o:				FILE_WARNING_FLAGS += -Wno-sign-compare
+%/Declaration.o:			FILE_WARNING_FLAGS += -Wno-unknown-pragmas
 %/Action.o:					FILE_WARNING_FLAGS += -Wno-unknown-pragmas
 %/Semantic.o:				FILE_WARNING_FLAGS += -Wno-unknown-pragmas
 %/AssembleyGenerator.o:		FILE_WARNING_FLAGS += -Wno-unknown-pragmas
