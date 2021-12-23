@@ -16,6 +16,7 @@ namespace ThorsAnvil::Anvil::Ice
 class Action;
 class Decl;
 class Scope;
+class CodeBlock;
 class Namespace;
 class Type;
 class Void;
@@ -26,7 +27,7 @@ class ObjectInit;
 class Statement;
 class Expression;
 
-enum class DeclType {Void, Namespace, Class, Function, Object, ObjectInit, Statement, Expression};
+enum class DeclType {Void, Namespace, Class, Function, CodeBlock, Object, ObjectInit, Statement, Expression};
 
 using Int               = std::size_t;
 using Identifier        = std::string;
@@ -38,6 +39,7 @@ using ActionRef         = Action*;      // Pointer because Storage uses nullptr
 
 using DeclRef           = std::reference_wrapper<Decl>;
 using ScopeRef          = std::reference_wrapper<Scope>;
+using CodeBlockRef      = std::reference_wrapper<CodeBlock>;
 using NamespaceRef      = std::reference_wrapper<Namespace>;
 using TypeRef           = std::reference_wrapper<Type>;
 using TypeList          = std::list<TypeRef>;
@@ -48,6 +50,7 @@ using ObjectRef         = std::reference_wrapper<Object>;
 using ObjectInitRef     = std::reference_wrapper<ObjectInit>;
 using StatementRef      = std::reference_wrapper<Statement>;
 using ExpressionRef     = std::reference_wrapper<Expression>;
+using StatementList     = std::list<StatementRef>;
 using ExpressionList    = std::list<ExpressionRef>;
 
 using NamespaceDecOrder = std::vector<NamespaceRef>;
@@ -96,6 +99,19 @@ class Scope: public Decl
         void generateHexName(std::string& name, std::size_t count);
 };
 
+class CodeBlock: public Scope
+{
+    public:
+        CodeBlock(ActionRef action)
+            : Scope(action)
+        {}
+        virtual std::string const& declName() const override {static std::string name;return name;}
+        virtual DeclType declType() const override {return DeclType::CodeBlock;}
+
+        static constexpr bool valid = true;
+        static constexpr Int defaultStorageId = 9;
+};
+
 class NamedScope: public Scope
 {
     std::string name;
@@ -118,7 +134,7 @@ class Namespace: public NamedScope
         virtual DeclType declType() const override {return DeclType::Namespace;}
 
         static constexpr bool valid = true;
-        static constexpr Int defaultStorageId = 9;
+        static constexpr Int defaultStorageId = 10;
 };
 
 class Type: public NamedScope
@@ -126,7 +142,7 @@ class Type: public NamedScope
     public:
         using NamedScope::NamedScope;
         static constexpr bool valid = true;
-        static constexpr Int defaultStorageId = 10;
+        static constexpr Int defaultStorageId = 11;
 };
 
 class Void: public Type
@@ -136,7 +152,7 @@ class Void: public Type
         virtual DeclType declType() const override {return DeclType::Void;}
 
         static constexpr bool valid = false;
-        static constexpr Int defaultStorageId = 11;
+        static constexpr Int defaultStorageId = 12;
 };
 
 class Class: public Type
@@ -147,7 +163,7 @@ class Class: public Type
         virtual bool storeFunctionsInContainer() const override {return true;}
 
         static constexpr bool valid = true;
-        static constexpr Int defaultStorageId = 12;
+        static constexpr Int defaultStorageId = 13;
 };
 
 class Function: public Type
@@ -159,7 +175,7 @@ class Function: public Type
         virtual bool storeFunctionsInContainer() const override {return true;}
 
         static constexpr bool valid = true;
-        static constexpr Int defaultStorageId = 13;
+        static constexpr Int defaultStorageId = 14;
 
         void addOverload(ActionRef action, TypeList&& list, Type& returnType);
         Type const& getReturnType(ActionRef action, ExpressionList const& params) const;
@@ -181,7 +197,7 @@ class Object: public Decl
         Type const& getType() const {return type;}
 
         static constexpr bool valid = true;
-        static constexpr Int defaultStorageId = 14;
+        static constexpr Int defaultStorageId = 15;
 };
 
 class ObjectInit: public Decl
@@ -191,7 +207,7 @@ class ObjectInit: public Decl
         virtual DeclType declType() const override {return DeclType::ObjectInit;}
 
         static constexpr bool valid = true;
-        static constexpr Int defaultStorageId = 15;
+        static constexpr Int defaultStorageId = 16;
 };
 
 class Statement: public Decl
@@ -201,7 +217,7 @@ class Statement: public Decl
         virtual DeclType declType() const override {return DeclType::Statement;}
 
         static constexpr bool valid = true;
-        static constexpr Int defaultStorageId = 16;
+        static constexpr Int defaultStorageId = 17;
 };
 
 class StatementExpression: public Statement
@@ -237,6 +253,19 @@ class StatementAssembley: public Statement
         {}
 };
 
+class StatementCodeBlock: public Statement
+{
+    CodeBlock&      codeBlock;
+    StatementList   list;
+    public:
+        using Base = Statement;
+        StatementCodeBlock(ActionRef action, CodeBlock& codeBlock, StatementList list)
+            : Statement(action)
+            , codeBlock(codeBlock)
+            , list(list)
+        {}
+};
+
 class Expression: public Decl
 {
     public:
@@ -244,7 +273,7 @@ class Expression: public Decl
         virtual DeclType declType() const override {return DeclType::Expression;}
 
         static constexpr bool valid = true;
-        static constexpr Int defaultStorageId = 17;
+        static constexpr Int defaultStorageId = 18;
         virtual Type const& getType() const = 0;
 };
 

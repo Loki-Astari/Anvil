@@ -10,7 +10,7 @@
 namespace ThorsAnvil::Anvil::Ice
 {
 
-using Data = std::variant<Int, DeclList, NamespaceList, TypeList, ExpressionList, StatementList, DeclRef, ScopeRef, NamespaceRef, TypeRef, VoidRef, ClassRef, FunctionRef, ObjectRef, StatementRef, ExpressionRef, ObjectInitRef, Identifier>;
+using Data = std::variant<Int, DeclList, NamespaceList, TypeList, ExpressionList, StatementList, DeclRef, ScopeRef, CodeBlockRef, NamespaceRef, TypeRef, VoidRef, ClassRef, FunctionRef, ObjectRef, StatementRef, ExpressionRef, ObjectInitRef, Identifier>;
 
 template<typename T>
 class StorageAccess;
@@ -21,6 +21,7 @@ class Storage
     Int                 nextFree;
     // TODO defaultDecl can we make it another type?
     Namespace           defaultDecl;
+    CodeBlock           defaultCodeBlock;
     Namespace           defaultNamespace;
     Void                defaultType;
     Void                defaultVoid;
@@ -36,6 +37,7 @@ class Storage
         Storage()
             : nextFree(0)
             , defaultDecl(ActionRef{}, "Invalid Decl")
+            , defaultCodeBlock(ActionRef{})
             , defaultNamespace(ActionRef{}, "Invalid Namespace")
             , defaultType(ActionRef{}, "Invalid Type")
             , defaultVoid(ActionRef{}, "Invalid Void")
@@ -62,6 +64,7 @@ class Storage
             data.emplace_back(ExpressionList{});
             // ----
             data.emplace_back(DeclRef{defaultDecl});
+            data.emplace_back(CodeBlockRef{defaultCodeBlock});
             data.emplace_back(NamespaceRef{defaultNamespace});
             data.emplace_back(TypeRef{defaultType});
             data.emplace_back(VoidRef{defaultVoid});

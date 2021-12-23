@@ -92,11 +92,17 @@ class Action
         FunctionId          scopeFunctionOpen(IdentifierId id);
         FunctionId          scopeFunctionClose(FunctionId id, TypeListId listId, TypeId returnType);
         FunctionId          scopeFunctionAnon(TypeListId listId, TypeId returnType);
+        CodeBlockId         scopeCodeBlockOpen();
+        StatementId         scopeCodeBlockClose(CodeBlockId, StatementListId);
         ObjectId            scopeObjectAdd(IdentifierId name, TypeId id, ObjectInitId init);
+        FunctionId          scopeConstructorInit();
+        ObjectId            scopeConstructorAdd(FunctionId id, TypeListId listId, StatementId code);
+        FunctionId          scopeDestructorInit();
+        ObjectId            scopeDestructorAdd(FunctionId id, TypeListId listId, StatementId code);
         IdentifierId        identifierCreate();
 
         ObjectInitId        initVariable(ExpressionListId listId);
-        ObjectInitId        initFunction(StatementListId listId);
+        ObjectInitId        initFunction(StatementId codeBlock);
 
         StatementId         statmentExpression(ExpressionId id)                             {return addObjectToScope1<StatementExpression, Expression>(id);}
         StatementId         statmentReturn(ExpressionId id)                                 {return addObjectToScope1<StatementReturn, Expression>(id);}
@@ -242,6 +248,8 @@ class Action
         virtual ClassId             scopeClassCloseV(Class&, DeclList& list, Reuse&& reuse);
         virtual FunctionId          scopeFunctionOpenV(std::string& id, Reuse&& reuse);
         virtual FunctionId          scopeFunctionCloseV(Function& id, TypeList& listId, Type& returnType, Reuse&& reuse);
+        virtual CodeBlockId         scopeCodeBlockOpenV();
+        virtual StatementId         scopeCodeBlockCloseV(CodeBlock&, StatementList&);
         virtual ObjectId            scopeObjectAddV(Identifier& name, Type& id);
         virtual IdentifierId        identifierCreateV();
     private:

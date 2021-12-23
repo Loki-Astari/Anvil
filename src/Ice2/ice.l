@@ -36,6 +36,8 @@ namespace           {action.token();return yy::Parser::token::NAMESPACE;}
 class               {action.token();return yy::Parser::token::CLASS;}
 func                {action.token();return yy::Parser::token::FUNC;}
 return              {action.token();return yy::Parser::token::RETURN;}
+construct           {action.token();return yy::Parser::token::CONSTRUCT;}
+destruct            {action.token();return yy::Parser::token::DESTRUCT;}
 ->                  {action.token();return yy::Parser::token::ARROW;}
 ::                  {action.token();return yy::Parser::token::SCOPE;}
 \{                  {action.token();return '{';}

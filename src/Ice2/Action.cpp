@@ -204,6 +204,43 @@ FunctionId Action::scopeFunctionCloseV(Function& cl, TypeList& list, Type& retur
 }
 // ------------------
 
+CodeBlockId Action::scopeCodeBlockOpen()
+{
+    ScopePrinter scope("scopeCodeBlockOpen");
+    return scopeCodeBlockOpenV();
+}
+CodeBlockId Action::scopeCodeBlockOpenV()
+{
+    Scope&     topScope = currentScope.back();
+    CodeBlock& result  = topScope.add<CodeBlock>(*this);
+    currentScope.emplace_back(result);
+
+    return storage.add(CodeBlockRef{result});
+}
+// ------------------
+
+StatementId Action::scopeCodeBlockClose(CodeBlockId id, StatementListId listId)
+{
+    ScopePrinter scope("scopeCodeBlockClose");
+    CodeBlockAccess      access(storage, id);
+    return scopeCodeBlockCloseV(access, StatementListAccess(storage, listId));
+}
+StatementId Action::scopeCodeBlockCloseV(CodeBlock& codeBlock, StatementList& list)
+{
+    Scope&          topScope = currentScope.back();
+    CodeBlock*      topBlock = dynamic_cast<CodeBlock*>(&topScope);
+
+    if (&codeBlock != topBlock)
+    {
+        error("Internal Error: Scope Note correctly aligned from CodeBlock");
+    }
+    currentScope.pop_back();
+    Scope&          newTop = currentScope.back();
+    StatementCodeBlock& result   = newTop.add<StatementCodeBlock>(*this, codeBlock, list);
+    return storage.add(StatementRef{result});
+}
+// ------------------
+
 FunctionId Action::scopeFunctionAnon(TypeListId listId, TypeId returnType)
 {
     ScopePrinter scope("scopeFunctionAnon");
@@ -236,6 +273,48 @@ ObjectId Action::scopeObjectAddV(Identifier& name, Type& type)
 }
 // ------------------
 
+FunctionId Action::scopeConstructorInit()
+{
+    IdentifierId name = storage.add<std::string>(std::string("$Constructor"));
+    return scopeFunctionOpen(name);
+}
+ObjectId Action::scopeConstructorAdd(FunctionId id, TypeListId listId, StatementId code)
+{
+    IdentifierId    voidId      = storage.add<std::string>(std::string("Void"));
+    TypeId          voidType    = getNameFromScopeStack<Type>(voidId);
+
+    scopeFunctionClose(id, listId, voidType);
+
+    IdentifierId    funcName    = storage.add<std::string>(std::string("$Constructor"));
+    TypeId          funcType    = getNameFromScopeStack<Type>(funcName);
+    ObjectInitId    init        = initFunction(code);
+
+    IdentifierId    name        = storage.add<std::string>(std::string("$constructor"));
+    return scopeObjectAdd(name, funcType, init);
+}
+
+// ------------------
+FunctionId Action::scopeDestructorInit()
+{
+    IdentifierId name = storage.add<std::string>(std::string("$Destructor"));
+    return scopeFunctionOpen(name);
+}
+ObjectId Action::scopeDestructorAdd(FunctionId id, TypeListId listId, StatementId code)
+{
+    IdentifierId    voidId      = storage.add<std::string>(std::string("Void"));
+    TypeId          voidType    = getNameFromScopeStack<Type>(voidId);
+
+    scopeFunctionClose(id, listId, voidType);
+
+    IdentifierId    funcName    = storage.add<std::string>(std::string("$Destructor"));
+    TypeId          funcType    = getNameFromScopeStack<Type>(funcName);
+    ObjectInitId    init        = initFunction(code);
+
+    IdentifierId    name        = storage.add<std::string>(std::string("$destructor"));
+    return scopeObjectAdd(name, funcType, init);
+}
+// ------------------
+
 IdentifierId Action::identifierCreate()
 {
     ScopePrinter scope("identifierCreate");
@@ -252,7 +331,7 @@ ObjectInitId Action::initVariable(ExpressionListId /*listId*/)
 {
     return 0;
 }
-ObjectInitId Action::initFunction(StatementListId /*listId*/)
+ObjectInitId Action::initFunction(StatementId /*codeBlock*/)
 {
     return 0;
 }
