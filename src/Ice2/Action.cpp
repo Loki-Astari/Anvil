@@ -327,13 +327,15 @@ IdentifierId Action::identifierCreateV()
 // ------------------
 
 
-ObjectInitId Action::initVariable(ExpressionListId /*listId*/)
+ObjectInitId Action::initVariable(ExpressionListId listId)
 {
-    return 0;
+    ExpressionListAccess    access(listId);
+
+    error("Unimplemented: initVariable");
 }
 ObjectInitId Action::initFunction(StatementId /*codeBlock*/)
 {
-    return 0;
+    error("Unimplemented: initFunction");
 }
 
 // Expression Functions

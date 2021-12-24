@@ -233,6 +233,7 @@ DestructorStart:        DESTRUCT                                            {$$ 
 ObjectDecl:             IdentifierObject ':' TypeDecl ObjectInit            {$$ = action.scopeObjectAdd($1, $3, $4);}
 ObjectInit:             ';'                                                 {$$ = action.initVariable(action.listCreate<Expression>());}
                     |   '(' ExpressionListOpt ')' ';'                       {$$ = action.initVariable($2);}
+                    |   '=' Expression;                                     {$$ = action.initVariable(action.listAppend<Expression>(action.listCreate<Expression>(), $1));}
                     |   CodeBlock                                           {$$ = action.initFunction($1);}
 
 
