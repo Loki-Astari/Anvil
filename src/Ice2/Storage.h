@@ -10,7 +10,7 @@
 namespace ThorsAnvil::Anvil::Ice
 {
 
-using Data = std::variant<Int, DeclList, NamespaceList, TypeList, ExpressionList, StatementList, DeclRef, ScopeRef, CodeBlockRef, NamespaceRef, TypeRef, VoidRef, ClassRef, FunctionRef, ObjectRef, StatementRef, ExpressionRef, ObjectInitRef, Identifier>;
+using Data = std::variant<Int, DeclList, NamespaceList, TypeList, ExpressionList, StatementList, DeclRef, ScopeRef, CodeBlockRef, NamespaceRef, TypeRef, VoidRef, ClassRef, FunctionRef, ObjectRef, StatementRef, ExpressionRef, Identifier>;
 
 template<typename T>
 class StorageAccess;
@@ -29,7 +29,6 @@ class Storage
     Function            defaultFunction;
     Object              defaultObject;
     Identifier          defaultIdentifier;
-    ObjectInit          defaultInit;
     Statement           defaultStatement;
     ExpressionObject    defaultExpression;
 
@@ -44,7 +43,6 @@ class Storage
             , defaultClass(ActionRef{}, "Invalid Class")
             , defaultFunction(ActionRef{}, "Invalid Function")
             , defaultObject(ActionRef{}, "Invalid Object", defaultClass)
-            , defaultInit(ActionRef{})
             , defaultStatement(ActionRef{})
             , defaultExpression(ActionRef{}, defaultObject)
         {
@@ -71,9 +69,8 @@ class Storage
             data.emplace_back(ClassRef{defaultClass});
             data.emplace_back(FunctionRef{defaultFunction});
             data.emplace_back(ObjectRef{defaultObject});
-            data.emplace_back(ObjectInitRef{defaultInit});
             data.emplace_back(StatementRef{defaultStatement});
-            data.emplace_back(ExpressionRef{defaultExpression}); // 16
+            data.emplace_back(ExpressionRef{defaultExpression}); // 17
         }
 
         template<typename T>

@@ -253,14 +253,15 @@ FunctionId Action::scopeFunctionAnon(TypeListId listId, TypeId returnType)
 
 // ------------------
 
-ObjectId Action::scopeObjectAdd(IdentifierId name, TypeId type, ObjectInitId /*init*/)
+ObjectId Action::scopeObjectAddVariable(IdentifierId name, TypeId type, ExpressionListId init)
 {
-    ScopePrinter scope("scopeObjectAdd");
-    IdentifierAccess    nameAccess(storage, name);
-    TypeAccess          typeAccess(storage, type);
-    return scopeObjectAddV(nameAccess, typeAccess);
+    ScopePrinter scope("scopeObjectAddVariable");
+    IdentifierAccess        nameAccess(storage, name);
+    TypeAccess              typeAccess(storage, type);
+    ExpressionListAccess    listAccess(storage, init);
+    return scopeObjectAddVariableV(nameAccess, typeAccess, listAccess);
 }
-ObjectId Action::scopeObjectAddV(Identifier& name, Type& type)
+ObjectId Action::scopeObjectAddVariableV(Identifier& name, Type& type, ExpressionList& init)
 {
     Scope&  topScope = currentScope.back();
     auto find = topScope.get(name);
@@ -268,7 +269,28 @@ ObjectId Action::scopeObjectAddV(Identifier& name, Type& type)
     {
         error("Object Already defined: ", name);
     }
-    Object& object = topScope.add<Object>(*this, name, type);
+    ObjectVariable& object = topScope.add<ObjectVariable>(*this, name, type, init);
+    return storage.add<ObjectRef>(object);
+}
+// ------------------
+
+ObjectId Action::scopeObjectAddFunction(IdentifierId name, TypeId type, StatementId init)
+{
+    ScopePrinter scope("scopeObjectAddFunction");
+    IdentifierAccess        nameAccess(storage, name);
+    TypeAccess              typeAccess(storage, type);
+    StatementAccess         codeAccess(storage, init);
+    return scopeObjectAddFunctionV(nameAccess, typeAccess, codeAccess);
+}
+ObjectId Action::scopeObjectAddFunctionV(Identifier& name, Type& type, Statement& code)
+{
+    Scope&  topScope = currentScope.back();
+    auto find = topScope.get(name);
+    if (find.first)
+    {
+        error("Object Already defined: ", name);
+    }
+    ObjectFunction& object = topScope.add<ObjectFunction>(*this, name, type, code);
     return storage.add<ObjectRef>(object);
 }
 // ------------------
@@ -287,10 +309,9 @@ ObjectId Action::scopeConstructorAdd(FunctionId id, TypeListId listId, Statement
 
     IdentifierId    funcName    = storage.add<std::string>(std::string("$Constructor"));
     TypeId          funcType    = getNameFromScopeStack<Type>(funcName);
-    ObjectInitId    init        = initFunction(code);
 
     IdentifierId    name        = storage.add<std::string>(std::string("$constructor"));
-    return scopeObjectAdd(name, funcType, init);
+    return scopeObjectAddFunction(name, funcType, code);
 }
 
 // ------------------
@@ -308,10 +329,9 @@ ObjectId Action::scopeDestructorAdd(FunctionId id, TypeListId listId, StatementI
 
     IdentifierId    funcName    = storage.add<std::string>(std::string("$Destructor"));
     TypeId          funcType    = getNameFromScopeStack<Type>(funcName);
-    ObjectInitId    init        = initFunction(code);
 
     IdentifierId    name        = storage.add<std::string>(std::string("$destructor"));
-    return scopeObjectAdd(name, funcType, init);
+    return scopeObjectAddFunction(name, funcType, code);
 }
 // ------------------
 
@@ -325,18 +345,6 @@ IdentifierId Action::identifierCreateV()
     return storage.add<std::string>(std::string(lexer.lexem()));
 }
 // ------------------
-
-
-ObjectInitId Action::initVariable(ExpressionListId listId)
-{
-    ExpressionListAccess    access(listId);
-
-    error("Unimplemented: initVariable");
-}
-ObjectInitId Action::initFunction(StatementId /*codeBlock*/)
-{
-    error("Unimplemented: initFunction");
-}
 
 // Expression Functions
 // ========================

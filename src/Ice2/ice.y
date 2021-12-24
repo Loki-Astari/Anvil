@@ -44,7 +44,6 @@ using ThorsAnvil::Anvil::Ice::FunctionId;
 using ThorsAnvil::Anvil::Ice::CodeBlockId;
 using ThorsAnvil::Anvil::Ice::ObjectId;
 using ThorsAnvil::Anvil::Ice::IdentifierId;
-using ThorsAnvil::Anvil::Ice::ObjectInitId;
 using ThorsAnvil::Anvil::Ice::StatementId;
 using ThorsAnvil::Anvil::Ice::ExpressionId;
 // ---
@@ -55,7 +54,6 @@ using ThorsAnvil::Anvil::Ice::Type;
 using ThorsAnvil::Anvil::Ice::Class;
 using ThorsAnvil::Anvil::Ice::Function;
 using ThorsAnvil::Anvil::Ice::Object;
-using ThorsAnvil::Anvil::Ice::ObjectInit;
 using ThorsAnvil::Anvil::Ice::Statement;
 using ThorsAnvil::Anvil::Ice::Expression;
 using ThorsAnvil::Anvil::Ice::Id;
@@ -77,7 +75,6 @@ using ThorsAnvil::Anvil::Ice::Id;
     CodeBlockId         codeBlockId;
     ObjectId            objectId;
     IdentifierId        identifierId;
-    ObjectInitId        objectInitId;
     StatementId         statementId;
     ExpressionId        expressionId;
     Id<std::string>     assembley;
@@ -142,7 +139,8 @@ using ThorsAnvil::Anvil::Ice::Id;
 %type   <typeId>                TypeDecl
 %type   <typeId>                AnonType
 %type   <typeId>                Type
-%type   <objectId>              ObjectDecl
+%type   <objectId>              VariableDecl
+%type   <objectId>              FunctionDecl
 %type   <objectId>              Object
 %type   <objectId>              Constructor
 %type   <functionId>            ConstructorStart
@@ -152,7 +150,7 @@ using ThorsAnvil::Anvil::Ice::Id;
 %type   <identifierId>          IdentifierNamespace
 %type   <identifierId>          IdentifierType
 %type   <identifierId>          IdentifierObject
-%type   <objectInitId>          ObjectInit
+%type   <expressionListId>      VariableInit
 %type   <statementId>           Statement
 %type   <statementId>           CodeBlock
 %type   <codeBlockId>           CodeBlockStart
@@ -215,7 +213,8 @@ Decl:                   Namespace                                           {$$ 
                     |   Function                                            {$$ = action.convert<Function, Decl>($1);}
                     |   Constructor                                         {$$ = action.convert<Object, Decl>($1);}
                     |   Destructor                                          {$$ = action.convert<Object, Decl>($1);}
-                    |   ObjectDecl                                          {$$ = action.convert<Object, Decl>($1);}
+                    |   VariableDecl                                        {$$ = action.convert<Object, Decl>($1);}
+                    |   FunctionDecl                                        {$$ = action.convert<Object, Decl>($1);}
 
 Class:                  ClassStart '{' DeclListOpt '}'                      {$$ = action.scopeClassClose($1, $3);}
 ClassStart:             CLASS IdentifierType                                {$$ = action.scopeClassOpen($2);}
@@ -230,12 +229,12 @@ ConstructorStart:       CONSTRUCT                                           {$$ 
 Destructor:             DestructorStart '{' TypeListOpt '}' CodeBlock       {$$ = action.scopeDestructorAdd($1, $3, $5);}
 DestructorStart:        DESTRUCT                                            {$$ = action.scopeDestructorInit();}
 
-ObjectDecl:             IdentifierObject ':' TypeDecl ObjectInit            {$$ = action.scopeObjectAdd($1, $3, $4);}
-ObjectInit:             ';'                                                 {$$ = action.initVariable(action.listCreate<Expression>());}
-                    |   '(' ExpressionListOpt ')' ';'                       {$$ = action.initVariable($2);}
-                    |   '=' Expression;                                     {$$ = action.initVariable(action.listAppend<Expression>(action.listCreate<Expression>(), $1));}
-                    |   CodeBlock                                           {$$ = action.initFunction($1);}
+VariableDecl:           IdentifierObject ':' TypeDecl VariableInit ';'      {$$ = action.scopeObjectAddVariable($1, $3, $4);}
+VariableInit:                                                               {$$ = action.listCreate<Expression>();}
+                    |   '=' Expression                                      {$$ = action.listAppend<Expression>(action.listCreate<Expression>(), $2);}
+                    |   '(' ExpressionListOpt ')'                           {$$ = $2;}
 
+FunctionDecl:           IdentifierObject ':' TypeDecl CodeBlock             {$$ = action.scopeObjectAddFunction($1, $3, $4);}
 
 Statement:              Expression ';'                                      {$$ = action.statmentExpression($1);}
                     |   RETURN Expression ';'                               {$$ = action.statmentReturn($2);}

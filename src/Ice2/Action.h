@@ -94,15 +94,13 @@ class Action
         FunctionId          scopeFunctionAnon(TypeListId listId, TypeId returnType);
         CodeBlockId         scopeCodeBlockOpen();
         StatementId         scopeCodeBlockClose(CodeBlockId, StatementListId);
-        ObjectId            scopeObjectAdd(IdentifierId name, TypeId id, ObjectInitId init);
+        ObjectId            scopeObjectAddVariable(IdentifierId name, TypeId id, ExpressionListId init);
+        ObjectId            scopeObjectAddFunction(IdentifierId name, TypeId id, StatementId init);
         FunctionId          scopeConstructorInit();
         ObjectId            scopeConstructorAdd(FunctionId id, TypeListId listId, StatementId code);
         FunctionId          scopeDestructorInit();
         ObjectId            scopeDestructorAdd(FunctionId id, TypeListId listId, StatementId code);
         IdentifierId        identifierCreate();
-
-        ObjectInitId        initVariable(ExpressionListId listId);
-        ObjectInitId        initFunction(StatementId codeBlock);
 
         StatementId         statmentExpression(ExpressionId id)                             {return addObjectToScope1<StatementExpression, Expression>(id);}
         StatementId         statmentReturn(ExpressionId id)                                 {return addObjectToScope1<StatementReturn, Expression>(id);}
@@ -250,7 +248,8 @@ class Action
         virtual FunctionId          scopeFunctionCloseV(Function& id, TypeList& listId, Type& returnType, Reuse&& reuse);
         virtual CodeBlockId         scopeCodeBlockOpenV();
         virtual StatementId         scopeCodeBlockCloseV(CodeBlock&, StatementList&);
-        virtual ObjectId            scopeObjectAddV(Identifier& name, Type& id);
+        virtual ObjectId            scopeObjectAddVariableV(Identifier& name, Type& id, ExpressionList& init);
+        virtual ObjectId            scopeObjectAddFunctionV(Identifier& name, Type& id, Statement& code);
         virtual IdentifierId        identifierCreateV();
     private:
         void addToLine();

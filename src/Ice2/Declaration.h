@@ -23,11 +23,10 @@ class Void;
 class Class;
 class Function;
 class Object;
-class ObjectInit;
 class Statement;
 class Expression;
 
-enum class DeclType {Void, Namespace, Class, Function, CodeBlock, Object, ObjectInit, Statement, Expression};
+enum class DeclType {Void, Namespace, Class, Function, CodeBlock, Object, Statement, Expression};
 
 using Int               = std::size_t;
 using Identifier        = std::string;
@@ -47,7 +46,6 @@ using VoidRef           = std::reference_wrapper<Void>;
 using ClassRef          = std::reference_wrapper<Class>;
 using FunctionRef       = std::reference_wrapper<Function>;
 using ObjectRef         = std::reference_wrapper<Object>;
-using ObjectInitRef     = std::reference_wrapper<ObjectInit>;
 using StatementRef      = std::reference_wrapper<Statement>;
 using ExpressionRef     = std::reference_wrapper<Expression>;
 using StatementList     = std::list<StatementRef>;
@@ -200,14 +198,24 @@ class Object: public Decl
         static constexpr Int defaultStorageId = 15;
 };
 
-class ObjectInit: public Decl
+class ObjectVariable: public Object
 {
+    ExpressionList      init;
     public:
-        using Decl::Decl;
-        virtual DeclType declType() const override {return DeclType::ObjectInit;}
+        ObjectVariable(ActionRef action, std::string name, Type const& type, ExpressionList& init)
+            : Object(action, std::move(name), type)
+            , init(init)
+        {}
+};
 
-        static constexpr bool valid = true;
-        static constexpr Int defaultStorageId = 16;
+class ObjectFunction: public Object
+{
+    StatementRef        code;
+    public:
+        ObjectFunction(ActionRef action, std::string name, Type const& type, Statement& code)
+            : Object(action, std::move(name), type)
+            , code(code)
+        {}
 };
 
 class Statement: public Decl
@@ -217,7 +225,7 @@ class Statement: public Decl
         virtual DeclType declType() const override {return DeclType::Statement;}
 
         static constexpr bool valid = true;
-        static constexpr Int defaultStorageId = 17;
+        static constexpr Int defaultStorageId = 16;
 };
 
 class StatementExpression: public Statement
@@ -273,7 +281,7 @@ class Expression: public Decl
         virtual DeclType declType() const override {return DeclType::Expression;}
 
         static constexpr bool valid = true;
-        static constexpr Int defaultStorageId = 18;
+        static constexpr Int defaultStorageId = 17;
         virtual Type const& getType() const = 0;
 };
 
