@@ -257,6 +257,8 @@ class Action
         void addToLine();
         void resetLine();
 
+        void addDefaultMethodsToScope(Scope& scope, DeclList& decl);
+
         template<typename Dst, typename Param1>
         Id<Base<Dst>> addObjectToScope1(Id<Param1> id)
         {

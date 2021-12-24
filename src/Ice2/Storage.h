@@ -28,7 +28,7 @@ class Storage
     Void                defaultVoid;
     Class               defaultClass;
     Function            defaultFunction;
-    Object              defaultObject;
+    ObjectVariable      defaultObject;
     Identifier          defaultIdentifier;
     Statement           defaultStatement;
     ExpressionObject    defaultExpression;
@@ -44,7 +44,7 @@ class Storage
             , defaultVoid(ActionRef{})
             , defaultClass(ActionRef{}, "Invalid Class")
             , defaultFunction(ActionRef{}, "Invalid Function")
-            , defaultObject(ActionRef{}, "Invalid Object", defaultClass)
+            , defaultObject(ActionRef{}, "Invalid Object", defaultClass, ExpressionList{})
             , defaultStatement(ActionRef{})
             , defaultExpression(ActionRef{}, defaultObject)
         {

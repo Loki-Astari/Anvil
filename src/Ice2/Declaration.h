@@ -27,7 +27,7 @@ class Object;
 class Statement;
 class Expression;
 
-enum class DeclType {Void, Namespace, Class, Function, CodeBlock, MemberInit, Object, Statement, Expression};
+enum class DeclType {Void, Namespace, Class, Function, CodeBlock, MemberInit, ObjectVariable, ObjectFunction, Statement, Expression};
 
 using Int               = std::size_t;
 using Identifier        = std::string;
@@ -209,7 +209,6 @@ class Object: public Decl
             , name(std::move(name))
             , type(type)
         {}
-        virtual DeclType declType() const override {return DeclType::Object;}
         virtual std::string const& declName() const override {return name;}
 
         Type const& getType() const {return type;}
@@ -222,10 +221,11 @@ class ObjectVariable: public Object
 {
     ExpressionList      init;
     public:
-        ObjectVariable(ActionRef action, std::string name, Type const& type, ExpressionList& init)
+        ObjectVariable(ActionRef action, std::string name, Type const& type, ExpressionList init)
             : Object(action, std::move(name), type)
             , init(init)
         {}
+        virtual DeclType declType() const override {return DeclType::ObjectVariable;}
 };
 
 class ObjectFunction: public Object
@@ -236,6 +236,7 @@ class ObjectFunction: public Object
             : Object(action, std::move(name), type)
             , code(code)
         {}
+        virtual DeclType declType() const override {return DeclType::ObjectFunction;}
 };
 
 class ObjectFunctionConstructor: public ObjectFunction

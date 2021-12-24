@@ -106,7 +106,7 @@ NamespaceId Action::scopeNamespaceClose(NamespaceId id, DeclListId listId)
     NamespaceAccess     access(storage, id);
     return scopeNamespaceCloseV(access, DeclListAccess(storage, listId), [&access](){return access.reuse();});
 }
-NamespaceId Action::scopeNamespaceCloseV(Namespace& ns, DeclList&, Reuse&& reuse)
+NamespaceId Action::scopeNamespaceCloseV(Namespace& ns, DeclList& decl, Reuse&& reuse)
 {
     Scope&          topScope = currentScope.back();
     Namespace*      topNS = dynamic_cast<Namespace*>(&topScope);
@@ -115,6 +115,7 @@ NamespaceId Action::scopeNamespaceCloseV(Namespace& ns, DeclList&, Reuse&& reuse
     {
         error("Internal Error: Scope Note correctly aligned from Namespace");
     }
+    addDefaultMethodsToScope(ns, decl);
     currentScope.pop_back();
     return reuse();;
 }
@@ -142,7 +143,7 @@ ClassId Action::scopeClassClose(ClassId id, DeclListId listId)
     ClassAccess     access(storage, id);
     return scopeClassCloseV(access, DeclListAccess(storage, listId), [&access](){return access.reuse();});
 }
-ClassId Action::scopeClassCloseV(Class& cl, DeclList& /*list*/, Reuse&& reuse)
+ClassId Action::scopeClassCloseV(Class& cl, DeclList& decl, Reuse&& reuse)
 {
     Scope&          topScope = currentScope.back();
     Class*          topClass = dynamic_cast<Class*>(&topScope);
@@ -151,26 +152,34 @@ ClassId Action::scopeClassCloseV(Class& cl, DeclList& /*list*/, Reuse&& reuse)
     {
         error("Internal Error: Scope Note correctly aligned from Class");
     }
-    auto findCons = cl.get("$Constructor");
+    addDefaultMethodsToScope(cl, decl);
+    currentScope.pop_back();
+    return reuse();
+}
+// ------------------
+
+void Action::addDefaultMethodsToScope(Scope& scope, DeclList& /*decl*/)
+{
+    auto findCons = scope.get("$Constructor");
     if (!findCons.first)
     {
         // TODO: Need to add constructors and destructors for members.
         static Statement initCodeInit(this);
-        Function& constructorType = cl.add<Function>(*this, "$Constructor");
-        cl.add<ObjectFunctionConstructor>(*this, "$constructor", constructorType, MemberInitList{}, initCodeInit);
+        Function& constructorType = scope.add<Function>(*this, "$Constructor");
+        scope.add<ObjectFunctionConstructor>(*this, "$constructor", constructorType, MemberInitList{}, initCodeInit);
         constructorType.addOverload(this, TypeList{}, getRefFromScope<Type>(currentScope.front(), "Void"));
     }
-    auto findDest = cl.get("$Constructor");
+    auto findDest = scope.get("$Destructor");
     if (!findDest.first)
     {
         // TODO: Need to add constructors and destructors for members.
         static Statement initCodeInit(this);
-        Function& constructorType = cl.add<Function>(*this, "$Destructor");
-        cl.add<ObjectFunction>(*this, "$destructor", constructorType, initCodeInit);
+        Function& constructorType = scope.add<Function>(*this, "$Destructor");
+        scope.add<ObjectFunction>(*this, "$destructor", constructorType, initCodeInit);
         constructorType.addOverload(this, TypeList{}, getRefFromScope<Type>(currentScope.front(), "Void"));
     }
-    currentScope.pop_back();
-    return reuse();
+
+    // Help
 }
 // ------------------
 
@@ -296,7 +305,7 @@ ObjectId Action::scopeObjectAddVariableV(Identifier& name, Type& type, Expressio
 
     func.getReturnType(this, init);                     // calls error() if no constructor
 
-    ObjectVariable& object = topScope.add<ObjectVariable>(*this, name, type, init);
+    ObjectVariable& object = topScope.add<ObjectVariable>(*this, name, type, std::move(init));
     return storage.add<ObjectRef>(object);
 }
 // ------------------
