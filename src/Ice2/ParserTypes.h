@@ -54,24 +54,31 @@ struct IdTraits<NamespaceList>
     using AccessType = NamespaceList;
 };
 template<>
-struct IdTraits<TypeList>
+struct IdTraits<MemberInitList>
 {
     static constexpr bool valid = true;
     static constexpr Int defaultStorageId = 5;
+    using AccessType = MemberInitList;
+};
+template<>
+struct IdTraits<TypeList>
+{
+    static constexpr bool valid = true;
+    static constexpr Int defaultStorageId = 6;
     using AccessType = TypeList;
 };
 template<>
 struct IdTraits<StatementList>
 {
     static constexpr bool valid = true;
-    static constexpr Int defaultStorageId = 6;
+    static constexpr Int defaultStorageId = 7;
     using AccessType = StatementList;
 };
 template<>
 struct IdTraits<ExpressionList>
 {
     static constexpr bool valid = true;
-    static constexpr Int defaultStorageId = 7;
+    static constexpr Int defaultStorageId = 8;
     using AccessType = ExpressionList;
 };
 
@@ -130,9 +137,11 @@ using NamespaceListId       = Id<NamespaceList>;
 using TypeListId            = Id<TypeList>;
 using ExpressionListId      = Id<ExpressionList>;
 using StatementListId       = Id<StatementList>;
+using MemberInitListId      = Id<MemberInitList>;
 using DeclId                = Id<Decl>;
 using ScopeId               = Id<Scope>;
 using CodeBlockId           = Id<CodeBlock>;
+using MemberInitId          = Id<MemberInit>;
 using NamespaceId           = Id<Namespace>;
 using TypeId                = Id<Type>;
 using ClassId               = Id<Class>;
@@ -148,9 +157,11 @@ using NamespaceListAccess   = IdAccess<NamespaceList>;
 using TypeListAccess        = IdAccess<TypeList>;
 using ExpressionListAccess  = IdAccess<ExpressionList>;
 using StatementListAccess   = IdAccess<StatementList>;
+using MemberInitListAccess  = IdAccess<MemberInitList>;
 using DeclAccess            = IdAccess<Decl>;
 using ScopeAccess           = IdAccess<Scope>;
 using CodeBlockAccess       = IdAccess<CodeBlock>;
+using MemberInitAccess      = IdAccess<MemberInit>;
 using NamespaceAccess       = IdAccess<Namespace>;
 using TypeAccess            = IdAccess<Type>;
 using ClassAccess           = IdAccess<Class>;

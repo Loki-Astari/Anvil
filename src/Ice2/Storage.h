@@ -10,7 +10,7 @@
 namespace ThorsAnvil::Anvil::Ice
 {
 
-using Data = std::variant<Int, DeclList, NamespaceList, TypeList, ExpressionList, StatementList, DeclRef, ScopeRef, CodeBlockRef, NamespaceRef, TypeRef, VoidRef, ClassRef, FunctionRef, ObjectRef, StatementRef, ExpressionRef, Identifier>;
+using Data = std::variant<Int, DeclList, NamespaceList, TypeList, ExpressionList, StatementList, MemberInitList, DeclRef, ScopeRef, CodeBlockRef, MemberInitRef, NamespaceRef, TypeRef, VoidRef, ClassRef, FunctionRef, ObjectRef, StatementRef, ExpressionRef, Identifier>;
 
 template<typename T>
 class StorageAccess;
@@ -22,6 +22,7 @@ class Storage
     // TODO defaultDecl can we make it another type?
     Namespace           defaultDecl;
     CodeBlock           defaultCodeBlock;
+    MemberInit          defaultMemberInit;
     Namespace           defaultNamespace;
     Void                defaultType;
     Void                defaultVoid;
@@ -37,6 +38,7 @@ class Storage
             : nextFree(0)
             , defaultDecl(ActionRef{}, "Invalid Decl")
             , defaultCodeBlock(ActionRef{})
+            , defaultMemberInit(ActionRef{}, "Invalid Member", ExpressionList{})
             , defaultNamespace(ActionRef{}, "Invalid Namespace")
             , defaultType(ActionRef{})
             , defaultVoid(ActionRef{})
@@ -57,12 +59,14 @@ class Storage
             // ----
             data.emplace_back(DeclList{});
             data.emplace_back(NamespaceList{});
+            data.emplace_back(MemberInitList{});
             data.emplace_back(TypeList{});
             data.emplace_back(StatementList{});
             data.emplace_back(ExpressionList{});
             // ----
             data.emplace_back(DeclRef{defaultDecl});
             data.emplace_back(CodeBlockRef{defaultCodeBlock});
+            data.emplace_back(MemberInitRef{defaultMemberInit});
             data.emplace_back(NamespaceRef{defaultNamespace});
             data.emplace_back(TypeRef{defaultType});
             data.emplace_back(VoidRef{defaultVoid});
@@ -70,7 +74,7 @@ class Storage
             data.emplace_back(FunctionRef{defaultFunction});
             data.emplace_back(ObjectRef{defaultObject});
             data.emplace_back(StatementRef{defaultStatement});
-            data.emplace_back(ExpressionRef{defaultExpression}); // 17
+            data.emplace_back(ExpressionRef{defaultExpression}); // 18
         }
 
         template<typename T>

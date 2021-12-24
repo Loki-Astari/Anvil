@@ -157,7 +157,7 @@ ClassId Action::scopeClassCloseV(Class& cl, DeclList& /*list*/, Reuse&& reuse)
         // TODO: Need to add constructors and destructors for members.
         static Statement initCodeInit(this);
         Function& constructorType = cl.add<Function>(*this, "$Constructor");
-        cl.add<ObjectFunction>(*this, "$constructor", constructorType, initCodeInit);
+        cl.add<ObjectFunctionConstructor>(*this, "$constructor", constructorType, MemberInitList{}, initCodeInit);
         constructorType.addOverload(this, TypeList{}, getRefFromScope<Type>(currentScope.front(), "Void"));
     }
     auto findDest = cl.get("$Constructor");
@@ -322,26 +322,42 @@ ObjectId Action::scopeObjectAddFunctionV(Identifier& name, Type& type, Statement
 }
 // ------------------
 
+MemberInitId Action::memberInit(IdentifierId name, ExpressionListId init)
+{
+    ScopePrinter scope("memberInit");
+    IdentifierAccess        nameAccess(storage, name);
+    ExpressionListAccess    initAccess(storage, init);
+    return memberInitV(nameAccess, initAccess);
+}
+MemberInitId Action::memberInitV(Identifier& name, ExpressionList& init)
+{
+    Scope&  topScope = currentScope.back();
+    MemberInit& object = topScope.add<MemberInit>(*this, name, std::move(init));
+    return storage.add<MemberInitRef>(object);
+}
+// ------------------
+
 FunctionId Action::scopeConstructorInit()
 {
     IdentifierId name = storage.add<std::string>(std::string("$Constructor"));
     return scopeFunctionOpen(name);
 }
-ObjectId Action::scopeConstructorAdd(FunctionId id, TypeListId listId, StatementId code)
+ObjectId Action::scopeConstructorAdd(FunctionId id, TypeListId listId, MemberInitListId init, StatementId code)
 {
     IdentifierId    voidId      = storage.add<std::string>(std::string("Void"));
     TypeId          voidType    = getNameFromScopeStack<Type>(voidId);
-
     scopeFunctionClose(id, listId, voidType);
 
-    IdentifierId    funcName    = storage.add<std::string>(std::string("$Constructor"));
-    TypeId          funcType    = getNameFromScopeStack<Type>(funcName);
-
-    IdentifierId    name        = storage.add<std::string>(std::string("$constructor"));
-    return scopeObjectAddFunction(name, funcType, code);
+    Scope&                  topScope = currentScope.back();
+    MemberInitListAccess    initAccess(storage, init);
+    StatementAccess         codeAccess(storage, code);
+    Type&                   funcType    = getRefFromScopeStack<Type>("$Constructor");
+    ObjectFunction& object = topScope.add<ObjectFunctionConstructor>(*this, "$constructor", funcType, initAccess, codeAccess);
+    return storage.add<ObjectRef>(object);
 }
 
 // ------------------
+
 FunctionId Action::scopeDestructorInit()
 {
     IdentifierId name = storage.add<std::string>(std::string("$Destructor"));
@@ -351,14 +367,13 @@ ObjectId Action::scopeDestructorAdd(FunctionId id, TypeListId listId, StatementI
 {
     IdentifierId    voidId      = storage.add<std::string>(std::string("Void"));
     TypeId          voidType    = getNameFromScopeStack<Type>(voidId);
-
     scopeFunctionClose(id, listId, voidType);
 
-    IdentifierId    funcName    = storage.add<std::string>(std::string("$Destructor"));
-    TypeId          funcType    = getNameFromScopeStack<Type>(funcName);
-
-    IdentifierId    name        = storage.add<std::string>(std::string("$destructor"));
-    return scopeObjectAddFunction(name, funcType, code);
+    Scope&          topScope = currentScope.back();
+    StatementAccess codeAccess(storage, code);
+    Type&           funcType    = getRefFromScopeStack<Type>("$Destructor");
+    ObjectFunction& object = topScope.add<ObjectFunction>(*this, "$destructor", funcType, codeAccess);
+    return storage.add<ObjectRef>(object);
 }
 // ------------------
 
@@ -511,11 +526,13 @@ template struct IdAccess<Identifier>;
 template struct IdAccess<Namespace>;
 template struct IdAccess<Decl>;
 template struct IdAccess<Scope>;
+template struct IdAccess<MemberInit>;
 template struct IdAccess<Object>;
 template struct IdAccess<Statement>;
 template struct IdAccess<Expression>;
 template struct IdAccess<ExpressionList>;
 template struct IdAccess<StatementList>;
+template struct IdAccess<MemberInitList>;
 
 
 }

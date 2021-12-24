@@ -97,9 +97,10 @@ class Action
         ObjectId            scopeObjectAddVariable(IdentifierId name, TypeId id, ExpressionListId init);
         ObjectId            scopeObjectAddFunction(IdentifierId name, TypeId id, StatementId init);
         FunctionId          scopeConstructorInit();
-        ObjectId            scopeConstructorAdd(FunctionId id, TypeListId listId, StatementId code);
+        ObjectId            scopeConstructorAdd(FunctionId id, TypeListId listId, MemberInitListId init, StatementId code);
         FunctionId          scopeDestructorInit();
         ObjectId            scopeDestructorAdd(FunctionId id, TypeListId listId, StatementId code);
+        MemberInitId        memberInit(IdentifierId, ExpressionListId);
         IdentifierId        identifierCreate();
 
         StatementId         statmentExpression(ExpressionId id)                             {return addObjectToScope1<StatementExpression, Expression>(id);}
@@ -250,6 +251,7 @@ class Action
         virtual StatementId         scopeCodeBlockCloseV(CodeBlock&, StatementList&);
         virtual ObjectId            scopeObjectAddVariableV(Identifier& name, Type& id, ExpressionList& init);
         virtual ObjectId            scopeObjectAddFunctionV(Identifier& name, Type& id, Statement& code);
+        virtual MemberInitId        memberInitV(Identifier& name, ExpressionList& init);
         virtual IdentifierId        identifierCreateV();
     private:
         void addToLine();
