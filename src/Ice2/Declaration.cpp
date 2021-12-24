@@ -72,6 +72,15 @@ void Scope::generateHexName(std::string& name, std::size_t count)
     }
 }
 
+Void::Void(ActionRef action)
+    : Type(action, "Void")
+{
+    static Statement voidCodeInit(action);
+    Function& constructorType = add<Function>(*action, "$Constructor");
+    add<ObjectFunction>(*action, "$constructor", constructorType, voidCodeInit);
+    constructorType.addOverload(action, TypeList{}, *this);
+}
+
 Object& ExpressionMemberAccess::findMember(ActionRef action, Expression& src, Identifier& memberName)
 {
     Type const& type = src.getType();

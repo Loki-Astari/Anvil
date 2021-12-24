@@ -132,9 +132,11 @@ using ThorsAnvil::Anvil::Ice::Id;
 %type   <classId>               Class
 %type   <classId>               ClassStart
 %type   <classId>               ClassAnon
+%type   <classId>               ClassAnonStart
 %type   <functionId>            Function
 %type   <functionId>            FunctionStart
 %type   <functionId>            FunctionAnon
+%type   <functionId>            FunctionAnonStart
 %type   <scopeId>               ScopedType
 %type   <typeId>                TypeDecl
 %type   <typeId>                AnonType
@@ -218,11 +220,13 @@ Decl:                   Namespace                                           {$$ 
 
 Class:                  ClassStart '{' DeclListOpt '}'                      {$$ = action.scopeClassClose($1, $3);}
 ClassStart:             CLASS IdentifierType                                {$$ = action.scopeClassOpen($2);}
-ClassAnon:              CLASS '{' DeclListOpt '}'                           {$$ = action.scopeClassAnon($3);}
+ClassAnon:              ClassAnonStart '{' DeclListOpt '}'                  {$$ = action.scopeClassClose($1, $3);}
+ClassAnonStart:         CLASS                                               {$$ = action.scopeClassAnon();}
 
 Function:               FunctionStart '{' TypeListOpt ARROW Type '}'        {$$ = action.scopeFunctionClose($1, $3, $5);}
 FunctionStart:          FUNC IdentifierType                                 {$$ = action.scopeFunctionOpen($2);}
-FunctionAnon:           FUNC '{' TypeListOpt ARROW Type '}'                 {$$ = action.scopeFunctionAnon($3, $5);}
+FunctionAnon:           FunctionAnonStart '{' TypeListOpt ARROW Type '}'    {$$ = action.scopeFunctionClose($1, $3, $5);}
+FunctionAnonStart:      FUNC                                                {$$ = action.scopeFunctionAnon();}
 
 Constructor:            ConstructorStart '{' TypeListOpt '}' CodeBlock      {$$ = action.scopeConstructorAdd($1, $3, $5);}
 ConstructorStart:       CONSTRUCT                                           {$$ = action.scopeConstructorInit();}

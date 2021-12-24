@@ -31,7 +31,7 @@ Action::Action(Lexer& lexer, Scope& globalScope, Storage& storage, std::ostream&
     , offset(0)
 {
     currentScope.emplace_back(globalScope);
-    globalScope.add<Void>(*this, "Void");
+    globalScope.add<Void>(*this);
 }
 
 Action::~Action()
@@ -151,18 +151,35 @@ ClassId Action::scopeClassCloseV(Class& cl, DeclList& /*list*/, Reuse&& reuse)
     {
         error("Internal Error: Scope Note correctly aligned from Class");
     }
+    auto findCons = cl.get("$Constructor");
+    if (!findCons.first)
+    {
+        // TODO: Need to add constructors and destructors for members.
+        static Statement initCodeInit(this);
+        Function& constructorType = cl.add<Function>(*this, "$Constructor");
+        cl.add<ObjectFunction>(*this, "$constructor", constructorType, initCodeInit);
+        constructorType.addOverload(this, TypeList{}, getRefFromScope<Type>(currentScope.front(), "Void"));
+    }
+    auto findDest = cl.get("$Constructor");
+    if (!findDest.first)
+    {
+        // TODO: Need to add constructors and destructors for members.
+        static Statement initCodeInit(this);
+        Function& constructorType = cl.add<Function>(*this, "$Destructor");
+        cl.add<ObjectFunction>(*this, "$destructor", constructorType, initCodeInit);
+        constructorType.addOverload(this, TypeList{}, getRefFromScope<Type>(currentScope.front(), "Void"));
+    }
     currentScope.pop_back();
     return reuse();
 }
 // ------------------
 
-ClassId Action::scopeClassAnon(DeclListId listId)
+ClassId Action::scopeClassAnon()
 {
     ScopePrinter scope("scopeClassAnon");
     std::string     anonN   = anonName();
     IdentifierId    anonId  = storage.add<std::string>(std::move(anonN));
     ClassId         classId = scopeClassOpen(anonId);
-    classId = scopeClassClose(classId, listId);
     return classId;
 }
 // ------------------
@@ -241,13 +258,12 @@ StatementId Action::scopeCodeBlockCloseV(CodeBlock& codeBlock, StatementList& li
 }
 // ------------------
 
-FunctionId Action::scopeFunctionAnon(TypeListId listId, TypeId returnType)
+FunctionId Action::scopeFunctionAnon()
 {
     ScopePrinter scope("scopeFunctionAnon");
     std::string     anonN   = anonName();
     IdentifierId    anonId  = storage.add<std::string>(std::move(anonN));
     FunctionId      funcId  = scopeFunctionOpen(anonId);
-    funcId = scopeFunctionClose(funcId, listId, returnType);
     return funcId;
 }
 
@@ -269,6 +285,17 @@ ObjectId Action::scopeObjectAddVariableV(Identifier& name, Type& type, Expressio
     {
         error("Object Already defined: ", name);
     }
+
+    auto constructor = type.get("$Constructor");
+    if (!constructor.first)
+    {
+        error("Object can't find constructor");
+    }
+    Decl& decl = *constructor.second->second;
+    Function& func = dynamic_cast<Function&>(decl);
+
+    func.getReturnType(this, init);                     // calls error() if no constructor
+
     ObjectVariable& object = topScope.add<ObjectVariable>(*this, name, type, init);
     return storage.add<ObjectRef>(object);
 }

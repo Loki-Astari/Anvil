@@ -358,7 +358,8 @@ namespace Std
 }
 namespace Name_Space
 {
-    data : func{Std::Integer, Std::String -> Std::Number};
+    data : func{Std::Integer, Std::String -> Std::Number}
+    {}
 }
     )");
 

@@ -88,10 +88,10 @@ class Action
         NamespaceId         scopeNamespaceClose(NamespaceId id, DeclListId listId);
         ClassId             scopeClassOpen(IdentifierId id);
         ClassId             scopeClassClose(ClassId id, DeclListId listId);
-        ClassId             scopeClassAnon(DeclListId listId);
+        ClassId             scopeClassAnon();
         FunctionId          scopeFunctionOpen(IdentifierId id);
         FunctionId          scopeFunctionClose(FunctionId id, TypeListId listId, TypeId returnType);
-        FunctionId          scopeFunctionAnon(TypeListId listId, TypeId returnType);
+        FunctionId          scopeFunctionAnon();
         CodeBlockId         scopeCodeBlockOpen();
         StatementId         scopeCodeBlockClose(CodeBlockId, StatementListId);
         ObjectId            scopeObjectAddVariable(IdentifierId name, TypeId id, ExpressionListId init);

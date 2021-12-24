@@ -146,7 +146,7 @@ class Type: public NamedScope
 class Void: public Type
 {
     public:
-        using Type::Type;
+        Void(ActionRef action);
         virtual DeclType declType() const override {return DeclType::Void;}
 
         static constexpr bool valid = false;
