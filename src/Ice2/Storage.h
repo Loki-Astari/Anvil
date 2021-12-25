@@ -82,7 +82,7 @@ class Storage
         {
             if (nextFree == 0)
             {
-                data.emplace_back(std::forward<T>(value));
+                data.emplace_back(std::move(value));
                 return data.size() - 1;
             }
             Int result = nextFree;
