@@ -44,7 +44,7 @@ using MemberInitRef     = std::reference_wrapper<MemberInit>;
 using NamespaceRef      = std::reference_wrapper<Namespace>;
 using TypeRef           = std::reference_wrapper<Type>;
 using TypeCRef          = std::reference_wrapper<Type const>;
-using TypeList          = std::list<TypeRef>;
+using TypeCList         = std::list<TypeCRef>;
 using VoidRef           = std::reference_wrapper<Void>;
 using ClassRef          = std::reference_wrapper<Class>;
 using FunctionRef       = std::reference_wrapper<Function>;
@@ -57,11 +57,11 @@ using ExpressionList    = std::list<ExpressionRef>;
 
 using NamespaceDecOrder = std::vector<NamespaceRef>;
 
-inline bool operator<(TypeRef const& lhs, TypeRef const& rhs)
+inline bool operator<(TypeCRef const& lhs, TypeCRef const& rhs)
 {
     return &lhs.get() < &rhs.get();
 }
-inline bool operator==(TypeRef const& lhs, TypeRef const& rhs)
+inline bool operator==(TypeCRef const& lhs, TypeCRef const& rhs)
 {
     return &lhs.get() == &rhs.get();
 }
@@ -185,7 +185,7 @@ class Class: public Type
 
 class Function: public Type
 {
-    std::map<TypeList, TypeCRef>   overload;
+    std::map<TypeCList, TypeCRef>   overload;
     public:
         using Type::Type;
         virtual DeclType declType() const override {return DeclType::Function;}
@@ -194,7 +194,7 @@ class Function: public Type
         static constexpr bool valid = true;
         static constexpr Int defaultStorageId = 16;
 
-        void addOverload(ActionRef action, TypeList list, Type const& returnType);
+        void addOverload(ActionRef action, TypeCList list, Type const& returnType);
         Type const& getReturnType(ActionRef action, ExpressionList const& params) const;
 };
 

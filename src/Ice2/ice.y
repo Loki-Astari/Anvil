@@ -32,7 +32,7 @@ int yylex(void*, ThorsAnvil::Anvil::Ice::Lexer& lexer, ThorsAnvil::Anvil::Ice::A
 using ThorsAnvil::Anvil::Ice::VoidId;
 using ThorsAnvil::Anvil::Ice::DeclListId;
 using ThorsAnvil::Anvil::Ice::NamespaceListId;
-using ThorsAnvil::Anvil::Ice::TypeListId;
+using ThorsAnvil::Anvil::Ice::TypeCListId;
 using ThorsAnvil::Anvil::Ice::ExpressionListId;
 using ThorsAnvil::Anvil::Ice::StatementListId;
 using ThorsAnvil::Anvil::Ice::MemberInitListId;
@@ -66,7 +66,7 @@ using ThorsAnvil::Anvil::Ice::Id;
     VoidId              voidId;
     DeclListId          declListId;
     NamespaceListId     namespaceListId;
-    TypeListId          typeListId;
+    TypeCListId         typeCListId;
     ExpressionListId    expressionListId;
     StatementListId     statementListId;
     MemberInitListId    memberInitListId;
@@ -125,8 +125,8 @@ using ThorsAnvil::Anvil::Ice::Id;
 %type   <declListId>            DeclListOpt
 %type   <declListId>            DeclList
 %type   <namespaceListId>       NamespaceList
-%type   <typeListId>            TypeListOpt
-%type   <typeListId>            TypeList
+%type   <typeCListId>           TypeListOpt
+%type   <typeCListId>           TypeList
 %type   <expressionListId>      ExpressionListOpt
 %type   <expressionListId>      ExpressionList
 %type   <statementListId>       StatementListOpt
@@ -200,10 +200,10 @@ DeclListOpt:                                                                {$$ 
 DeclList:               Decl                                                {$$ = action.listAppend<Decl>(action.listCreate<Decl>(), $1);}
                     |   DeclList Decl                                       {$$ = action.listAppend<Decl>($1, $2);}
 
-TypeListOpt:                                                                {$$ = action.listCreate<Type>();}
+TypeListOpt:                                                                {$$ = action.listCreate<Type const>();}
                     |   TypeList                                            {$$ = $1;}
-TypeList:               Type                                                {$$ = action.listAppend<Type>(action.listCreate<Type>(), $1);}
-                    |   TypeList ',' Type                                   {$$ = action.listAppend<Type>($1, $3);}
+TypeList:               Type                                                {$$ = action.listAppend<Type const, Type>(action.listCreate<Type const>(), $1);}
+                    |   TypeList ',' Type                                   {$$ = action.listAppend<Type const, Type>($1, $3);}
 
 ExpressionListOpt:                                                          {$$ = action.listCreate<Expression>();}
                     |   ExpressionList                                      {$$ = $1;}

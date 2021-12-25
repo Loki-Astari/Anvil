@@ -167,7 +167,7 @@ void Action::addDefaultMethodsToScope(Scope& scope, DeclList /*decl*/)
         static Statement initCodeInit(this);
         Function& constructorType = scope.add<Function>(*this, "$Constructor");
         scope.add<ObjectFunctionConstructor>(*this, "$constructor", constructorType, MemberInitList{}, initCodeInit);
-        constructorType.addOverload(this, TypeList{}, getRefFromScope<Type>(currentScope.front(), "Void"));
+        constructorType.addOverload(this, TypeCList{}, getRefFromScope<Type>(currentScope.front(), "Void"));
     }
     auto findDest = scope.get("$Destructor");
     if (!findDest.first)
@@ -176,7 +176,7 @@ void Action::addDefaultMethodsToScope(Scope& scope, DeclList /*decl*/)
         static Statement initCodeInit(this);
         Function& constructorType = scope.add<Function>(*this, "$Destructor");
         scope.add<ObjectFunction>(*this, "$destructor", constructorType, initCodeInit);
-        constructorType.addOverload(this, TypeList{}, getRefFromScope<Type>(currentScope.front(), "Void"));
+        constructorType.addOverload(this, TypeCList{}, getRefFromScope<Type>(currentScope.front(), "Void"));
     }
 
     // Help
@@ -209,13 +209,13 @@ FunctionId Action::scopeFunctionOpenV(Identifier funcName, Reuse&& /*reuse*/)
 }
 // ------------------
 
-FunctionId Action::scopeFunctionClose(FunctionId id, TypeListId listId, TypeId returnType)
+FunctionId Action::scopeFunctionClose(FunctionId id, TypeCListId listId, TypeId returnType)
 {
     ScopePrinter scope("scopeFunctionClose");
     FunctionAccess      access(storage, id);
-    return scopeFunctionCloseV(access, moveAccess(TypeListAccess(storage, listId)), TypeAccess(storage, returnType), [&access](){return access.reuse();});
+    return scopeFunctionCloseV(access, moveAccess(TypeCListAccess(storage, listId)), TypeAccess(storage, returnType), [&access](){return access.reuse();});
 }
-FunctionId Action::scopeFunctionCloseV(Function& cl, TypeList list, Type& returnType, Reuse&& reuse)
+FunctionId Action::scopeFunctionCloseV(Function& cl, TypeCList list, Type const& returnType, Reuse&& reuse)
 {
     Scope&          topScope = currentScope.back();
     Function*       topFunction = dynamic_cast<Function*>(&topScope);
@@ -286,7 +286,7 @@ ObjectId Action::scopeObjectAddVariable(IdentifierId name, TypeId type, Expressi
     ExpressionListAccess    listAccess(storage, init);
     return scopeObjectAddVariableV(moveAccess(nameAccess), typeAccess, moveAccess(listAccess));
 }
-ObjectId Action::scopeObjectAddVariableV(Identifier name, Type& type, ExpressionList init)
+ObjectId Action::scopeObjectAddVariableV(Identifier name, Type const& type, ExpressionList init)
 {
     Scope&  topScope = currentScope.back();
     auto find = topScope.get(name);
@@ -318,7 +318,7 @@ ObjectId Action::scopeObjectAddFunction(IdentifierId name, TypeId type, Statemen
     StatementAccess         codeAccess(storage, init);
     return scopeObjectAddFunctionV(moveAccess(nameAccess), typeAccess, codeAccess);
 }
-ObjectId Action::scopeObjectAddFunctionV(Identifier name, Type& type, Statement& code)
+ObjectId Action::scopeObjectAddFunctionV(Identifier name, Type const& type, Statement& code)
 {
     Scope&  topScope = currentScope.back();
     auto find = topScope.get(name);
@@ -351,7 +351,7 @@ FunctionId Action::scopeConstructorInit()
     IdentifierId name = storage.add<std::string>(std::string("$Constructor"));
     return scopeFunctionOpen(name);
 }
-ObjectId Action::scopeConstructorAdd(FunctionId id, TypeListId listId, MemberInitListId init, StatementId code)
+ObjectId Action::scopeConstructorAdd(FunctionId id, TypeCListId listId, MemberInitListId init, StatementId code)
 {
     IdentifierId    voidId      = storage.add<std::string>(std::string("Void"));
     TypeId          voidType    = getNameFromScopeStack<Type>(voidId);
@@ -372,7 +372,7 @@ FunctionId Action::scopeDestructorInit()
     IdentifierId name = storage.add<std::string>(std::string("$Destructor"));
     return scopeFunctionOpen(name);
 }
-ObjectId Action::scopeDestructorAdd(FunctionId id, TypeListId listId, StatementId code)
+ObjectId Action::scopeDestructorAdd(FunctionId id, TypeCListId listId, StatementId code)
 {
     IdentifierId    voidId      = storage.add<std::string>(std::string("Void"));
     TypeId          voidType    = getNameFromScopeStack<Type>(voidId);
@@ -535,6 +535,7 @@ template struct IdAccess<Identifier>;
 template struct IdAccess<Namespace>;
 template struct IdAccess<Decl>;
 template struct IdAccess<Scope>;
+template struct IdAccess<Type>;
 template struct IdAccess<MemberInit>;
 template struct IdAccess<Object>;
 template struct IdAccess<Statement>;

@@ -69,14 +69,14 @@ class Action
         {
             return storage.add<List<T>>(List<T>{});
         }
-        template<typename T>
-        ListId<T> listAppend(ListId<T> listId, Id<T> id)
+        template<typename T, typename S = T>
+        ListId<T> listAppend(ListId<T> listId, Id<S> id)
         {
             ListAccess<T>   listAccess(storage, listId);
-            IdAccess<T>     objectAccess(storage, id);
+            IdAccess<S>     objectAccess(storage, id);
 
             List<T>&        list = listAccess;
-            T&              object = objectAccess;
+            S&              object = objectAccess;
 
             list.emplace_back(object);
             return listAccess.reuse();
@@ -90,16 +90,16 @@ class Action
         ClassId             scopeClassClose(ClassId id, DeclListId listId);
         ClassId             scopeClassAnon();
         FunctionId          scopeFunctionOpen(IdentifierId id);
-        FunctionId          scopeFunctionClose(FunctionId id, TypeListId listId, TypeId returnType);
+        FunctionId          scopeFunctionClose(FunctionId id, TypeCListId listId, TypeId returnType);
         FunctionId          scopeFunctionAnon();
         CodeBlockId         scopeCodeBlockOpen();
         StatementId         scopeCodeBlockClose(CodeBlockId, StatementListId);
         ObjectId            scopeObjectAddVariable(IdentifierId name, TypeId id, ExpressionListId init);
         ObjectId            scopeObjectAddFunction(IdentifierId name, TypeId id, StatementId init);
         FunctionId          scopeConstructorInit();
-        ObjectId            scopeConstructorAdd(FunctionId id, TypeListId listId, MemberInitListId init, StatementId code);
+        ObjectId            scopeConstructorAdd(FunctionId id, TypeCListId listId, MemberInitListId init, StatementId code);
         FunctionId          scopeDestructorInit();
-        ObjectId            scopeDestructorAdd(FunctionId id, TypeListId listId, StatementId code);
+        ObjectId            scopeDestructorAdd(FunctionId id, TypeCListId listId, StatementId code);
         MemberInitId        memberInit(IdentifierId, ExpressionListId);
         IdentifierId        identifierCreate();
 
@@ -246,11 +246,11 @@ class Action
         virtual ClassId             scopeClassOpenV(Identifier, Reuse&& reuse);
         virtual ClassId             scopeClassCloseV(Class&, DeclList list, Reuse&& reuse);
         virtual FunctionId          scopeFunctionOpenV(Identifier id, Reuse&& reuse);
-        virtual FunctionId          scopeFunctionCloseV(Function& id, TypeList listId, Type& returnType, Reuse&& reuse);
+        virtual FunctionId          scopeFunctionCloseV(Function& id, TypeCList listId, Type const& returnType, Reuse&& reuse);
         virtual CodeBlockId         scopeCodeBlockOpenV();
         virtual StatementId         scopeCodeBlockCloseV(CodeBlock&, StatementList);
-        virtual ObjectId            scopeObjectAddVariableV(Identifier name, Type& id, ExpressionList init);
-        virtual ObjectId            scopeObjectAddFunctionV(Identifier name, Type& id, Statement& code);
+        virtual ObjectId            scopeObjectAddVariableV(Identifier name, Type const& id, ExpressionList init);
+        virtual ObjectId            scopeObjectAddFunctionV(Identifier name, Type const& id, Statement& code);
         virtual MemberInitId        memberInitV(Identifier name, ExpressionList init);
         virtual IdentifierId        identifierCreateV();
     private:

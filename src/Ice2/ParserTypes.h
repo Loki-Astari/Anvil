@@ -13,7 +13,7 @@ namespace ThorsAnvil::Anvil::Ice
 using Int                   = std::size_t;
 using NamespaceList         = std::list<NamespaceRef>;
 using DeclList              = std::list<DeclRef>;
-using TypeList              = std::list<TypeRef>;
+using TypeCList             = std::list<TypeCRef>;
 using StatementList         = std::list<StatementRef>;
 using ExpressionList        = std::list<ExpressionRef>;
 
@@ -61,11 +61,11 @@ struct IdTraits<MemberInitList>
     using AccessType = MemberInitList;
 };
 template<>
-struct IdTraits<TypeList>
+struct IdTraits<TypeCList>
 {
     static constexpr bool valid = true;
     static constexpr Int defaultStorageId = 6;
-    using AccessType = TypeList;
+    using AccessType = TypeCList;
 };
 template<>
 struct IdTraits<StatementList>
@@ -145,7 +145,7 @@ using VoidId                = Id<Void, false>;
 using IntId                 = Id<Int>;
 using DeclListId            = Id<DeclList>;
 using NamespaceListId       = Id<NamespaceList>;
-using TypeListId            = Id<TypeList>;
+using TypeCListId           = Id<TypeCList>;
 using ExpressionListId      = Id<ExpressionList>;
 using StatementListId       = Id<StatementList>;
 using MemberInitListId      = Id<MemberInitList>;
@@ -165,7 +165,7 @@ using ExpressionId          = Id<Expression>;
 using IntAccess             = IdAccess<Int>;
 using DeclListAccess        = IdAccess<DeclList>;
 using NamespaceListAccess   = IdAccess<NamespaceList>;
-using TypeListAccess        = IdAccess<TypeList>;
+using TypeCListAccess       = IdAccess<TypeCList>;
 using ExpressionListAccess  = IdAccess<ExpressionList>;
 using StatementListAccess   = IdAccess<StatementList>;
 using MemberInitListAccess  = IdAccess<MemberInitList>;
