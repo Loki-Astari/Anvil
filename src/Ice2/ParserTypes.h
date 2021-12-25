@@ -130,6 +130,17 @@ struct IdAccess
     operator T&() const;
 };
 
+template<typename T>
+constexpr std::remove_reference_t<T>&& moveAccess(IdAccess<T>& access)
+{
+    return std::move(static_cast<T&>(access));
+}
+template<typename T>
+constexpr std::remove_reference_t<T>&& moveAccess(IdAccess<T>&& access)
+{
+    return std::move(static_cast<T&>(access));
+}
+
 using VoidId                = Id<Void, false>;
 using IntId                 = Id<Int>;
 using DeclListId            = Id<DeclList>;

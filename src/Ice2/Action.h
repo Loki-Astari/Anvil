@@ -51,9 +51,9 @@ class Action
         friend std::ostream& operator<<(std::ostream& str, Action const& action);
 
         template<typename... Args>
-        void log(Args&&... args) const;
+        void log(Args const&... args) const;
         template<typename... Args>
-        [[ noreturn ]] void error(Args&&... args) const;
+        [[ noreturn ]] void error(Args const&... args) const;
 
         // Lexing
         virtual void invalidCharacter()                                 {addToLine();error("Invalid Character");}
@@ -240,24 +240,24 @@ class Action
         void                assembleyAppend(Id<std::string> id);
         // Parsing virtual methods
         using Reuse = std::function<Int()>;
-        virtual VoidId              anvilProgramV(NamespaceList&, Reuse&& reuse);
-        virtual NamespaceId         scopeNamespaceOpenV(std::string&, Reuse&& reuse);
-        virtual NamespaceId         scopeNamespaceCloseV(Namespace&, DeclList& list, Reuse&& reuse);
-        virtual ClassId             scopeClassOpenV(std::string&, Reuse&& reuse);
-        virtual ClassId             scopeClassCloseV(Class&, DeclList& list, Reuse&& reuse);
-        virtual FunctionId          scopeFunctionOpenV(std::string& id, Reuse&& reuse);
-        virtual FunctionId          scopeFunctionCloseV(Function& id, TypeList& listId, Type& returnType, Reuse&& reuse);
+        virtual VoidId              anvilProgramV(NamespaceList, Reuse&& reuse);
+        virtual NamespaceId         scopeNamespaceOpenV(Identifier, Reuse&& reuse);
+        virtual NamespaceId         scopeNamespaceCloseV(Namespace&, DeclList list, Reuse&& reuse);
+        virtual ClassId             scopeClassOpenV(Identifier, Reuse&& reuse);
+        virtual ClassId             scopeClassCloseV(Class&, DeclList list, Reuse&& reuse);
+        virtual FunctionId          scopeFunctionOpenV(Identifier id, Reuse&& reuse);
+        virtual FunctionId          scopeFunctionCloseV(Function& id, TypeList listId, Type& returnType, Reuse&& reuse);
         virtual CodeBlockId         scopeCodeBlockOpenV();
-        virtual StatementId         scopeCodeBlockCloseV(CodeBlock&, StatementList&);
-        virtual ObjectId            scopeObjectAddVariableV(Identifier& name, Type& id, ExpressionList& init);
-        virtual ObjectId            scopeObjectAddFunctionV(Identifier& name, Type& id, Statement& code);
-        virtual MemberInitId        memberInitV(Identifier& name, ExpressionList& init);
+        virtual StatementId         scopeCodeBlockCloseV(CodeBlock&, StatementList);
+        virtual ObjectId            scopeObjectAddVariableV(Identifier name, Type& id, ExpressionList init);
+        virtual ObjectId            scopeObjectAddFunctionV(Identifier name, Type& id, Statement& code);
+        virtual MemberInitId        memberInitV(Identifier name, ExpressionList init);
         virtual IdentifierId        identifierCreateV();
     private:
         void addToLine();
         void resetLine();
 
-        void addDefaultMethodsToScope(Scope& scope, DeclList& decl);
+        void addDefaultMethodsToScope(Scope& scope, DeclList decl);
 
         template<typename Dst, typename Param1>
         Id<Base<Dst>> addObjectToScope1(Id<Param1> id)
@@ -282,18 +282,18 @@ class Action
             return storage.add(Ref<Base<Dst>>{result});
         }
         template<typename T>
-        T& getOrAddScope(Scope& topScope, std::string const& scopeName);
+        T& getOrAddScope(Scope& topScope, std::string scopeName);
         std::string getCurrentScopeFullName() const;
 };
 
 template<typename... Args>
-void Action::log(Args&&... args) const
+void Action::log(Args const&... args) const
 {
     (output << ... << args);
 }
 
 template<typename... Args>
-void Action::error(Args&&... args) const
+void Action::error(Args const&... args) const
 {
     std::stringstream extended;
     extended << "Error: '";

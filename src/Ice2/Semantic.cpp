@@ -14,7 +14,7 @@ Semantic::~Semantic()
 }
 
 // Action Override
-NamespaceId Semantic::scopeNamespaceOpenV(std::string& namespaceName, Reuse&& reuse)
+NamespaceId Semantic::scopeNamespaceOpenV(std::string namespaceName, Reuse&& reuse)
 {
     NamespaceId newNamespace = Action::scopeNamespaceOpenV(namespaceName, std::move(reuse));
     namespaceDecOrder.emplace_back(storage.get<NamespaceRef>(newNamespace.value));

@@ -18,7 +18,7 @@ class Semantic: public Action
         Semantic(Lexer& lexer, NamespaceDecOrder& namespaceDecOrder, Scope& globalScope, Storage& storage, std::ostream& output = std::cerr);
         virtual ~Semantic() override;
 
-        virtual NamespaceId scopeNamespaceOpenV(std::string& namespaceName, Reuse&& reuse) override;
+        virtual NamespaceId scopeNamespaceOpenV(std::string namespaceName, Reuse&& reuse) override;
 };
 
 }
