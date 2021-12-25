@@ -43,6 +43,7 @@ using CodeBlockRef      = std::reference_wrapper<CodeBlock>;
 using MemberInitRef     = std::reference_wrapper<MemberInit>;
 using NamespaceRef      = std::reference_wrapper<Namespace>;
 using TypeRef           = std::reference_wrapper<Type>;
+using TypeCRef          = std::reference_wrapper<Type const>;
 using TypeList          = std::list<TypeRef>;
 using VoidRef           = std::reference_wrapper<Void>;
 using ClassRef          = std::reference_wrapper<Class>;
@@ -103,9 +104,7 @@ class Scope: public Decl
 class CodeBlock: public Scope
 {
     public:
-        CodeBlock(ActionRef action)
-            : Scope(action)
-        {}
+        using Scope::Scope;
         virtual std::string const& declName() const override {static std::string name;return name;}
         virtual DeclType declType() const override {return DeclType::CodeBlock;}
 
@@ -186,7 +185,7 @@ class Class: public Type
 
 class Function: public Type
 {
-    std::map<TypeList, TypeRef>   overload;
+    std::map<TypeList, TypeCRef>   overload;
     public:
         using Type::Type;
         virtual DeclType declType() const override {return DeclType::Function;}
@@ -195,7 +194,7 @@ class Function: public Type
         static constexpr bool valid = true;
         static constexpr Int defaultStorageId = 16;
 
-        void addOverload(ActionRef action, TypeList&& list, Type& returnType);
+        void addOverload(ActionRef action, TypeList list, Type const& returnType);
         Type const& getReturnType(ActionRef action, ExpressionList const& params) const;
 };
 
@@ -223,14 +222,14 @@ class ObjectVariable: public Object
     public:
         ObjectVariable(ActionRef action, std::string name, Type const& type, ExpressionList init)
             : Object(action, std::move(name), type)
-            , init(init)
+            , init(std::move(init))
         {}
         virtual DeclType declType() const override {return DeclType::ObjectVariable;}
 };
 
 class ObjectFunction: public Object
 {
-    StatementRef        code;
+    Statement&          code;
     public:
         ObjectFunction(ActionRef action, std::string name, Type const& type, Statement& code)
             : Object(action, std::move(name), type)
@@ -243,9 +242,9 @@ class ObjectFunctionConstructor: public ObjectFunction
 {
     MemberInitList      init;
     public:
-        ObjectFunctionConstructor(ActionRef action, std::string name, Type const& type, MemberInitList& init, Statement& code)
+        ObjectFunctionConstructor(ActionRef action, std::string name, Type const& type, MemberInitList init, Statement& code)
             : ObjectFunction(action, std::move(name), type, code)
-            , init(init)
+            , init(std::move(init))
         {}
 };
 
@@ -286,9 +285,9 @@ class StatementAssembley: public Statement
     std::string     assembley;
     public:
         using Base = Statement;
-        StatementAssembley(ActionRef action, std::string& assembley)
+        StatementAssembley(ActionRef action, std::string assembley)
             : Statement(action)
-            , assembley(assembley)
+            , assembley(std::move(assembley))
         {}
 };
 
@@ -301,7 +300,7 @@ class StatementCodeBlock: public Statement
         StatementCodeBlock(ActionRef action, CodeBlock& codeBlock, StatementList list)
             : Statement(action)
             , codeBlock(codeBlock)
-            , list(list)
+            , list(std::move(list))
         {}
 };
 
@@ -334,14 +333,14 @@ class ExpressionMemberAccess: public Expression
     Object&     member;
     public:
         using Base = Expression;
-        ExpressionMemberAccess(ActionRef action, Expression& src, Identifier& memberName)
+        ExpressionMemberAccess(ActionRef action, Expression& src, Identifier const& memberName)
             : Expression(action)
             , src(src)
-            , member(findMember(action, src, memberName))
+            , member(findMember(action, memberName))
         {}
         virtual Type const& getType() const override {return member.getType();}
     private:
-        Object& findMember(ActionRef action, Expression& src, Identifier& memberName);
+        Object& findMember(ActionRef action, Identifier const& memberName);
 };
 
 template<typename T>
@@ -366,9 +365,9 @@ class ExpressionLiteral: public Expression
     Type const& type;
     public:
         using Base = Expression;
-        ExpressionLiteral(ActionRef action, T& literal)
+        ExpressionLiteral(ActionRef action, T literal)
             : Expression(action)
-            , literal(literal)
+            , literal(std::move(literal))
             , type(findType(action))
         {}
         virtual Type const& getType() const override {return type;}
@@ -383,10 +382,10 @@ class ExpressionFuncCall: public Expression
     Type const&     type;
     public:
         using Base = Expression;
-        ExpressionFuncCall(ActionRef action, Expression& funcObject, ExpressionList& params)
+        ExpressionFuncCall(ActionRef action, Expression& funcObject, ExpressionList params)
             : Expression(action)
             , funcObject(funcObject)
-            , params(params)
+            , params(std::move(params))
             , type(findType(action))
         {}
         virtual Type const& getType() const override {return type;}
@@ -425,7 +424,7 @@ bool doesDeclNeedRuntimeStorage<Object>(Scope& scope, Decl const& decl)
 template<typename T, typename... Args>
 inline T& Scope::add(Action& action, Args&&... args)
 {
-    std::unique_ptr<Decl> decl(new T(&action, args...));
+    std::unique_ptr<Decl> decl(new T(&action, std::forward<Args>(args)...));
     std::string  index = decl->declName();
     if (index == "")
     {

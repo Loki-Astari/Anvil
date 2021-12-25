@@ -81,7 +81,7 @@ Void::Void(ActionRef action)
     constructorType.addOverload(action, TypeList{}, *this);
 }
 
-Object& ExpressionMemberAccess::findMember(ActionRef action, Expression& src, Identifier& memberName)
+Object& ExpressionMemberAccess::findMember(ActionRef action, Identifier const& memberName)
 {
     Type const& type = src.getType();
     auto find = type.get(memberName);
@@ -105,7 +105,7 @@ Type const& ExpressionFuncCall::findType(ActionRef action)
     return functionInfo.getReturnType(action, params);
 }
 
-void Function::addOverload(ActionRef action, TypeList&& list, Type& returnType)
+void Function::addOverload(ActionRef action, TypeList list, Type const& returnType)
 {
     auto find = overload.find(list);
     if (find != overload.end())
