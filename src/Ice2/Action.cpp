@@ -158,7 +158,7 @@ ClassId Action::scopeClassCloseV(Class& cl, DeclList decl, Reuse&& reuse)
 }
 // ------------------
 
-void Action::addDefaultMethodsToScope(Scope& scope, DeclList /*decl*/)
+void Action::addDefaultMethodsToScope(Scope& scope, DeclList declList)
 {
     auto findCons = scope.get("$Constructor");
     if (!findCons.first)
@@ -179,7 +179,19 @@ void Action::addDefaultMethodsToScope(Scope& scope, DeclList /*decl*/)
         constructorType.addOverload(this, TypeCList{}, getRefFromScope<Type>(currentScope.front(), "Void"));
     }
 
-    // Help
+    std::vector<ObjectVariableCRef>  data;
+    for (auto const& decl: declList)
+    {
+        if (decl.get().declType() == DeclType::ObjectVariable)
+        {
+            ObjectVariable const& var = dynamic_cast<ObjectVariable const&>(decl.get());
+            data.emplace_back(var);
+
+            //std::cerr << "Name: " << var.declName() << "\n";
+        }
+    }
+    //std::cerr << "\n-------------------\n\n";
+    ((void)data);
 }
 // ------------------
 
@@ -348,6 +360,7 @@ MemberInitId Action::memberInitV(Identifier name, ExpressionList init)
 
 FunctionId Action::scopeConstructorInit()
 {
+    ScopePrinter scope("scopeConstructorInit");
     IdentifierId name = storage.add<std::string>(std::string("$Constructor"));
     return scopeFunctionOpen(name);
 }
@@ -369,6 +382,7 @@ ObjectId Action::scopeConstructorAdd(FunctionId id, TypeCListId listId, MemberIn
 
 FunctionId Action::scopeDestructorInit()
 {
+    ScopePrinter scope("scopeDestructorInit");
     IdentifierId name = storage.add<std::string>(std::string("$Destructor"));
     return scopeFunctionOpen(name);
 }

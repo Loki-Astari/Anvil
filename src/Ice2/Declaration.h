@@ -24,6 +24,8 @@ class Void;
 class Class;
 class Function;
 class Object;
+class ObjectVariable;
+class ObjectFunction;
 class Statement;
 class Expression;
 
@@ -49,6 +51,9 @@ using VoidRef           = std::reference_wrapper<Void>;
 using ClassRef          = std::reference_wrapper<Class>;
 using FunctionRef       = std::reference_wrapper<Function>;
 using ObjectRef         = std::reference_wrapper<Object>;
+using ObjectVariableRef = std::reference_wrapper<ObjectVariable>;
+using ObjectVariableCRef= std::reference_wrapper<ObjectVariable const>;
+using ObjectFunctionRef = std::reference_wrapper<ObjectFunction>;
 using StatementRef      = std::reference_wrapper<Statement>;
 using ExpressionRef     = std::reference_wrapper<Expression>;
 using MemberInitList    = std::list<MemberInitRef>;
@@ -69,8 +74,18 @@ inline bool operator==(TypeCRef const& lhs, TypeCRef const& rhs)
 class Decl
 {
     public:
-        Decl(ActionRef /*action*/) {}
-        virtual ~Decl() {}
+        Decl(ActionRef /*action*/)
+        {
+            // std::cerr << "Creating:   " << this << "\n";
+        }
+        virtual ~Decl()
+        {
+            // std::cerr << "Destroying: " << this << "\n";
+        }
+        Decl(Decl const&) = delete;
+        Decl& operator=(Decl const&) = delete;
+        Decl(Decl&&) = delete;
+        Decl& operator=(Decl&&) = delete;
         virtual DeclType declType() const = 0;
         virtual std::string const& declName() const;
 
@@ -97,6 +112,7 @@ class Scope: public Decl
 
         std::string anonName();
     private:
+        std::unique_ptr<Decl>& getMember(Action& action, std::string const& index, bool needsStorage);
         char hex(std::size_t halfByte);
         void generateHexName(std::string& name, std::size_t count);
 };
@@ -425,16 +441,7 @@ template<typename T, typename... Args>
 inline T& Scope::add(Action& action, Args&&... args)
 {
     std::unique_ptr<Decl> decl(new T(&action, std::forward<Args>(args)...));
-    std::string  index = decl->declName();
-    if (index == "")
-    {
-        index = anonName();
-    }
-    auto& location = members[index];
-    if (doesDeclNeedRuntimeStorage<T>(*this, *decl))
-    {
-        objectId[index] = nextObjectId++;
-    }
+    auto& location = getMember(action, decl->declName(), doesDeclNeedRuntimeStorage<T>(*this, *decl));
     location = std::move(decl);
     return dynamic_cast<T&>(*location);
 }

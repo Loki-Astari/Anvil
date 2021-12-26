@@ -72,6 +72,25 @@ void Scope::generateHexName(std::string& name, std::size_t count)
     }
 }
 
+std::unique_ptr<Decl>& Scope::getMember(Action& action, std::string const& name, bool needsStorage)
+{
+    std::string  index = name;
+    if (index == "")
+    {
+        index = anonName();
+    }
+    auto& location = members[index];
+    if (location.get() != nullptr)
+    {
+        action.error("Location already in use: ", index);
+    }
+    if (needsStorage)
+    {
+        objectId[index] = nextObjectId++;
+    }
+    return location;
+}
+
 Void::Void(ActionRef action)
     : Type(action, "Void")
 {
