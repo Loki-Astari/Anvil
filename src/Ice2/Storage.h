@@ -43,7 +43,7 @@ class Storage
             , defaultType(ActionRef{})
             , defaultVoid(ActionRef{})
             , defaultClass(ActionRef{}, "Invalid Class")
-            , defaultFunction(ActionRef{}, "Invalid Function")
+            , defaultFunction(ActionRef{}, "Invalid Function", TypeCList{}, defaultVoid)
             , defaultObject(ActionRef{}, "Invalid Object", defaultClass, ExpressionList{})
             , defaultStatement(ActionRef{})
             , defaultExpression(ActionRef{}, defaultObject)

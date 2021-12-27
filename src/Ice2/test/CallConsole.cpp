@@ -56,7 +56,7 @@ namespace Sys
                 CMD Import GetSymbol Expr-1 Expr-2 _ZN3Ice6System5printERKNSt3__112basic_stringIcNS1_11char_traitsIcEENS1_9allocatorIcEEEE
             -->
         }
-        destruct{}
+        destruct
         {
             <--
                 ADDR LRR Expr-1 = This + 0

@@ -62,7 +62,7 @@ class Action
         virtual void token();
 
         // Public Utility
-        std::string         anonName();
+        IdentifierId anonName();
 
         template<typename T>
         ListId<T> listCreate()
@@ -89,17 +89,13 @@ class Action
         ClassId             scopeClassOpen(IdentifierId id);
         ClassId             scopeClassClose(ClassId id, DeclListId listId);
         ClassId             scopeClassAnon();
-        FunctionId          scopeFunctionOpen(IdentifierId id);
-        FunctionId          scopeFunctionClose(FunctionId id, TypeCListId listId, TypeId returnType);
-        FunctionId          scopeFunctionAnon();
+        FunctionId          scopeFunctionAdd(IdentifierId id, TypeCListId listId, TypeId returnType);
         CodeBlockId         scopeCodeBlockOpen();
         StatementId         scopeCodeBlockClose(CodeBlockId, StatementListId);
         ObjectId            scopeObjectAddVariable(IdentifierId name, TypeId id, ExpressionListId init);
         ObjectId            scopeObjectAddFunction(IdentifierId name, TypeId id, StatementId init);
-        FunctionId          scopeConstructorInit();
-        ObjectId            scopeConstructorAdd(FunctionId id, TypeCListId listId, MemberInitListId init, StatementId code);
-        FunctionId          scopeDestructorInit();
-        ObjectId            scopeDestructorAdd(FunctionId id, TypeCListId listId, StatementId code);
+        ObjectId            scopeConstructorAdd(TypeCListId listId, MemberInitListId init, StatementId code);
+        ObjectId            scopeDestructorAdd(StatementId code);
         MemberInitId        memberInit(IdentifierId, ExpressionListId);
         IdentifierId        identifierCreate();
 
@@ -245,8 +241,7 @@ class Action
         virtual NamespaceId         scopeNamespaceCloseV(Namespace&, DeclList list, Reuse&& reuse);
         virtual ClassId             scopeClassOpenV(Identifier, Reuse&& reuse);
         virtual ClassId             scopeClassCloseV(Class&, DeclList list, Reuse&& reuse);
-        virtual FunctionId          scopeFunctionOpenV(Identifier id, Reuse&& reuse);
-        virtual FunctionId          scopeFunctionCloseV(Function& id, TypeCList listId, Type const& returnType, Reuse&& reuse);
+        virtual FunctionId          scopeFunctionAddV(Identifier& id, TypeCList listId, Type const& returnType, Reuse&& reuse);
         virtual CodeBlockId         scopeCodeBlockOpenV();
         virtual StatementId         scopeCodeBlockCloseV(CodeBlock&, StatementList);
         virtual ObjectId            scopeObjectAddVariableV(Identifier name, Type const& id, ExpressionList init);
@@ -256,8 +251,6 @@ class Action
     private:
         void addToLine();
         void resetLine();
-
-        void addDefaultMethodsToScope(Scope& scope, DeclList decl);
 
         template<typename Dst, typename Param1>
         Id<Base<Dst>> addObjectToScope1(Id<Param1> id)
@@ -283,6 +276,7 @@ class Action
         }
         template<typename T>
         T& getOrAddScope(Scope& topScope, std::string scopeName);
+        void addDefaultMethodsToScope(Scope& scope, DeclList decl);
         std::string getCurrentScopeFullName() const;
 };
 

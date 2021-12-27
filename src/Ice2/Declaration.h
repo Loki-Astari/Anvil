@@ -13,6 +13,34 @@
 namespace ThorsAnvil::Anvil::Ice
 {
 
+#if 0
+class Decl
+    class MemberInit: public Decl
+    class Scope: public Decl
+    class NamedScope: public Scope
+        class Namespace: public NamedScope
+        class Type: public NamedScope
+            class Void: public Type
+            class Class: public Type
+            class Function: public Type
+            class Overload: public Type
+    class Object: public Decl
+        class ObjectVariable: public Object
+        class ObjectFunction: public Object
+            class ObjectFunctionConstructor: public ObjectFunction
+        class ObjectOverload: public Object
+    class Statement: public Decl
+        class StatementExpression: public Statement
+        class StatementReturn: public Statement
+        class StatementAssembley: public Statement
+        class StatementCodeBlock: public Statement
+    class Expression: public Decl
+        class ExpressionObject: public Expression
+        class ExpressionMemberAccess: public Expression
+        class ExpressionLiteral: public Expression
+        class ExpressionFuncCall: public Expression
+#endif
+
 class Action;
 class Decl;
 class Scope;
@@ -23,13 +51,15 @@ class Type;
 class Void;
 class Class;
 class Function;
+class Overload;
 class Object;
 class ObjectVariable;
 class ObjectFunction;
+class ObjectOverload;
 class Statement;
 class Expression;
 
-enum class DeclType {Void, Namespace, Class, Function, CodeBlock, MemberInit, ObjectVariable, ObjectFunction, Statement, Expression};
+enum class DeclType {Void, Namespace, Class, Function, Overload, CodeBlock, MemberInit, ObjectVariable, ObjectFunction, ObjectOverload, Statement, Expression};
 
 using Int               = std::size_t;
 using Identifier        = std::string;
@@ -50,10 +80,13 @@ using TypeCList         = std::list<TypeCRef>;
 using VoidRef           = std::reference_wrapper<Void>;
 using ClassRef          = std::reference_wrapper<Class>;
 using FunctionRef       = std::reference_wrapper<Function>;
+using FunctionCRef      = std::reference_wrapper<Function const>;
+using OverloadRef       = std::reference_wrapper<Overload>;
 using ObjectRef         = std::reference_wrapper<Object>;
 using ObjectVariableRef = std::reference_wrapper<ObjectVariable>;
 using ObjectVariableCRef= std::reference_wrapper<ObjectVariable const>;
 using ObjectFunctionRef = std::reference_wrapper<ObjectFunction>;
+using ObjectOverloadRef = std::reference_wrapper<ObjectOverload>;
 using StatementRef      = std::reference_wrapper<Statement>;
 using ExpressionRef     = std::reference_wrapper<Expression>;
 using MemberInitList    = std::list<MemberInitRef>;
@@ -88,6 +121,8 @@ class Decl
         Decl& operator=(Decl&&) = delete;
         virtual DeclType declType() const = 0;
         virtual std::string const& declName() const;
+        virtual bool needsStorage() const;
+        virtual bool overloadable() const;
 
         static constexpr bool valid = true;
         static constexpr Int defaultStorageId = 9;
@@ -112,7 +147,7 @@ class Scope: public Decl
 
         std::string anonName();
     private:
-        std::unique_ptr<Decl>& getMember(Action& action, std::string const& index, bool needsStorage);
+        Decl& saveMember(Action& action, std::unique_ptr<Decl>&& member);
         char hex(std::size_t halfByte);
         void generateHexName(std::string& name, std::size_t count);
 };
@@ -201,17 +236,37 @@ class Class: public Type
 
 class Function: public Type
 {
-    std::map<TypeCList, TypeCRef>   overload;
+    TypeCList       param;
+    Type const&     returnType;
     public:
-        using Type::Type;
+        Function(ActionRef action, std::string name, TypeCList param, Type const& returnType)
+            : Type(action, std::move(name))
+            , param(std::move(param))
+            , returnType(returnType)
+        {}
         virtual DeclType declType() const override {return DeclType::Function;}
         virtual bool storeFunctionsInContainer() const override {return true;}
+        Type const& getReturnType(ActionRef /*action*/) const {return returnType;}
+
+        TypeCList getParams() const {return param;}
 
         static constexpr bool valid = true;
         static constexpr Int defaultStorageId = 16;
+};
 
-        void addOverload(ActionRef action, TypeCList list, Type const& returnType);
-        Type const& getReturnType(ActionRef action, ExpressionList const& params) const;
+class Overload: public Type
+{
+    std::map<TypeCList, FunctionCRef>   overloadData;
+    public:
+        Overload(ActionRef action, std::string name)
+            : Type(action, std::move(name))
+        {}
+        virtual DeclType declType() const override {return DeclType::Overload;}
+        Type const& getReturnType(ActionRef action, TypeCList const& index) const;
+        void addOverload(Function const& type);
+
+        // static constexpr bool valid = true;
+        // static constexpr Int defaultStorageId = XX;
 };
 
 class Object: public Decl
@@ -225,7 +280,8 @@ class Object: public Decl
             , type(type)
         {}
         virtual std::string const& declName() const override {return name;}
-
+        virtual bool needsStorage() const override {return true;}
+ 
         Type const& getType() const {return type;}
 
         static constexpr bool valid = true;
@@ -245,7 +301,7 @@ class ObjectVariable: public Object
 
 class ObjectFunction: public Object
 {
-    Statement&          code;
+    Statement&  code;
     public:
         ObjectFunction(ActionRef action, std::string name, Type const& type, Statement& code)
             : Object(action, std::move(name), type)
@@ -262,6 +318,22 @@ class ObjectFunctionConstructor: public ObjectFunction
             : ObjectFunction(action, std::move(name), type, code)
             , init(std::move(init))
         {}
+};
+
+class ObjectOverload: public Object
+{
+    std::map<TypeCList, std::unique_ptr<ObjectFunction>>      overloadData;
+    public:
+        ObjectOverload(ActionRef action, std::string name, Type const& type)
+            : Object(action, std::move(name), type)
+        {}
+        virtual DeclType declType() const override {return DeclType::ObjectOverload;}
+        virtual bool overloadable() const override {return true;}
+
+        void addOverload(std::unique_ptr<Decl>&& decl);
+
+        // static constexpr bool valid = true;
+        // static constexpr Int defaultStorageId = XX;
 };
 
 class Statement: public Decl
@@ -410,40 +482,12 @@ class ExpressionFuncCall: public Expression
 };
 
 
-// Included from Declaration.h
-
-// By default only object need runtime storage.
-// So most types simply return false.
-template<typename T>
-inline
-bool doesDeclNeedRuntimeStorage(Scope&, Decl const&)
-{
-    return false;
-}
-
-/*
-template<>
-inline
-bool doesDeclNeedRuntimeStorage<Object>(Scope& scope, Decl const& decl)
-{
-    Object const& object = dynamic_cast<Object const&>(decl);
-    // If we don't store functions and thus is a function then return false.
-    // Otherwise return true as:
-    //      A: This is not a function so needs storage in the local context.
-    //      B: Is a function and the local context says it needs to store it.
-    return (!scope.storeFunctionsInContainer() && object.getType().declType() == DeclType::Func)
-                ? false
-                : true;
-}
-*/
-
 template<typename T, typename... Args>
 inline T& Scope::add(Action& action, Args&&... args)
 {
     std::unique_ptr<Decl> decl(new T(&action, std::forward<Args>(args)...));
-    auto& location = getMember(action, decl->declName(), doesDeclNeedRuntimeStorage<T>(*this, *decl));
-    location = std::move(decl);
-    return dynamic_cast<T&>(*location);
+    Decl& object = saveMember(action, std::move(decl));
+    return dynamic_cast<T&>(object);
 }
 
 

@@ -142,9 +142,7 @@ using ThorsAnvil::Anvil::Ice::Id;
 %type   <classId>               ClassAnon
 %type   <classId>               ClassAnonStart
 %type   <functionId>            Function
-%type   <functionId>            FunctionStart
 %type   <functionId>            FunctionAnon
-%type   <functionId>            FunctionAnonStart
 %type   <scopeId>               ScopedType
 %type   <typeId>                TypeDecl
 %type   <typeId>                AnonType
@@ -153,9 +151,7 @@ using ThorsAnvil::Anvil::Ice::Id;
 %type   <objectId>              FunctionDecl
 %type   <objectId>              Object
 %type   <objectId>              Constructor
-%type   <functionId>            ConstructorStart
 %type   <objectId>              Destructor
-%type   <functionId>            DestructorStart
 %type   <identifierId>          ScopeIdentifier
 %type   <identifierId>          IdentifierNamespace
 %type   <identifierId>          IdentifierType
@@ -231,20 +227,16 @@ ClassStart:             CLASS IdentifierType                                {$$ 
 ClassAnon:              ClassAnonStart '{' DeclListOpt '}'                  {$$ = action.scopeClassClose($1, $3);}
 ClassAnonStart:         CLASS                                               {$$ = action.scopeClassAnon();}
 
-Function:               FunctionStart '{' TypeListOpt ARROW Type '}'        {$$ = action.scopeFunctionClose($1, $3, $5);}
-FunctionStart:          FUNC IdentifierType                                 {$$ = action.scopeFunctionOpen($2);}
-FunctionAnon:           FunctionAnonStart '{' TypeListOpt ARROW Type '}'    {$$ = action.scopeFunctionClose($1, $3, $5);}
-FunctionAnonStart:      FUNC                                                {$$ = action.scopeFunctionAnon();}
+Function:               FUNC IdentifierType '{' TypeListOpt ARROW Type '}'  {$$ = action.scopeFunctionAdd($2, $4, $6);}
+FunctionAnon:           FUNC '{' TypeListOpt ARROW Type '}'                 {$$ = action.scopeFunctionAdd(action.anonName(), $3, $5);}
 
-Constructor:            ConstructorStart '{' TypeListOpt '}' MemberInitListOpt CodeBlock      {$$ = action.scopeConstructorAdd($1, $3, $5, $6);}
-ConstructorStart:       CONSTRUCT                                           {$$ = action.scopeConstructorInit();}
+Constructor:            CONSTRUCT '{' TypeListOpt '}' MemberInitListOpt CodeBlock      {$$ = action.scopeConstructorAdd($3, $5, $6);}
 MemberInitListOpt:                                                          {$$ = action.listCreate<MemberInit>();}
                     |   ':' MemberInitList                                  {$$ = $2;}
 MemberInitList:         MemberInit                                          {$$ = action.listAppend<MemberInit>(action.listCreate<MemberInit>(), $1);}
                     |   MemberInitList ',' MemberInit                       {$$ = action.listAppend<MemberInit>($1, $3);}
 MemberInit:             IdentifierObject '(' ExpressionListOpt ')'          {$$ = action.memberInit($1, $3);}
-Destructor :            DestructorStart '{' TypeListOpt '}' CodeBlock       {$$ = action.scopeDestructorAdd($1, $3, $5);}
-DestructorStart:        DESTRUCT                                            {$$ = action.scopeDestructorInit();}
+Destructor :            DESTRUCT CodeBlock                                  {$$ = action.scopeDestructorAdd($2);}
 
 VariableDecl:           IdentifierObject ':' TypeDecl VariableInit ';'      {$$ = action.scopeObjectAddVariable($1, $3, $4);}
 VariableInit:                                                               {$$ = action.listCreate<Expression>();}

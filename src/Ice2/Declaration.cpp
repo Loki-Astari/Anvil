@@ -17,6 +17,16 @@ std::string const& Decl::declName() const
     return emptyName;
 }
 
+bool Decl::needsStorage() const
+{
+    return false;
+}
+
+bool Decl::overloadable() const
+{
+    return false;
+}
+
 Scope::Scope(ActionRef action)
     : Decl(action)
     , nextObjectId(0)
@@ -72,32 +82,86 @@ void Scope::generateHexName(std::string& name, std::size_t count)
     }
 }
 
-std::unique_ptr<Decl>& Scope::getMember(Action& action, std::string const& name, bool needsStorage)
+Decl& Scope::saveMember(Action& action, std::unique_ptr<Decl>&& member)
 {
-    std::string  index = name;
+    Decl& result = *member;
+
+    std::string  index = member->declName();
     if (index == "")
     {
         index = anonName();
     }
-    auto& location = members[index];
-    if (location.get() != nullptr)
-    {
-        action.error("Location already in use: ", index);
-    }
-    if (needsStorage)
+    if (member->needsStorage())
     {
         objectId[index] = nextObjectId++;
     }
-    return location;
+
+
+    auto& location = members[index];
+    ObjectFunction* newFunction = dynamic_cast<ObjectFunction*>(member.get());
+    if (newFunction != nullptr)
+    {
+        if (location.get() == nullptr)
+        {
+            Overload&  overload = add<Overload>(action, "");
+            location = std::make_unique<ObjectOverload>(&action, newFunction->declName(), overload);
+        }
+    }
+
+    if (location.get() != nullptr)
+    {
+        if (location->overloadable() && newFunction != nullptr)
+        {
+            ObjectOverload& functionOverload = dynamic_cast<ObjectOverload&>(*location);
+            functionOverload.addOverload(std::move(member));
+        }
+        else
+        {
+            action.error("Location already in use: ", index);
+        }
+    }
+    else
+    {
+        location = std::move(member);
+    }
+    return result;
 }
 
 Void::Void(ActionRef action)
     : Type(action, "Void")
 {
     static Statement voidCodeInit(action);
-    Function& constructorType = add<Function>(*action, "$Constructor");
+    Function& constructorType = add<Function>(*action, "", TypeCList{}, *this);
     add<ObjectFunction>(*action, "$constructor", constructorType, voidCodeInit);
-    constructorType.addOverload(action, TypeCList{}, *this);
+}
+
+Type const& Overload::getReturnType(ActionRef action, TypeCList const& index) const
+{
+    auto find = overloadData.find(index);
+    if (find == overloadData.end())
+    {
+        action->error("Did not find overlaad");
+    }
+    return find->second.get().getReturnType(action);
+}
+
+void Overload::addOverload(Function const& type)
+{
+    overloadData.emplace(type.getParams(), FunctionCRef{type});
+}
+
+void ObjectOverload::addOverload(std::unique_ptr<Decl>&& decl)
+{
+    std::unique_ptr<ObjectFunction> object(dynamic_cast<ObjectFunction*>(decl.release()));
+
+    Type&       type = const_cast<Type&>(getType());
+    Overload&   overload = dynamic_cast<Overload&>(type);
+
+    Type&       objectType = const_cast<Type&>(object->getType());
+    Function&   objectFunc = dynamic_cast<Function&>(objectType);
+
+    overload.addOverload(objectFunc);
+    overloadData.emplace(objectFunc.getParams(), std::move(object));
 }
 
 Object& ExpressionMemberAccess::findMember(ActionRef action, Identifier const& memberName)
@@ -116,37 +180,17 @@ Object& ExpressionMemberAccess::findMember(ActionRef action, Identifier const& m
 Type const& ExpressionFuncCall::findType(ActionRef action)
 {
     Type const& funcType = funcObject.getType();
-    if (funcType.declType() != DeclType::Function)
+    if (funcType.declType() != DeclType::Overload)
     {
         action->error("Makeing a function call with a non function object");
     }
-    Function const& functionInfo = dynamic_cast<Function const&>(funcType);
-    return functionInfo.getReturnType(action, params);
-}
-
-void Function::addOverload(ActionRef action, TypeCList list, Type const& returnType)
-{
-    auto find = overload.find(list);
-    if (find != overload.end())
+    TypeCList   paramTypes;
+    for (auto const& param: params)
     {
-        action->error("Function Overload Error: This parameter list already exists");
+        paramTypes.emplace_back(param.get().getType());
     }
-    overload.emplace(std::move(list), returnType);
-}
-
-Type const& Function::getReturnType(ActionRef action, ExpressionList const& params) const
-{
-    TypeCList    typeInfo;
-    for (auto const& expr: params)
-    {
-        typeInfo.emplace_back(expr.get().getType());
-    }
-    auto find = overload.find(typeInfo);
-    if (find == overload.end())
-    {
-        action->error("Function Overload Missing: No function exists that takes these parameters");
-    }
-    return find->second;
+    Overload const& functionInfo = dynamic_cast<Overload const&>(funcType);
+    return functionInfo.getReturnType(action, paramTypes);
 }
 
 template<typename T>
