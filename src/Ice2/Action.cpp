@@ -406,24 +406,6 @@ void Action::assembleyAppend(Id<std::string> id)
     assembley.insert(std::begin(assembley), std::begin(view), std::end(view));
 }
 
-// Storage Access
-// ========================
-template<typename T>
-IdAccess<T>::~IdAccess()
-{
-    if (index != 0)
-    {
-        storage.release(index);
-    }
-}
-
-template<typename T>
-IdAccess<T>::operator T&() const
-{
-    Int location = (index != 0) ? index : IdTraits<T>::defaultStorageId;
-    return storage.get<AccessType>(location);
-}
-
 namespace ThorsAnvil::Anvil::Ice
 {
 
@@ -435,20 +417,6 @@ std::ostream& operator<<(std::ostream& str, Action const& action)
              << action.currentLine << "\n"
              << "\n";
 }
-
-template struct IdAccess<Identifier>;
-template struct IdAccess<Namespace>;
-template struct IdAccess<Decl>;
-template struct IdAccess<Scope>;
-template struct IdAccess<Type>;
-template struct IdAccess<MemberInit>;
-template struct IdAccess<Object>;
-template struct IdAccess<Statement>;
-template struct IdAccess<Expression>;
-template struct IdAccess<ExpressionList>;
-template struct IdAccess<StatementList>;
-template struct IdAccess<MemberInitList>;
-
 
 }
 

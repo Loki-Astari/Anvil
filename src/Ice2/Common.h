@@ -65,6 +65,7 @@ template<typename T> using Base             = typename T::Base;
 
 
 using Int                   = std::size_t;
+using IntId                 = Id<Int>;
 
 using Identifier            = std::string;
 using IdentifierId          = Id<Identifier>;
@@ -76,39 +77,50 @@ using MemberStorage         = std::map<std::string, std::unique_ptr<Decl>>;
 using MemberIndex           = std::map<std::string, std::size_t>;
 using NameRef               = MemberStorage::const_iterator;
 
+using DeclId                = Id<Decl>;
 using DeclRef               = std::reference_wrapper<Decl>;
 using DeclList              = std::list<DeclRef>;
 using DeclListId            = Id<DeclList>;
+using DeclListAccess        = IdAccess<DeclList>;
 
 using MemberInitId          = Id<MemberInit>;
 using MemberInitRef         = std::reference_wrapper<MemberInit>;
 using MemberInitList        = std::list<MemberInitRef>;
 using MemberInitListId      = Id<MemberInitList>;
+using MemberInitListAccess  = IdAccess<MemberInitList>;
 
 using ScopeId               = Id<Scope>;
+using ScopeAccess           = IdAccess<Scope>;
 using ScopeRef              = std::reference_wrapper<Scope>;
 
 using CodeBlockId           = Id<CodeBlock>;
+using CodeBlockAccess       = IdAccess<CodeBlock>;
 using CodeBlockRef          = std::reference_wrapper<CodeBlock>;
 
 using NamespaceId           = Id<Namespace>;
+using NamespaceAccess       = IdAccess<Namespace>;
 using NamespaceRef          = std::reference_wrapper<Namespace>;
 using NamespaceList         = std::list<NamespaceRef>;
 using NamespaceListId       = Id<NamespaceList>;
+using NamespaceListAccess   = IdAccess<NamespaceList>;
 
 using TypeId                = Id<Type>;
+using TypeAccess            = IdAccess<Type>;
 using TypeRef               = std::reference_wrapper<Type>;
 using TypeCRef              = std::reference_wrapper<Type const>;
 using TypeCList             = std::list<TypeCRef>;
 using TypeCListId           = Id<TypeCList>;
+using TypeCListAccess       = IdAccess<TypeCList>;
 
 using VoidId                = Id<Void, false>;
 using VoidRef               = std::reference_wrapper<Void>;
 
 using ClassId               = Id<Class>;
+using ClassAccess           = IdAccess<Class>;
 using ClassRef              = std::reference_wrapper<Class>;
 
 using FunctionId            = Id<Function>;
+using FunctionAccess        = IdAccess<Function>;
 using FunctionRef           = std::reference_wrapper<Function>;
 using FunctionCRef          = std::reference_wrapper<Function const>;
 
@@ -117,14 +129,17 @@ using ObjectRef             = std::reference_wrapper<Object>;
 using ObjectVariableCRef    = std::reference_wrapper<ObjectVariable const>;
 
 using StatementId           = Id<Statement>;
+using StatementAccess       = IdAccess<Statement>;
 using StatementRef          = std::reference_wrapper<Statement>;
 using StatementList         = std::list<StatementRef>;
 using StatementListId       = Id<StatementList>;
+using StatementListAccess   = IdAccess<StatementList>;
 
 using ExpressionId          = Id<Expression>;
 using ExpressionRef         = std::reference_wrapper<Expression>;
 using ExpressionList        = std::list<ExpressionRef>;
 using ExpressionListId      = Id<ExpressionList>;
+using ExpressionListAccess  = IdAccess<ExpressionList>;
 
 inline bool operator<(TypeCRef const& lhs, TypeCRef const& rhs)
 {
