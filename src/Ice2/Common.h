@@ -3,6 +3,7 @@
 
 #include <map>
 #include <list>
+#include <string>
 
 #if 0
 class Decl
@@ -67,6 +68,7 @@ using Int                   = std::size_t;
 
 using Identifier            = std::string;
 using IdentifierId          = Id<Identifier>;
+using IdentifierAccess      = IdAccess<Identifier>;
 
 using ActionRef             = Action*;      // Pointer because Storage uses nullptr
 
@@ -87,6 +89,7 @@ using ScopeId               = Id<Scope>;
 using ScopeRef              = std::reference_wrapper<Scope>;
 
 using CodeBlockId           = Id<CodeBlock>;
+using CodeBlockRef          = std::reference_wrapper<CodeBlock>;
 
 using NamespaceId           = Id<Namespace>;
 using NamespaceRef          = std::reference_wrapper<Namespace>;
@@ -94,17 +97,23 @@ using NamespaceList         = std::list<NamespaceRef>;
 using NamespaceListId       = Id<NamespaceList>;
 
 using TypeId                = Id<Type>;
+using TypeRef               = std::reference_wrapper<Type>;
 using TypeCRef              = std::reference_wrapper<Type const>;
 using TypeCList             = std::list<TypeCRef>;
 using TypeCListId           = Id<TypeCList>;
 
 using VoidId                = Id<Void, false>;
+using VoidRef               = std::reference_wrapper<Void>;
+
 using ClassId               = Id<Class>;
+using ClassRef              = std::reference_wrapper<Class>;
 
 using FunctionId            = Id<Function>;
+using FunctionRef           = std::reference_wrapper<Function>;
 using FunctionCRef          = std::reference_wrapper<Function const>;
 
 using ObjectId              = Id<Object>;
+using ObjectRef             = std::reference_wrapper<Object>;
 using ObjectVariableCRef    = std::reference_wrapper<ObjectVariable const>;
 
 using StatementId           = Id<Statement>;
