@@ -10,6 +10,26 @@
 namespace ThorsAnvil::Anvil::Ice
 {
 
+class Void;
+class Type;
+class Class;
+class Function;
+class Object;
+class Statement;
+class Expression;
+class CodeBlock;
+
+using VoidRef           = std::reference_wrapper<Void>;
+using TypeRef           = std::reference_wrapper<Type>;
+using TypeCRef          = std::reference_wrapper<Type const>;
+using ClassRef          = std::reference_wrapper<Class>;
+using FunctionRef       = std::reference_wrapper<Function>;
+using ObjectRef         = std::reference_wrapper<Object>;
+using StatementRef      = std::reference_wrapper<Statement>;
+using ExpressionRef     = std::reference_wrapper<Expression>;
+using CodeBlockRef      = std::reference_wrapper<CodeBlock>;
+
+
 using Data = std::variant<Int, DeclList, NamespaceList, TypeCList, ExpressionList, StatementList, MemberInitList, DeclRef, ScopeRef, CodeBlockRef, MemberInitRef, NamespaceRef, TypeRef, VoidRef, ClassRef, FunctionRef, ObjectRef, StatementRef, ExpressionRef, Identifier>;
 
 template<typename T>

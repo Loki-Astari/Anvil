@@ -1,120 +1,21 @@
 #ifndef THORSANVIL_ANVIL_ICE_DECLARATION_H
 #define THORSANVIL_ANVIL_ICE_DECLARATION_H
 
-#include <functional>
-#include <vector>
+#include "Common.h"
 #include <list>
 #include <map>
 #include <string>
-#include <memory>
-#include <ostream>
-#include <iostream>
 
 namespace ThorsAnvil::Anvil::Ice
 {
 
-#if 0
-class Decl
-    class MemberInit: public Decl
-    class Scope: public Decl
-    class NamedScope: public Scope
-        class Namespace: public NamedScope
-        class Type: public NamedScope
-            class Void: public Type
-            class Class: public Type
-            class Function: public Type
-            class Overload: public Type
-    class Object: public Decl
-        class ObjectVariable: public Object
-        class ObjectFunction: public Object
-            class ObjectFunctionConstructor: public ObjectFunction
-        class ObjectOverload: public Object
-    class Statement: public Decl
-        class StatementExpression: public Statement
-        class StatementReturn: public Statement
-        class StatementAssembley: public Statement
-        class StatementCodeBlock: public Statement
-    class Expression: public Decl
-        class ExpressionObject: public Expression
-        class ExpressionMemberAccess: public Expression
-        class ExpressionLiteral: public Expression
-        class ExpressionFuncCall: public Expression
-#endif
-
-class Action;
-class Decl;
-class Scope;
-class CodeBlock;
-class MemberInit;
-class Namespace;
-class Type;
-class Void;
-class Class;
-class Function;
-class Overload;
-class Object;
-class ObjectVariable;
-class ObjectFunction;
-class ObjectOverload;
-class Statement;
-class Expression;
-
 enum class DeclType {Void, Namespace, Class, Function, Overload, CodeBlock, MemberInit, ObjectVariable, ObjectFunction, ObjectOverload, Statement, Expression};
-
-using Int               = std::size_t;
-using Identifier        = std::string;
-using MemberStorage     = std::map<std::string, std::unique_ptr<Decl>>;
-using MemberIndex       = std::map<std::string, std::size_t>;
-using NameRef           = MemberStorage::const_iterator;
-
-using ActionRef         = Action*;      // Pointer because Storage uses nullptr
-
-using DeclRef           = std::reference_wrapper<Decl>;
-using ScopeRef          = std::reference_wrapper<Scope>;
-using CodeBlockRef      = std::reference_wrapper<CodeBlock>;
-using MemberInitRef     = std::reference_wrapper<MemberInit>;
-using NamespaceRef      = std::reference_wrapper<Namespace>;
-using TypeRef           = std::reference_wrapper<Type>;
-using TypeCRef          = std::reference_wrapper<Type const>;
-using TypeCList         = std::list<TypeCRef>;
-using VoidRef           = std::reference_wrapper<Void>;
-using ClassRef          = std::reference_wrapper<Class>;
-using FunctionRef       = std::reference_wrapper<Function>;
-using FunctionCRef      = std::reference_wrapper<Function const>;
-using OverloadRef       = std::reference_wrapper<Overload>;
-using ObjectRef         = std::reference_wrapper<Object>;
-using ObjectVariableRef = std::reference_wrapper<ObjectVariable>;
-using ObjectVariableCRef= std::reference_wrapper<ObjectVariable const>;
-using ObjectFunctionRef = std::reference_wrapper<ObjectFunction>;
-using ObjectOverloadRef = std::reference_wrapper<ObjectOverload>;
-using StatementRef      = std::reference_wrapper<Statement>;
-using ExpressionRef     = std::reference_wrapper<Expression>;
-using MemberInitList    = std::list<MemberInitRef>;
-using StatementList     = std::list<StatementRef>;
-using ExpressionList    = std::list<ExpressionRef>;
-
-using NamespaceDecOrder = std::vector<NamespaceRef>;
-
-inline bool operator<(TypeCRef const& lhs, TypeCRef const& rhs)
-{
-    return &lhs.get() < &rhs.get();
-}
-inline bool operator==(TypeCRef const& lhs, TypeCRef const& rhs)
-{
-    return &lhs.get() == &rhs.get();
-}
 
 class Decl
 {
     public:
-        Decl(ActionRef /*action*/)
-        {
-            // std::cerr << "Creating:   " << this << "\n";
-        }
-        virtual ~Decl()
-        {
-            // std::cerr << "Destroying: " << this << "\n";
-        }
+        Decl(ActionRef /*action*/);
+        virtual ~Decl();
         Decl(Decl const&) = delete;
         Decl& operator=(Decl const&) = delete;
         Decl(Decl&&) = delete;
@@ -127,7 +28,6 @@ class Decl
         static constexpr bool valid = true;
         static constexpr Int defaultStorageId = 9;
 };
-
 
 class Scope: public Decl
 {
@@ -264,9 +164,6 @@ class Overload: public Type
         virtual DeclType declType() const override {return DeclType::Overload;}
         Type const& getReturnType(ActionRef action, TypeCList const& index) const;
         void addOverload(Function const& type);
-
-        // static constexpr bool valid = true;
-        // static constexpr Int defaultStorageId = XX;
 };
 
 class Object: public Decl
@@ -331,9 +228,6 @@ class ObjectOverload: public Object
         virtual bool overloadable() const override {return true;}
 
         void addOverload(std::unique_ptr<Decl>&& decl);
-
-        // static constexpr bool valid = true;
-        // static constexpr Int defaultStorageId = XX;
 };
 
 class Statement: public Decl
@@ -397,10 +291,10 @@ class Expression: public Decl
     public:
         using Decl::Decl;
         virtual DeclType declType() const override {return DeclType::Expression;}
+        virtual Type const& getType() const = 0;
 
         static constexpr bool valid = true;
         static constexpr Int defaultStorageId = 19;
-        virtual Type const& getType() const = 0;
 };
 
 class ExpressionObject: public Expression
@@ -431,20 +325,9 @@ class ExpressionMemberAccess: public Expression
         Object& findMember(ActionRef action, Identifier const& memberName);
 };
 
-template<typename T>
-struct ExpressionLiteralTypeName;
-
-template<>
-struct ExpressionLiteralTypeName<std::string>
-{
-    static const std::string standardName;
-};
-template<>
-struct ExpressionLiteralTypeName<Int>
-{
-    static const std::string standardName;
-};
-
+template<typename T> struct ExpressionLiteralTypeName;
+template<> struct ExpressionLiteralTypeName<std::string> {static const std::string standardName;};
+template<> struct ExpressionLiteralTypeName<Int>         {static const std::string standardName;};
 
 template<typename T>
 class ExpressionLiteral: public Expression
@@ -481,16 +364,8 @@ class ExpressionFuncCall: public Expression
         Type const& findType(ActionRef action);
 };
 
-
-template<typename T, typename... Args>
-inline T& Scope::add(Action& action, Args&&... args)
-{
-    std::unique_ptr<Decl> decl(new T(&action, std::forward<Args>(args)...));
-    Decl& object = saveMember(action, std::move(decl));
-    return dynamic_cast<T&>(object);
 }
 
-
-}
+#include "Declaration.tpp"
 
 #endif

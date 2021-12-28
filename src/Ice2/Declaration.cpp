@@ -9,6 +9,14 @@ std::string const ExpressionLiteralTypeName<std::string>::standardName = "String
 std::string const ExpressionLiteralTypeName<Int>::standardName = "Integer";
 #pragma vera-pop
 
+Decl::Decl(ActionRef /*action*/)
+{
+    // std::cerr << "Creating:   " << this << "\n";
+}
+Decl::~Decl()
+{
+    // std::cerr << "Destroying: " << this << "\n";
+}
 
 std::string const& Decl::declName() const
 {
