@@ -125,41 +125,42 @@ Id<To> Action::convert(Id<From> id)
     return storage.add<ToStoreType>(ToStoreType{toType});
 }
 
-template<typename Dst, typename Param1>
-Id<Base<Dst>> Action::addObjectToScope1(Id<Param1> id)
+template<typename Dst, typename... Param>
+Id<Base<Dst>> Action::addDeclToScope(Id<Param>... id)
 {
-    IdAccess<Param1>    param1Access(storage, id);
-    Param1&             param1 = param1Access;
-
     Scope&     topScope = currentScope.back();
-    Base<Dst>& result   = topScope.add<Dst>(*this, param1);
-    return storage.add(Ref<Base<Dst>>{result});
-}
-template<typename Dst, typename Param1, typename Param2>
-Id<Base<Dst>> Action::addObjectToScope2(Id<Param1> id1, Id<Param2> id2)
-{
-    IdAccess<Param1>    param1Access(storage, id1);
-    IdAccess<Param2>    param2Access(storage, id2);
-    Param1&             param1 = param1Access;
-    Param2&             param2 = param2Access;
-
-    Scope&     topScope = currentScope.back();
-    Base<Dst>& result   = topScope.add<Dst>(*this, param1, param2);
+    Base<Dst>& result   = topScope.add<Dst>(*this, static_cast<Param&>(IdAccess<Param>{storage, id})...);
     return storage.add(Ref<Base<Dst>>{result});
 }
 
-template<typename T>
-T& Action::getOrAddScope(Scope& topScope, std::string scopeName)
+template<typename Dst, typename... Param>
+Dst& Action::getOrAddDeclToScope(std::string scopeName, Param... param)
 {
+    Scope& topScope = currentScope.back();
     auto find = topScope.get(scopeName);
     if (find.first)
     {
         Decl*       foundDeclWithSameName = find.second->second.get();
-        return dynamic_cast<T&>(*foundDeclWithSameName);
+        Dst*        result = dynamic_cast<Dst*>(foundDeclWithSameName);
+        if (result == nullptr)
+        {
+            error("Object With name already exists: ", scopeName);
+        }
+        return *result;
     }
-    T& addedScope = topScope.add<T>(*this, std::move(scopeName));
-    addedScope.setPath(getCurrentScopeFullName());
+    Dst& addedScope = topScope.add<Dst>(*this, std::move(scopeName), std::move(param)...);
     return addedScope;
+}
+
+template<typename Dst, typename... Param>
+ObjectFunction& Action::addFunctionToScope(std::string name, Param&&... param)
+{
+    ObjectOverload& objectOverload = getOrAddDeclToScope<ObjectOverload>(name);
+
+    std::unique_ptr<Dst> func = std::make_unique<Dst>(this, std::move(name), std::forward<Param>(param)...);
+    ObjectFunction&      result = *func;
+    objectOverload.addOverload(std::move(func));
+    return result;
 }
 
 }

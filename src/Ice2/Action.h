@@ -157,12 +157,12 @@ class Action
         void addToLine();
         void resetLine();
 
-        template<typename Dst, typename Param1>
-        Id<Base<Dst>> addObjectToScope1(Id<Param1> id);
-        template<typename Dst, typename Param1, typename Param2>
-        Id<Base<Dst>> addObjectToScope2(Id<Param1> id1, Id<Param2> id2);
-        template<typename T>
-        T& getOrAddScope(Scope& topScope, std::string scopeName);
+        template<typename Dst, typename... Param>
+        Id<Base<Dst>> addDeclToScope(Id<Param>... id);
+        template<typename Dst, typename... Param>
+        Dst& getOrAddDeclToScope(std::string scopeName, Param... param);
+        template<typename Dst, typename... Param>
+        ObjectFunction& addFunctionToScope(std::string name, Param&&... param);
         void addDefaultMethodsToScope(Scope& scope, DeclList decl);
         std::string getCurrentScopeFullName() const;
 };

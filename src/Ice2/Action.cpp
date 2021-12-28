@@ -86,8 +86,8 @@ NamespaceId Action::scopeNamespaceOpen(IdentifierId id)
 }
 NamespaceId Action::scopeNamespaceOpenV(Identifier namespaceName, Reuse&& /*reuse*/)
 {
-    Scope&          topScope = currentScope.back();
-    Namespace&      newNameSpace = getOrAddScope<Namespace>(topScope, std::move(namespaceName));
+    Namespace& newNameSpace = getOrAddDeclToScope<Namespace>(std::move(namespaceName));
+    newNameSpace.setPath(getCurrentScopeFullName());
     currentScope.emplace_back(newNameSpace);
 
     return storage.add(NamespaceRef{newNameSpace});
@@ -123,8 +123,8 @@ ClassId Action::scopeClassOpen(IdentifierId id)
 }
 ClassId Action::scopeClassOpenV(Identifier className, Reuse&& /*reuse*/)
 {
-    Scope&          topScope = currentScope.back();
-    Class&          newClass = getOrAddScope<Class>(topScope, std::move(className));
+    Class& newClass = getOrAddDeclToScope<Class>(std::move(className));
+    newClass.setPath(getCurrentScopeFullName());
     currentScope.emplace_back(newClass);
 
     return storage.add(ClassRef{newClass});
@@ -160,15 +160,15 @@ void Action::addDefaultMethodsToScope(Scope& scope, DeclList declList)
         // TODO: Need to add constructors and destructors for members.
         static Statement initCodeInit(this);
         Function& constructorType = scope.add<Function>(*this, "", TypeCList{}, getRefFromScope<Type>(currentScope.front(), "Void"));
-        scope.add<ObjectFunctionConstructor>(*this, "$constructor", constructorType, MemberInitList{}, initCodeInit);
+        addFunctionToScope<ObjectFunctionConstructor>("$constructor", constructorType, MemberInitList{}, initCodeInit);
     }
     auto findDest = scope.get("$destructor");
     if (!findDest.first)
     {
         // TODO: Need to add constructors and destructors for members.
-        static Statement initCodeInit(this);
-        Function& constructorType = scope.add<Function>(*this, "", TypeCList{}, getRefFromScope<Type>(currentScope.front(), "Void"));
-        scope.add<ObjectFunction>(*this, "$destructor", constructorType, initCodeInit);
+        static Statement deinitCodeInit(this);
+        Function& destructorType = scope.add<Function>(*this, "", TypeCList{}, getRefFromScope<Type>(currentScope.front(), "Void"));
+        addFunctionToScope<ObjectFunction>("$destructor", destructorType, deinitCodeInit);
     }
 
     std::vector<ObjectVariableCRef>  data;
@@ -293,7 +293,8 @@ ObjectId Action::scopeObjectAddFunctionV(Identifier name, Type const& type, Stat
     {
         error("Object Already defined: ", name);
     }
-    ObjectFunction& object = topScope.add<ObjectFunction>(*this, std::move(name), type, code);
+    ObjectFunction& object = addFunctionToScope<ObjectFunction>(std::move(name), type, code);
+
     return storage.add<ObjectRef>(object);
 }
 // ------------------
@@ -321,12 +322,11 @@ ObjectId Action::scopeConstructorAdd(TypeCListId listId, MemberInitListId init, 
     FunctionId      funcId      = scopeFunctionAdd(anonName(), listId, voidType);
     FunctionAccess  funcAccess(storage, funcId);
 
-    Scope&                  topScope = currentScope.back();
     MemberInitListAccess    initAccess(storage, init);
     StatementAccess         codeAccess(storage, code);
     Type&                   funcType    = funcAccess;
 
-    ObjectFunction& object = topScope.add<ObjectFunctionConstructor>(*this, "$constructor", funcType, initAccess, codeAccess);
+    ObjectFunction& object = addFunctionToScope<ObjectFunctionConstructor>("$constructor", funcType, initAccess, codeAccess);
     return storage.add<ObjectRef>(object);
 }
 
@@ -341,11 +341,10 @@ ObjectId Action::scopeDestructorAdd(StatementId code)
     FunctionId      funcId      = scopeFunctionAdd(anonName(), listId, voidType);
     FunctionAccess  funcAccess(storage, funcId);
 
-    Scope&                  topScope = currentScope.back();
     StatementAccess         codeAccess(storage, code);
     Type&                   funcType    = funcAccess;
 
-    ObjectFunction& object = topScope.add<ObjectFunction>(*this, "$destructor", funcType, codeAccess);
+    ObjectFunction& object = addFunctionToScope<ObjectFunction>("$destructor", funcType, codeAccess);
     return storage.add<ObjectRef>(object);
 }
 // ------------------
@@ -366,7 +365,7 @@ ExpressionId Action::expressionLiteralString()
     std::string_view    view    = lexer.lexem();
     Identifier          literal = std::string(std::begin(view), std::end(view));
     IdentifierId        id      = storage.add<Identifier>(std::move(literal));
-    return addObjectToScope1<ExpressionLiteral<std::string>, Identifier>(id);
+    return addDeclToScope<ExpressionLiteral<std::string>>(id);
 }
 ExpressionId Action::expressionLiteralInt()
 {
@@ -375,7 +374,7 @@ ExpressionId Action::expressionLiteralInt()
     char const*         endView = std::end(view);
     Int                 literal = std::strtol(begView, const_cast<char**>(&endView), 10);
     IntId               id      = storage.add<Int>(std::move(literal));
-    return addObjectToScope1<ExpressionLiteral<Int>, Int>(id);
+    return addDeclToScope<ExpressionLiteral<Int>>(id);
 }
 
 // Action Utility Functions
@@ -425,9 +424,9 @@ void Action::invalidCharacter()                                 {addToLine();err
 void Action::ignoreSpace()                                      {addToLine();}
 void Action::newLine()                                          {resetLine();}
 
-StatementId Action::statmentExpression(ExpressionId id)                             {return addObjectToScope1<StatementExpression, Expression>(id);}
-StatementId Action::statmentReturn(ExpressionId id)                                 {return addObjectToScope1<StatementReturn, Expression>(id);}
-StatementId Action::statmentAssembley(Id<std::string> id)                           {return addObjectToScope1<StatementAssembley, std::string>(id);}
+StatementId Action::statmentExpression(ExpressionId id)                             {return addDeclToScope<StatementExpression>(id);}
+StatementId Action::statmentReturn(ExpressionId id)                                 {return addDeclToScope<StatementReturn>(id);}
+StatementId Action::statmentAssembley(Id<std::string> id)                           {return addDeclToScope<StatementAssembley>(id);}
 
 // Expression:
 ExpressionId Action::expressionAssign(ExpressionId, ExpressionId)                        {error("Not Implemented: expressionAssign");}
@@ -467,8 +466,8 @@ ExpressionId Action::expressionNeg(ExpressionId)                                
 ExpressionId Action::expressionOneCompliment(ExpressionId)                               {error("Not Implemented: expressionOneCompliment");}
 ExpressionId Action::expressionNot(ExpressionId)                                         {error("Not Implemented: expressionNot");}
 ExpressionId Action::expressionArrayAccess(ExpressionId, ExpressionId)                   {error("Not Implemented: expressionArrayAccess");}
-ExpressionId Action::expressionFuncCall(ExpressionId id, ExpressionListId list)      {return addObjectToScope2<ExpressionFuncCall, Expression, ExpressionList>(id, list);}
-ExpressionId Action::expressionMemberAccess(ExpressionId id, IdentifierId mem)       {return addObjectToScope2<ExpressionMemberAccess, Expression, Identifier>(id, mem);}
+ExpressionId Action::expressionFuncCall(ExpressionId id, ExpressionListId list)      {return addDeclToScope<ExpressionFuncCall>(id, list);}
+ExpressionId Action::expressionMemberAccess(ExpressionId id, IdentifierId mem)       {return addDeclToScope<ExpressionMemberAccess>(id, mem);}
 ExpressionId Action::expressionPostInc(ExpressionId)                                     {error("Not Implemented: expressionPostInc");}
 ExpressionId Action::expressionPostDec(ExpressionId)                                     {error("Not Implemented: expressionPostDec");}
-ExpressionId Action::expressionObject(ObjectId id)                                   {return addObjectToScope1<ExpressionObject, Object>(id);}
+ExpressionId Action::expressionObject(ObjectId id)                                   {return addDeclToScope<ExpressionObject>(id);}

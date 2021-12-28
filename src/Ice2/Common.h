@@ -51,6 +51,7 @@ class Class;
 class Function;
 class Object;
 class ObjectVariable;
+class ObjectFunction;
 class Statement;
 class Expression;
 

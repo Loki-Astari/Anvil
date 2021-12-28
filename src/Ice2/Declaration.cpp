@@ -106,27 +106,9 @@ Decl& Scope::saveMember(Action& action, std::unique_ptr<Decl>&& member)
 
 
     auto& location = members[index];
-    ObjectFunction* newFunction = dynamic_cast<ObjectFunction*>(member.get());
-    if (newFunction != nullptr)
-    {
-        if (location.get() == nullptr)
-        {
-            Overload&  overload = add<Overload>(action, "");
-            location = std::make_unique<ObjectOverload>(&action, newFunction->declName(), overload);
-        }
-    }
-
     if (location.get() != nullptr)
     {
-        if (location->overloadable() && newFunction != nullptr)
-        {
-            ObjectOverload& functionOverload = dynamic_cast<ObjectOverload&>(*location);
-            functionOverload.addOverload(std::move(member));
-        }
-        else
-        {
-            action.error("Location already in use: ", index);
-        }
+        action.error("Location already in use: ", index);
     }
     else
     {

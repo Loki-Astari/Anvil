@@ -158,8 +158,8 @@ class Overload: public Type
 {
     std::map<TypeCList, FunctionCRef>   overloadData;
     public:
-        Overload(ActionRef action, std::string name)
-            : Type(action, std::move(name))
+        Overload(ActionRef action)
+            : Type(action, "")
         {}
         virtual DeclType declType() const override {return DeclType::Overload;}
         Type const& getReturnType(ActionRef action, TypeCList const& index) const;
@@ -219,10 +219,12 @@ class ObjectFunctionConstructor: public ObjectFunction
 
 class ObjectOverload: public Object
 {
+    Overload    overloadType;
     std::map<TypeCList, std::unique_ptr<ObjectFunction>>      overloadData;
     public:
-        ObjectOverload(ActionRef action, std::string name, Type const& type)
-            : Object(action, std::move(name), type)
+        ObjectOverload(ActionRef action, std::string name)
+            : Object(action, std::move(name), overloadType)
+            , overloadType(action)
         {}
         virtual DeclType declType() const override {return DeclType::ObjectOverload;}
         virtual bool overloadable() const override {return true;}
