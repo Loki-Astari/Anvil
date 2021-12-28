@@ -1,21 +1,18 @@
 #ifndef THORSANVIL_ANVIL_ICE_ACTION_H
 #define THORSANVIL_ANVIL_ICE_ACTION_H
 
-#include "ParserTypes.h"
-#include "Declaration.h"
-#include "Storage.h"
-#include "Utility/View.h"
 
-#include <iostream>
+#include "Common.h"
+
+#include <vector>
 #include <sstream>
-
+#include <iostream>
 
 namespace ThorsAnvil::Anvil::Ice
 {
 
 class Lexer;
-class Store;
-
+class Storage;
 class Action
 {
     protected:
@@ -29,22 +26,6 @@ class Action
     std::size_t             lineNo;
     std::size_t             offset;
     public:
-        // Creating an maintaining lists.
-        template<typename T> using Ref              = std::reference_wrapper<T>;
-        template<typename T> using List             = std::list<Ref<T>>;
-        template<typename T> using ListId           = Id<List<T>>;
-        template<typename T> using ListAccess       = IdAccess<List<T>>;
-        template<typename T> using Base             = typename T::Base;
-        /*
-        struct ParserInfo
-        {
-            using Ref           = std::reference_wrapper<T>;
-            using ID            = Id<T>;
-            using IDAccess      = IdAccess<T>;
-            using List          = std::list<Ref>;
-            using ListId        = Id<List>;
-            using ListIdAccess  = IdAccess<List>;
-        };*/
         Action(Lexer& lexer, Scope& globalScope, Storage& storage, std::ostream& output = std::cerr);
         virtual ~Action();
 
@@ -56,31 +37,18 @@ class Action
         [[ noreturn ]] void error(Args const&... args) const;
 
         // Lexing
-        virtual void invalidCharacter()                                 {addToLine();error("Invalid Character");}
-        virtual void ignoreSpace()                                      {addToLine();}
-        virtual void newLine()                                          {resetLine();}
+        virtual void invalidCharacter();
+        virtual void ignoreSpace();
+        virtual void newLine();
         virtual void token();
 
         // Public Utility
         IdentifierId anonName();
 
         template<typename T>
-        ListId<T> listCreate()
-        {
-            return storage.add<List<T>>(List<T>{});
-        }
+        ListId<T> listCreate();
         template<typename T, typename S = T>
-        ListId<T> listAppend(ListId<T> listId, Id<S> id)
-        {
-            ListAccess<T>   listAccess(storage, listId);
-            IdAccess<S>     objectAccess(storage, id);
-
-            List<T>&        list = listAccess;
-            S&              object = objectAccess;
-
-            list.emplace_back(object);
-            return listAccess.reuse();
-        }
+        ListId<T> listAppend(ListId<T> listId, Id<S> id);
 
         // Parsing
         VoidId              anvilProgram(NamespaceListId id);
@@ -99,135 +67,72 @@ class Action
         MemberInitId        memberInit(IdentifierId, ExpressionListId);
         IdentifierId        identifierCreate();
 
-        StatementId         statmentExpression(ExpressionId id)                             {return addObjectToScope1<StatementExpression, Expression>(id);}
-        StatementId         statmentReturn(ExpressionId id)                                 {return addObjectToScope1<StatementReturn, Expression>(id);}
-        StatementId         statmentAssembley(Id<std::string> id)                           {return addObjectToScope1<StatementAssembley, std::string>(id);}
+        StatementId         statmentExpression(ExpressionId id);
+        StatementId         statmentReturn(ExpressionId id);
+        StatementId         statmentAssembley(Id<std::string> id);
 
         template<typename T, typename V>
-        Id<T> getNameFromView(IdentifierId id, V view)
-        {
-            using Ref = std::reference_wrapper<T>;
-            //ScopePrinter scope("getTypeFromName");
-            IdentifierAccess    access(storage, id);
-
-            for (auto const& scope: view)
-            {
-                auto find = scope.get().get(access);
-                if (find.first)
-                {
-                    Decl& decl = *find.second->second;
-                    T& value = dynamic_cast<T&>(decl);
-                    return storage.add<Ref>(Ref{value});
-                }
-            }
-            error("Invalid Type Name: ", static_cast<std::string>(access));
-        }
-
+        Id<T> getNameFromView(IdentifierId id, V view);
         template<typename T>
-        Id<T> getNameFromScopeStack(IdentifierId id)
-        {
-            if (storage.get<Identifier>(id.value) == "::")
-            {
-                Scope&  global = currentScope.front();
-                T& result = dynamic_cast<T&>(global);
-                return storage.add<Ref<T>>(result);
-            }
-            return getNameFromView<T>(id, make_View<Reverse>(currentScope));
-        }
+        Id<T> getNameFromScopeStack(IdentifierId id);
         template<typename T>
-        Id<T> getNameFromScope(ScopeId scopeId, IdentifierId id)
-        {
-            ScopeAccess     scopeAccess(storage, scopeId);
-            ScopeRef        scope = ScopeRef(scopeAccess);
-            return getNameFromView<T>(id, make_View<Reverse>(&scope, &scope+1));
-        }
+        Id<T> getNameFromScope(ScopeId scopeId, IdentifierId id);
         // -------
 
         template<typename T, typename V>
-        T& getRefFromView(Identifier const& id, V view)
-        {
-            for (auto const& scope: view)
-            {
-                auto find = scope.get().get(id);
-                if (find.first)
-                {
-                    Decl& decl = *find.second->second;
-                    T& value = dynamic_cast<T&>(decl);
-                    return value;
-                }
-            }
-            error("Invalid Type Name: ", id);
-        }
+        T& getRefFromView(Identifier const& id, V view);
         template<typename T>
-        T& getRefFromScopeStack(Identifier const& id)
-        {
-            if (id == "::")
-            {
-                Scope&  global = currentScope.front();
-                return dynamic_cast<T&>(global);
-            }
-            return getRefFromView<T>(id, make_View<Reverse>(currentScope));
-        }
+        T& getRefFromScopeStack(Identifier const& id);
         template<typename T>
-        T& getRefFromScope(ScopeRef const& scope, Identifier const& id)
-        {
-            return getRefFromView<T>(id, make_View<Reverse>(&scope, &scope+1));
-        }
+        T& getRefFromScope(ScopeRef const& scope, Identifier const& id);
         // --------
 
         template<typename From, typename To>
-        Id<To> convert(Id<From> id)
-        {
-            using ToStoreType = typename IdTraits<To>::AccessType;
-            IdAccess<From>  access(storage, id);
-            From&  fromValue = access;
-            To&    toType = dynamic_cast<To&>(fromValue);
-            return storage.add<ToStoreType>(ToStoreType{toType});
-        }
+        Id<To> convert(Id<From> id);
 
         // Expression:
-        ExpressionId        expressionAssign(ExpressionId, ExpressionId)                        {error("Not Implemented: expressionAssign");}
-        ExpressionId        expressionAssignMul(ExpressionId, ExpressionId)                     {error("Not Implemented: expressionAssignMul");}
-        ExpressionId        expressionAssignDiv(ExpressionId, ExpressionId)                     {error("Not Implemented: expressionAssignDiv");}
-        ExpressionId        expressionAssignMod(ExpressionId, ExpressionId)                     {error("Not Implemented: expressionAssignMod");}
-        ExpressionId        expressionAssignAdd(ExpressionId, ExpressionId)                     {error("Not Implemented: expressionAssignAdd");}
-        ExpressionId        expressionAssignSub(ExpressionId, ExpressionId)                     {error("Not Implemented: expressionAssignSub");}
-        ExpressionId        expressionAssignLSh(ExpressionId, ExpressionId)                     {error("Not Implemented: expressionAssignLSh");}
-        ExpressionId        expressionAssignRSh(ExpressionId, ExpressionId)                     {error("Not Implemented: expressionAssignRSh");}
-        ExpressionId        expressionAssignAnd(ExpressionId, ExpressionId)                     {error("Not Implemented: expressionAssignAnd");}
-        ExpressionId        expressionAssignXOR(ExpressionId, ExpressionId)                     {error("Not Implemented: expressionAssignXOR");}
-        ExpressionId        expressionAssignOR(ExpressionId, ExpressionId)                      {error("Not Implemented: expressionAssignOR");}
-        ExpressionId        expressionConditional(ExpressionId, ExpressionId, ExpressionId)     {error("Not Implemented: expressionConditional");}
-        ExpressionId        expressionLogicalOr(ExpressionId, ExpressionId)                     {error("Not Implemented: expressionLogicalOr");}
-        ExpressionId        expressionLogicalAnd(ExpressionId, ExpressionId)                    {error("Not Implemented: expressionLogicalAnd");}
-        ExpressionId        expressionInclusiveOr(ExpressionId, ExpressionId)                   {error("Not Implemented: expressionInclusiveOr");}
-        ExpressionId        expressionExclusiveOr(ExpressionId, ExpressionId)                   {error("Not Implemented: expressionExclusiveOr");}
-        ExpressionId        expressionAnd(ExpressionId, ExpressionId)                           {error("Not Implemented: expressionAnd");}
-        ExpressionId        expressionEqual(ExpressionId, ExpressionId)                         {error("Not Implemented: expressionEqual");}
-        ExpressionId        expressionNotEqual(ExpressionId, ExpressionId)                      {error("Not Implemented: expressionNotEqual");}
-        ExpressionId        expressionLess(ExpressionId, ExpressionId)                          {error("Not Implemented: expressionLess");}
-        ExpressionId        expressionGreat(ExpressionId, ExpressionId)                         {error("Not Implemented: expressionGreat");}
-        ExpressionId        expressionLessEqual(ExpressionId, ExpressionId)                     {error("Not Implemented: expressionLessEqual");}
-        ExpressionId        expressionGreatEqual(ExpressionId, ExpressionId)                    {error("Not Implemented: expressionGreatEqual");}
-        ExpressionId        expressionShiftLeft(ExpressionId, ExpressionId)                     {error("Not Implemented: expressionShiftLeft");}
-        ExpressionId        expressionShiftRight(ExpressionId, ExpressionId)                    {error("Not Implemented: expressionShiftRight");}
-        ExpressionId        expressionAdd(ExpressionId, ExpressionId)                           {error("Not Implemented: expressionAdd");}
-        ExpressionId        expressionSub(ExpressionId, ExpressionId)                           {error("Not Implemented: expressionSub");}
-        ExpressionId        expressionMul(ExpressionId, ExpressionId)                           {error("Not Implemented: expressionMul");}
-        ExpressionId        expressionDiv(ExpressionId, ExpressionId)                           {error("Not Implemented: expressionDiv");}
-        ExpressionId        expressionMod(ExpressionId, ExpressionId)                           {error("Not Implemented: expressionMod");}
-        ExpressionId        expressionPreInc(ExpressionId)                                      {error("Not Implemented: expressionPreInc");}
-        ExpressionId        expressionPreDec(ExpressionId)                                      {error("Not Implemented: expressionPreDec");}
-        ExpressionId        expressionPlus(ExpressionId)                                        {error("Not Implemented: expressionPlus");}
-        ExpressionId        expressionNeg(ExpressionId)                                         {error("Not Implemented: expressionNeg");}
-        ExpressionId        expressionOneCompliment(ExpressionId)                               {error("Not Implemented: expressionOneCompliment");}
-        ExpressionId        expressionNot(ExpressionId)                                         {error("Not Implemented: expressionNot");}
-        ExpressionId        expressionArrayAccess(ExpressionId, ExpressionId)                   {error("Not Implemented: expressionArrayAccess");}
-        ExpressionId        expressionFuncCall(ExpressionId id, ExpressionListId list)      {return addObjectToScope2<ExpressionFuncCall, Expression, ExpressionList>(id, list);}
-        ExpressionId        expressionMemberAccess(ExpressionId id, IdentifierId mem)       {return addObjectToScope2<ExpressionMemberAccess, Expression, Identifier>(id, mem);}
-        ExpressionId        expressionPostInc(ExpressionId)                                     {error("Not Implemented: expressionPostInc");}
-        ExpressionId        expressionPostDec(ExpressionId)                                     {error("Not Implemented: expressionPostDec");}
-        ExpressionId        expressionObject(ObjectId id)                                   {return addObjectToScope1<ExpressionObject, Object>(id);}
+        ExpressionId        expressionAssign(ExpressionId, ExpressionId);
+        ExpressionId        expressionAssignMul(ExpressionId, ExpressionId);
+        ExpressionId        expressionAssignDiv(ExpressionId, ExpressionId);
+        ExpressionId        expressionAssignMod(ExpressionId, ExpressionId);
+        ExpressionId        expressionAssignAdd(ExpressionId, ExpressionId);
+        ExpressionId        expressionAssignSub(ExpressionId, ExpressionId);
+        ExpressionId        expressionAssignLSh(ExpressionId, ExpressionId);
+        ExpressionId        expressionAssignRSh(ExpressionId, ExpressionId);
+        ExpressionId        expressionAssignAnd(ExpressionId, ExpressionId);
+        ExpressionId        expressionAssignXOR(ExpressionId, ExpressionId);
+        ExpressionId        expressionAssignOR(ExpressionId, ExpressionId);
+        ExpressionId        expressionConditional(ExpressionId, ExpressionId, ExpressionId);
+        ExpressionId        expressionLogicalOr(ExpressionId, ExpressionId);
+        ExpressionId        expressionLogicalAnd(ExpressionId, ExpressionId);
+        ExpressionId        expressionInclusiveOr(ExpressionId, ExpressionId);
+        ExpressionId        expressionExclusiveOr(ExpressionId, ExpressionId);
+        ExpressionId        expressionAnd(ExpressionId, ExpressionId);
+        ExpressionId        expressionEqual(ExpressionId, ExpressionId);
+        ExpressionId        expressionNotEqual(ExpressionId, ExpressionId);
+        ExpressionId        expressionLess(ExpressionId, ExpressionId);
+        ExpressionId        expressionGreat(ExpressionId, ExpressionId);
+        ExpressionId        expressionLessEqual(ExpressionId, ExpressionId);
+        ExpressionId        expressionGreatEqual(ExpressionId, ExpressionId);
+        ExpressionId        expressionShiftLeft(ExpressionId, ExpressionId);
+        ExpressionId        expressionShiftRight(ExpressionId, ExpressionId);
+        ExpressionId        expressionAdd(ExpressionId, ExpressionId);
+        ExpressionId        expressionSub(ExpressionId, ExpressionId);
+        ExpressionId        expressionMul(ExpressionId, ExpressionId);
+        ExpressionId        expressionDiv(ExpressionId, ExpressionId);
+        ExpressionId        expressionMod(ExpressionId, ExpressionId);
+        ExpressionId        expressionPreInc(ExpressionId);
+        ExpressionId        expressionPreDec(ExpressionId);
+        ExpressionId        expressionPlus(ExpressionId);
+        ExpressionId        expressionNeg(ExpressionId);
+        ExpressionId        expressionOneCompliment(ExpressionId);
+        ExpressionId        expressionNot(ExpressionId);
+        ExpressionId        expressionArrayAccess(ExpressionId, ExpressionId);
+        ExpressionId        expressionFuncCall(ExpressionId id, ExpressionListId list);
+        ExpressionId        expressionMemberAccess(ExpressionId id, IdentifierId mem);
+        ExpressionId        expressionPostInc(ExpressionId);
+        ExpressionId        expressionPostDec(ExpressionId);
+        ExpressionId        expressionObject(ObjectId id);
         ExpressionId        expressionLiteralString();
         ExpressionId        expressionLiteralInt();
 
@@ -253,50 +158,17 @@ class Action
         void resetLine();
 
         template<typename Dst, typename Param1>
-        Id<Base<Dst>> addObjectToScope1(Id<Param1> id)
-        {
-            IdAccess<Param1>    param1Access(storage, id);
-            Param1&             param1 = param1Access;
-
-            Scope&     topScope = currentScope.back();
-            Base<Dst>& result   = topScope.add<Dst>(*this, param1);
-            return storage.add(Ref<Base<Dst>>{result});
-        }
+        Id<Base<Dst>> addObjectToScope1(Id<Param1> id);
         template<typename Dst, typename Param1, typename Param2>
-        Id<Base<Dst>> addObjectToScope2(Id<Param1> id1, Id<Param2> id2)
-        {
-            IdAccess<Param1>    param1Access(storage, id1);
-            IdAccess<Param2>    param2Access(storage, id2);
-            Param1&             param1 = param1Access;
-            Param2&             param2 = param2Access;
-
-            Scope&     topScope = currentScope.back();
-            Base<Dst>& result   = topScope.add<Dst>(*this, param1, param2);
-            return storage.add(Ref<Base<Dst>>{result});
-        }
+        Id<Base<Dst>> addObjectToScope2(Id<Param1> id1, Id<Param2> id2);
         template<typename T>
         T& getOrAddScope(Scope& topScope, std::string scopeName);
         void addDefaultMethodsToScope(Scope& scope, DeclList decl);
         std::string getCurrentScopeFullName() const;
 };
 
-template<typename... Args>
-void Action::log(Args const&... args) const
-{
-    (output << ... << args);
 }
 
-template<typename... Args>
-void Action::error(Args const&... args) const
-{
-    std::stringstream extended;
-    extended << "Error: '";
-    (extended << ... << args);
-    extended << "'\n" << *this;
-    throw std::runtime_error(extended.str());
-}
-
-
-}
+#include "Action.tpp"
 
 #endif

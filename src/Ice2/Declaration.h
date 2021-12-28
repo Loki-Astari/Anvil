@@ -281,7 +281,7 @@ class Object: public Decl
         {}
         virtual std::string const& declName() const override {return name;}
         virtual bool needsStorage() const override {return true;}
- 
+
         Type const& getType() const {return type;}
 
         static constexpr bool valid = true;

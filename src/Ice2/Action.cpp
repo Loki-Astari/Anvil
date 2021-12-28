@@ -1,10 +1,5 @@
 #include "Action.h"
 #include "Lexer.h"
-#include "Storage.h"
-#include "ParserTypes.h"
-#include "Utility/View.h"
-
-#include <cstdlib>
 
 using namespace ThorsAnvil::Anvil::Ice;
 
@@ -366,51 +361,6 @@ IdentifierId Action::identifierCreateV()
 }
 // ------------------
 
-// Expression Functions
-// ========================
-#if 0
-ExpressionId Action::expressionAssign(ExpressionId, ExpressionId);
-ExpressionId Action::expressionAssignMul(ExpressionId, ExpressionId);
-ExpressionId Action::expressionAssignDiv(ExpressionId, ExpressionId);
-ExpressionId Action::expressionAssignMod(ExpressionId, ExpressionId);
-ExpressionId Action::expressionAssignAdd(ExpressionId, ExpressionId);
-ExpressionId Action::expressionAssignSub(ExpressionId, ExpressionId);
-ExpressionId Action::expressionAssignLSh(ExpressionId, ExpressionId);
-ExpressionId Action::expressionAssignRSh(ExpressionId, ExpressionId);
-ExpressionId Action::expressionAssignAnd(ExpressionId, ExpressionId);
-ExpressionId Action::expressionAssignXOR(ExpressionId, ExpressionId);
-ExpressionId Action::expressionAssignOR(ExpressionId, ExpressionId);
-ExpressionId Action::expressionConditional(ExpressionId, ExpressionId, ExpressionId);
-ExpressionId Action::expressionLogicalOr(ExpressionId, ExpressionId);
-ExpressionId Action::expressionLogicalAnd(ExpressionId, ExpressionId);
-ExpressionId Action::expressionInclusiveOr(ExpressionId, ExpressionId);
-ExpressionId Action::expressionExclusiveOr(ExpressionId, ExpressionId);
-ExpressionId Action::expressionAnd(ExpressionId, ExpressionId);
-ExpressionId Action::expressionEqual(ExpressionId, ExpressionId);
-ExpressionId Action::expressionNotEqual(ExpressionId, ExpressionId);
-ExpressionId Action::expressionLess(ExpressionId, ExpressionId);
-ExpressionId Action::expressionGreat(ExpressionId, ExpressionId);
-ExpressionId Action::expressionLessEqual(ExpressionId, ExpressionId);
-ExpressionId Action::expressionGreatEqual(ExpressionId, ExpressionId);
-ExpressionId Action::expressionShiftLeft(ExpressionId, ExpressionId);
-ExpressionId Action::expressionShiftRight(ExpressionId, ExpressionId);
-ExpressionId Action::expressionAdd(ExpressionId, ExpressionId);
-ExpressionId Action::expressionSub(ExpressionId, ExpressionId);
-ExpressionId Action::expressionMul(ExpressionId, ExpressionId);
-ExpressionId Action::expressionDiv(ExpressionId, ExpressionId);
-ExpressionId Action::expressionMod(ExpressionId, ExpressionId);
-ExpressionId Action::expressionPreInc(ExpressionId);
-ExpressionId Action::expressionPreDec(ExpressionId);
-ExpressionId Action::expressionPlus(ExpressionId);
-ExpressionId Action::expressionNeg(ExpressionId);
-ExpressionId Action::expressionOneCompliment(ExpressionId);
-ExpressionId Action::expressionNot(ExpressionId);
-ExpressionId Action::expressionArrayAccess(ExpressionId, ExpressionId);
-ExpressionId Action::expressionFuncCall(ExpressionId, ExpressionId);
-ExpressionId Action::expressionMemberAccess(ExpressionId, ExpressionId);
-ExpressionId Action::expressionPostInc(ExpressionId);
-ExpressionId Action::expressionPostDec(ExpressionId);
-#endif
 ExpressionId Action::expressionLiteralString()
 {
     std::string_view    view    = lexer.lexem();
@@ -430,20 +380,6 @@ ExpressionId Action::expressionLiteralInt()
 
 // Action Utility Functions
 // ========================
-template<typename T>
-T& Action::getOrAddScope(Scope& topScope, std::string scopeName)
-{
-    auto find = topScope.get(scopeName);
-    if (find.first)
-    {
-        Decl*       foundDeclWithSameName = find.second->second.get();
-        return dynamic_cast<T&>(*foundDeclWithSameName);
-    }
-    T& addedScope = topScope.add<T>(*this, std::move(scopeName));
-    addedScope.setPath(getCurrentScopeFullName());
-    return addedScope;
-}
-
 std::string Action::getCurrentScopeFullName() const
 {
     std::string result;
@@ -515,3 +451,56 @@ template struct IdAccess<MemberInitList>;
 
 
 }
+
+// TODO FIX UP
+void Action::invalidCharacter()                                 {addToLine();error("Invalid Character");}
+void Action::ignoreSpace()                                      {addToLine();}
+void Action::newLine()                                          {resetLine();}
+
+StatementId Action::statmentExpression(ExpressionId id)                             {return addObjectToScope1<StatementExpression, Expression>(id);}
+StatementId Action::statmentReturn(ExpressionId id)                                 {return addObjectToScope1<StatementReturn, Expression>(id);}
+StatementId Action::statmentAssembley(Id<std::string> id)                           {return addObjectToScope1<StatementAssembley, std::string>(id);}
+
+// Expression:
+ExpressionId Action::expressionAssign(ExpressionId, ExpressionId)                        {error("Not Implemented: expressionAssign");}
+ExpressionId Action::expressionAssignMul(ExpressionId, ExpressionId)                     {error("Not Implemented: expressionAssignMul");}
+ExpressionId Action::expressionAssignDiv(ExpressionId, ExpressionId)                     {error("Not Implemented: expressionAssignDiv");}
+ExpressionId Action::expressionAssignMod(ExpressionId, ExpressionId)                     {error("Not Implemented: expressionAssignMod");}
+ExpressionId Action::expressionAssignAdd(ExpressionId, ExpressionId)                     {error("Not Implemented: expressionAssignAdd");}
+ExpressionId Action::expressionAssignSub(ExpressionId, ExpressionId)                     {error("Not Implemented: expressionAssignSub");}
+ExpressionId Action::expressionAssignLSh(ExpressionId, ExpressionId)                     {error("Not Implemented: expressionAssignLSh");}
+ExpressionId Action::expressionAssignRSh(ExpressionId, ExpressionId)                     {error("Not Implemented: expressionAssignRSh");}
+ExpressionId Action::expressionAssignAnd(ExpressionId, ExpressionId)                     {error("Not Implemented: expressionAssignAnd");}
+ExpressionId Action::expressionAssignXOR(ExpressionId, ExpressionId)                     {error("Not Implemented: expressionAssignXOR");}
+ExpressionId Action::expressionAssignOR(ExpressionId, ExpressionId)                      {error("Not Implemented: expressionAssignOR");}
+ExpressionId Action::expressionConditional(ExpressionId, ExpressionId, ExpressionId)     {error("Not Implemented: expressionConditional");}
+ExpressionId Action::expressionLogicalOr(ExpressionId, ExpressionId)                     {error("Not Implemented: expressionLogicalOr");}
+ExpressionId Action::expressionLogicalAnd(ExpressionId, ExpressionId)                    {error("Not Implemented: expressionLogicalAnd");}
+ExpressionId Action::expressionInclusiveOr(ExpressionId, ExpressionId)                   {error("Not Implemented: expressionInclusiveOr");}
+ExpressionId Action::expressionExclusiveOr(ExpressionId, ExpressionId)                   {error("Not Implemented: expressionExclusiveOr");}
+ExpressionId Action::expressionAnd(ExpressionId, ExpressionId)                           {error("Not Implemented: expressionAnd");}
+ExpressionId Action::expressionEqual(ExpressionId, ExpressionId)                         {error("Not Implemented: expressionEqual");}
+ExpressionId Action::expressionNotEqual(ExpressionId, ExpressionId)                      {error("Not Implemented: expressionNotEqual");}
+ExpressionId Action::expressionLess(ExpressionId, ExpressionId)                          {error("Not Implemented: expressionLess");}
+ExpressionId Action::expressionGreat(ExpressionId, ExpressionId)                         {error("Not Implemented: expressionGreat");}
+ExpressionId Action::expressionLessEqual(ExpressionId, ExpressionId)                     {error("Not Implemented: expressionLessEqual");}
+ExpressionId Action::expressionGreatEqual(ExpressionId, ExpressionId)                    {error("Not Implemented: expressionGreatEqual");}
+ExpressionId Action::expressionShiftLeft(ExpressionId, ExpressionId)                     {error("Not Implemented: expressionShiftLeft");}
+ExpressionId Action::expressionShiftRight(ExpressionId, ExpressionId)                    {error("Not Implemented: expressionShiftRight");}
+ExpressionId Action::expressionAdd(ExpressionId, ExpressionId)                           {error("Not Implemented: expressionAdd");}
+ExpressionId Action::expressionSub(ExpressionId, ExpressionId)                           {error("Not Implemented: expressionSub");}
+ExpressionId Action::expressionMul(ExpressionId, ExpressionId)                           {error("Not Implemented: expressionMul");}
+ExpressionId Action::expressionDiv(ExpressionId, ExpressionId)                           {error("Not Implemented: expressionDiv");}
+ExpressionId Action::expressionMod(ExpressionId, ExpressionId)                           {error("Not Implemented: expressionMod");}
+ExpressionId Action::expressionPreInc(ExpressionId)                                      {error("Not Implemented: expressionPreInc");}
+ExpressionId Action::expressionPreDec(ExpressionId)                                      {error("Not Implemented: expressionPreDec");}
+ExpressionId Action::expressionPlus(ExpressionId)                                        {error("Not Implemented: expressionPlus");}
+ExpressionId Action::expressionNeg(ExpressionId)                                         {error("Not Implemented: expressionNeg");}
+ExpressionId Action::expressionOneCompliment(ExpressionId)                               {error("Not Implemented: expressionOneCompliment");}
+ExpressionId Action::expressionNot(ExpressionId)                                         {error("Not Implemented: expressionNot");}
+ExpressionId Action::expressionArrayAccess(ExpressionId, ExpressionId)                   {error("Not Implemented: expressionArrayAccess");}
+ExpressionId Action::expressionFuncCall(ExpressionId id, ExpressionListId list)      {return addObjectToScope2<ExpressionFuncCall, Expression, ExpressionList>(id, list);}
+ExpressionId Action::expressionMemberAccess(ExpressionId id, IdentifierId mem)       {return addObjectToScope2<ExpressionMemberAccess, Expression, Identifier>(id, mem);}
+ExpressionId Action::expressionPostInc(ExpressionId)                                     {error("Not Implemented: expressionPostInc");}
+ExpressionId Action::expressionPostDec(ExpressionId)                                     {error("Not Implemented: expressionPostDec");}
+ExpressionId Action::expressionObject(ObjectId id)                                   {return addObjectToScope1<ExpressionObject, Object>(id);}

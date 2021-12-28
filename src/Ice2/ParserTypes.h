@@ -1,6 +1,7 @@
 #ifndef THORSANVIL_ANVIL_ICE_PARSER_TYPES_H
 #define THORSANVIL_ANVIL_ICE_PARSER_TYPES_H
 
+#include "Common.h"
 #include "Declaration.h"
 
 #include <functional>
@@ -83,7 +84,7 @@ struct IdTraits<ExpressionList>
 };
 
 
-template<typename T, bool valid = true>
+template<typename T, bool valid>
 struct Id
 {
     Int value;
