@@ -5,25 +5,25 @@
 #include <list>
 #include <map>
 #include <string>
+#include <numeric>
 
 namespace ThorsAnvil::Anvil::Ice
 {
-
-enum class DeclType {Void, Namespace, Class, Function, Overload, CodeBlock, MemberInit, ObjectVariable, ObjectFunction, ObjectOverload, Statement, Expression};
 
 class Decl
 {
     public:
         Decl(ActionRef /*action*/);
         virtual ~Decl();
+
         Decl(Decl const&) = delete;
         Decl& operator=(Decl const&) = delete;
         Decl(Decl&&) = delete;
         Decl& operator=(Decl&&) = delete;
-        virtual DeclType declType() const = 0;
+
         virtual std::string const& declName() const;
-        virtual bool needsStorage() const;
-        virtual bool overloadable() const;
+        virtual int  storageSize() const    {return 0;}
+        virtual bool overloadable() const   {return false;}
 
         static constexpr bool valid = true;
         static constexpr Int defaultStorageId = 9;
@@ -41,11 +41,11 @@ class Scope: public Decl
         std::pair<bool, NameRef> get(std::string const& name) const;
         template<typename T, typename... Args>
         T& add(Action& action, Args&&... args);
+
         virtual bool storeFunctionsInContainer() const {return false;}
+        std::string anonName();
 
         friend std::ostream& operator<<(std::ostream& str, Scope& data);
-
-        std::string anonName();
     private:
         Decl& saveMember(Action& action, std::unique_ptr<Decl>&& member);
         char hex(std::size_t halfByte);
@@ -57,7 +57,6 @@ class CodeBlock: public Scope
     public:
         using Scope::Scope;
         virtual std::string const& declName() const override {static std::string name;return name;}
-        virtual DeclType declType() const override {return DeclType::CodeBlock;}
 
         static constexpr bool valid = true;
         static constexpr Int defaultStorageId = 10;
@@ -74,7 +73,6 @@ class MemberInit: public Decl
             , init(std::move(init))
         {}
         virtual std::string const& declName() const override {static std::string name;return name;}
-        virtual DeclType declType() const override {return DeclType::MemberInit;}
 
         static constexpr bool valid = true;
         static constexpr Int defaultStorageId = 11;
@@ -99,7 +97,6 @@ class Namespace: public NamedScope
         Namespace(ActionRef action, std::string name)
             : NamedScope(action, std::move(name))
         {}
-        virtual DeclType declType() const override {return DeclType::Namespace;}
 
         static constexpr bool valid = true;
         static constexpr Int defaultStorageId = 12;
@@ -109,6 +106,7 @@ class Type: public NamedScope
 {
     public:
         using NamedScope::NamedScope;
+
         static constexpr bool valid = true;
         static constexpr Int defaultStorageId = 13;
 };
@@ -117,7 +115,6 @@ class Void: public Type
 {
     public:
         Void(ActionRef action);
-        virtual DeclType declType() const override {return DeclType::Void;}
 
         static constexpr bool valid = false;
         static constexpr Int defaultStorageId = 14;
@@ -127,7 +124,6 @@ class Class: public Type
 {
     public:
         using Type::Type;
-        virtual DeclType declType() const override {return DeclType::Class;}
         virtual bool storeFunctionsInContainer() const override {return true;}
 
         static constexpr bool valid = true;
@@ -144,10 +140,8 @@ class Function: public Type
             , param(std::move(param))
             , returnType(returnType)
         {}
-        virtual DeclType declType() const override {return DeclType::Function;}
         virtual bool storeFunctionsInContainer() const override {return true;}
         Type const& getReturnType(ActionRef /*action*/) const {return returnType;}
-
         TypeCList getParams() const {return param;}
 
         static constexpr bool valid = true;
@@ -161,7 +155,6 @@ class Overload: public Type
         Overload(ActionRef action)
             : Type(action, "")
         {}
-        virtual DeclType declType() const override {return DeclType::Overload;}
         Type const& getReturnType(ActionRef action, TypeCList const& index) const;
         void addOverload(Function const& type);
 };
@@ -177,8 +170,6 @@ class Object: public Decl
             , type(type)
         {}
         virtual std::string const& declName() const override {return name;}
-        virtual bool needsStorage() const override {return true;}
-
         Type const& getType() const {return type;}
 
         static constexpr bool valid = true;
@@ -193,7 +184,7 @@ class ObjectVariable: public Object
             : Object(action, std::move(name), type)
             , init(std::move(init))
         {}
-        virtual DeclType declType() const override {return DeclType::ObjectVariable;}
+        virtual int storageSize() const override {return 1;}
 };
 
 class ObjectFunction: public Object
@@ -204,7 +195,7 @@ class ObjectFunction: public Object
             : Object(action, std::move(name), type)
             , code(code)
         {}
-        virtual DeclType declType() const override {return DeclType::ObjectFunction;}
+        virtual int storageSize() const override {return 1;}
 };
 
 class ObjectFunctionConstructor: public ObjectFunction
@@ -226,9 +217,8 @@ class ObjectOverload: public Object
             : Object(action, std::move(name), overloadType)
             , overloadType(action)
         {}
-        virtual DeclType declType() const override {return DeclType::ObjectOverload;}
         virtual bool overloadable() const override {return true;}
-
+        virtual int storageSize() const override;
         void addOverload(std::unique_ptr<Decl>&& decl);
 };
 
@@ -236,7 +226,6 @@ class Statement: public Decl
 {
     public:
         using Decl::Decl;
-        virtual DeclType declType() const override {return DeclType::Statement;}
 
         static constexpr bool valid = true;
         static constexpr Int defaultStorageId = 18;
@@ -292,7 +281,6 @@ class Expression: public Decl
 {
     public:
         using Decl::Decl;
-        virtual DeclType declType() const override {return DeclType::Expression;}
         virtual Type const& getType() const = 0;
 
         static constexpr bool valid = true;

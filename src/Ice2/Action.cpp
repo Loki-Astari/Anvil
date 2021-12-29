@@ -171,12 +171,12 @@ void Action::addDefaultMethodsToScope(Scope& scope, DeclList declList)
         addFunctionToScope<ObjectFunction>("$destructor", destructorType, deinitCodeInit);
     }
 
-    std::vector<ObjectVariableCRef>  data;
+    std::vector<ObjectCRef>  data;
     for (auto const& decl: declList)
     {
-        if (decl.get().declType() == DeclType::ObjectVariable)
+        if (decl.get().storageSize() != 0)
         {
-            ObjectVariable const& var = dynamic_cast<ObjectVariable const&>(decl.get());
+            Object const& var = dynamic_cast<Object const&>(decl.get());
             data.emplace_back(var);
 
             //std::cerr << "Name: " << var.declName() << "\n";

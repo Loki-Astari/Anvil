@@ -127,7 +127,7 @@ using FunctionCRef          = std::reference_wrapper<Function const>;
 
 using ObjectId              = Id<Object>;
 using ObjectRef             = std::reference_wrapper<Object>;
-using ObjectVariableCRef    = std::reference_wrapper<ObjectVariable const>;
+using ObjectCRef            = std::reference_wrapper<Object const>;
 
 using StatementId           = Id<Statement>;
 using StatementAccess       = IdAccess<Statement>;

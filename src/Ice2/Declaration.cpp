@@ -25,16 +25,6 @@ std::string const& Decl::declName() const
     return emptyName;
 }
 
-bool Decl::needsStorage() const
-{
-    return false;
-}
-
-bool Decl::overloadable() const
-{
-    return false;
-}
-
 Scope::Scope(ActionRef action)
     : Decl(action)
     , nextObjectId(0)
@@ -99,9 +89,10 @@ Decl& Scope::saveMember(Action& action, std::unique_ptr<Decl>&& member)
     {
         index = anonName();
     }
-    if (member->needsStorage())
+    if (member->storageSize() != 0)
     {
-        objectId[index] = nextObjectId++;
+        objectId[index] = nextObjectId;
+        nextObjectId += member->storageSize();
     }
 
 
@@ -140,6 +131,14 @@ void Overload::addOverload(Function const& type)
     overloadData.emplace(type.getParams(), FunctionCRef{type});
 }
 
+int ObjectOverload::storageSize() const
+{
+    return std::accumulate(std::begin(overloadData), std::end(overloadData), 0,
+                            [](int lhs, auto const& rhs)
+                            {
+                                return lhs + rhs.second->storageSize();
+                            });
+}
 void ObjectOverload::addOverload(std::unique_ptr<Decl>&& decl)
 {
     std::unique_ptr<ObjectFunction> object(dynamic_cast<ObjectFunction*>(decl.release()));
@@ -169,18 +168,19 @@ Object& ExpressionMemberAccess::findMember(ActionRef action, Identifier const& m
 
 Type const& ExpressionFuncCall::findType(ActionRef action)
 {
-    Type const& funcType = funcObject.getType();
-    if (funcType.declType() != DeclType::Overload)
-    {
-        action->error("Makeing a function call with a non function object");
-    }
     TypeCList   paramTypes;
     for (auto const& param: params)
     {
         paramTypes.emplace_back(param.get().getType());
     }
-    Overload const& functionInfo = dynamic_cast<Overload const&>(funcType);
-    return functionInfo.getReturnType(action, paramTypes);
+
+    Type const& funcType = funcObject.getType();
+    Overload const* functionInfo = dynamic_cast<Overload const*>(&funcType);
+    if (functionInfo == nullptr)
+    {
+        action->error("Makeing a function call with a non function object");
+    }
+    return functionInfo->getReturnType(action, paramTypes);
 }
 
 template<typename T>
