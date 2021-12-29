@@ -20,7 +20,9 @@ class Decl
     class Object: public Decl
         class ObjectVariable: public Object
         class ObjectFunction: public Object
-            class ObjectFunctionConstructor: public ObjectFunction
+            class ObjectFunctionSpecial: public ObjectFunction
+                class ObjectFunctionConstructor: public ObjectFunctionSpecial
+                class ObjectFunctionDestructor: public ObjectFunctionSpecial
         class ObjectOverload: public Object
     class Statement: public Decl
         class StatementExpression: public Statement
@@ -141,6 +143,10 @@ using ExpressionRef         = std::reference_wrapper<Expression>;
 using ExpressionList        = std::list<ExpressionRef>;
 using ExpressionListId      = Id<ExpressionList>;
 using ExpressionListAccess  = IdAccess<ExpressionList>;
+
+using MemberList            = std::vector<ObjectCRef>;
+using OverloadMap           = std::map<TypeCList, std::unique_ptr<ObjectFunction>>;
+using OverloadIter          = OverloadMap::iterator;
 
 inline bool operator<(TypeCRef const& lhs, TypeCRef const& rhs)
 {

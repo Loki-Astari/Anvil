@@ -2,6 +2,10 @@
 #include "StorageAccess.h"
 #include "Action.h"
 
+#include <vector>
+#include <iostream>
+#include <set>
+
 using namespace ThorsAnvil::Anvil::Ice;
 
 #pragma vera-pushoff
@@ -129,6 +133,37 @@ Type const& Overload::getReturnType(ActionRef action, TypeCList const& index) co
 void Overload::addOverload(Function const& type)
 {
     overloadData.emplace(type.getParams(), FunctionCRef{type});
+}
+
+void ObjectFunctionSpecial::addMissingMemberInit(ActionRef action, Scope& scope, MemberList const& members)
+{
+    MemberInitList::iterator    dstLoop = init.begin();
+    MemberInitList::iterator    dstEnd  = init.end();
+    MemberList::const_iterator  srcLoop = members.begin();
+    MemberList::const_iterator  srcEnd  = members.end();
+
+    while (dstLoop != dstEnd && srcLoop != srcEnd)
+    {
+        if (dstLoop->get().getName() == srcLoop->get().declName())
+        {
+            ++dstLoop;
+            ++srcLoop;
+            continue;
+        }
+        MemberInit& addMember = scope.add<MemberInit>(*action, "", ExpressionList{});
+        init.insert(dstLoop, MemberInitRef{addMember});
+        ++srcLoop;
+    }
+    if (dstLoop != dstEnd)
+    {
+        action->error("Members are initialized in wrong order");
+    }
+    while (srcLoop != srcEnd)
+    {
+        MemberInit& addMember = scope.add<MemberInit>(*action, "", ExpressionList{});
+        init.insert(dstLoop, MemberInitRef{addMember});
+        ++srcLoop;
+    }
 }
 
 int ObjectOverload::storageSize() const

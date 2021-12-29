@@ -168,7 +168,7 @@ void Action::addDefaultMethodsToScope(Scope& scope, DeclList declList)
         // TODO: Need to add constructors and destructors for members.
         static Statement deinitCodeInit(this);
         Function& destructorType = scope.add<Function>(*this, "", TypeCList{}, getRefFromScope<Type>(currentScope.front(), "Void"));
-        addFunctionToScope<ObjectFunction>("$destructor", destructorType, deinitCodeInit);
+        addFunctionToScope<ObjectFunctionDestructor>("$destructor", destructorType, MemberInitList{}, deinitCodeInit);
     }
 
     std::vector<ObjectCRef>  data;
@@ -178,12 +178,25 @@ void Action::addDefaultMethodsToScope(Scope& scope, DeclList declList)
         {
             Object const& var = dynamic_cast<Object const&>(decl.get());
             data.emplace_back(var);
-
-            //std::cerr << "Name: " << var.declName() << "\n";
         }
     }
-    //std::cerr << "\n-------------------\n\n";
-    ((void)data);
+    Scope& topScope = currentScope.back();
+
+    auto conFind = topScope.get("$constructor");
+    ObjectOverload&  constructorList = dynamic_cast<ObjectOverload&>(*conFind.second->second);
+    for (auto& function: constructorList)
+    {
+        ObjectFunctionConstructor&  constructor = dynamic_cast<ObjectFunctionConstructor&>(function);
+        constructor.addMissingMemberInit(this, scope, data);
+    }
+
+    auto desFind = topScope.get("$destructor");
+    ObjectOverload&  destructorList = dynamic_cast<ObjectOverload&>(*desFind.second->second);
+    for (auto& function: destructorList)
+    {
+        ObjectFunctionDestructor&  destructor = dynamic_cast<ObjectFunctionDestructor&>(function);
+        destructor.addMissingMemberInit(this, scope, data);
+    }
 }
 // ------------------
 
@@ -344,7 +357,7 @@ ObjectId Action::scopeDestructorAdd(StatementId code)
     StatementAccess         codeAccess(storage, code);
     Type&                   funcType    = funcAccess;
 
-    ObjectFunction& object = addFunctionToScope<ObjectFunction>("$destructor", funcType, codeAccess);
+    ObjectFunction& object = addFunctionToScope<ObjectFunctionDestructor>("$destructor", funcType, MemberInitList{}, codeAccess);
     return storage.add<ObjectRef>(object);
 }
 // ------------------

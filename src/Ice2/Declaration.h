@@ -73,6 +73,7 @@ class MemberInit: public Decl
             , init(std::move(init))
         {}
         virtual std::string const& declName() const override {static std::string name;return name;}
+        Identifier const& getName() {return name;}
 
         static constexpr bool valid = true;
         static constexpr Int defaultStorageId = 11;
@@ -198,20 +199,47 @@ class ObjectFunction: public Object
         virtual int storageSize() const override {return 1;}
 };
 
-class ObjectFunctionConstructor: public ObjectFunction
+class ObjectFunctionSpecial: public ObjectFunction
 {
     MemberInitList      init;
     public:
-        ObjectFunctionConstructor(ActionRef action, std::string name, Type const& type, MemberInitList init, Statement& code)
+        ObjectFunctionSpecial(ActionRef action, std::string name, Type const& type, MemberInitList init, Statement& code)
             : ObjectFunction(action, std::move(name), type, code)
             , init(std::move(init))
         {}
+
+        void addMissingMemberInit(ActionRef action, Scope& scope, MemberList const& members);
+};
+class ObjectFunctionConstructor: public ObjectFunctionSpecial
+{
+    public:
+        using ObjectFunctionSpecial::ObjectFunctionSpecial;
+};
+class ObjectFunctionDestructor: public ObjectFunctionSpecial
+{
+    public:
+        using ObjectFunctionSpecial::ObjectFunctionSpecial;
+};
+
+class OverloadIterator
+{
+    OverloadIter    iter;
+    public:
+        OverloadIterator(){}
+        OverloadIterator(OverloadIterator const& copy): iter(copy.iter) {}
+        OverloadIterator operator=(OverloadIterator const& copy) {iter = copy.iter;return *this;}
+        OverloadIterator(OverloadIter iter): iter(iter) {}
+        OverloadIterator operator++(){++iter;return *this;}
+        OverloadIterator operator++(int){OverloadIterator tmp(iter);++iter;return tmp;}
+        ObjectFunction& operator*() {return *iter->second;}
+        bool operator==(OverloadIterator const& rhs) const {return iter == rhs.iter;}
+        bool operator!=(OverloadIterator const& rhs) const {return iter != rhs.iter;}
 };
 
 class ObjectOverload: public Object
 {
     Overload    overloadType;
-    std::map<TypeCList, std::unique_ptr<ObjectFunction>>      overloadData;
+    OverloadMap overloadData;
     public:
         ObjectOverload(ActionRef action, std::string name)
             : Object(action, std::move(name), overloadType)
@@ -220,6 +248,9 @@ class ObjectOverload: public Object
         virtual bool overloadable() const override {return true;}
         virtual int storageSize() const override;
         void addOverload(std::unique_ptr<Decl>&& decl);
+
+        OverloadIterator begin()    {return OverloadIterator(overloadData.begin());}
+        OverloadIterator end()      {return OverloadIterator(overloadData.end());}
 };
 
 class Statement: public Decl
