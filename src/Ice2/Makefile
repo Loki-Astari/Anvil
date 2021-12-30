@@ -1,5 +1,7 @@
 THORSANVIL_ROOT             = $(realpath ../../)
 
+COVERAGE_REQUIRED			= 60
+
 TEST_IGNORE					= ice.lex.cpp ice.lex.h ice.tab.cpp ice.tab.hpp
 EXTRA_HEADERS				= ice.tab.hpp ice.lex.h location.hh position.hh stack.hh
 CLEAN_EXTRA					= location.hh position.hh stack.hh  ice.lex.cpp ice.lex.h ice.tab.cpp ice.tab.hpp

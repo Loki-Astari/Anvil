@@ -134,21 +134,21 @@ Id<Base<Dst>> Action::addDeclToScope(Id<Param>... id)
 }
 
 template<typename Dst, typename... Param>
-Dst& Action::getOrAddDeclToScope(std::string scopeName, Param... param)
+Dst& Action::getOrAddDeclToScope(std::string declName, Param... param)
 {
     Scope& topScope = currentScope.back();
-    auto find = topScope.get(scopeName);
+    auto find = topScope.get(declName);
     if (find.first)
     {
         Decl*       foundDeclWithSameName = find.second->second.get();
         Dst*        result = dynamic_cast<Dst*>(foundDeclWithSameName);
         if (result == nullptr)
         {
-            error("Object With name already exists: ", scopeName);
+            error("Object With name already exists: ", declName);
         }
         return *result;
     }
-    Dst& addedScope = topScope.add<Dst>(*this, std::move(scopeName), std::move(param)...);
+    Dst& addedScope = topScope.add<Dst>(*this, std::move(declName), std::move(param)...);
     return addedScope;
 }
 

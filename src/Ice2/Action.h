@@ -59,11 +59,11 @@ class Action
         ClassId             scopeClassAnon();
         FunctionId          scopeFunctionAdd(IdentifierId id, TypeCListId listId, TypeId returnType);
         CodeBlockId         scopeCodeBlockOpen();
-        StatementId         scopeCodeBlockClose(CodeBlockId, StatementListId);
+        StatementCodeBlockId scopeCodeBlockClose(CodeBlockId, StatementListId);
         ObjectId            scopeObjectAddVariable(IdentifierId name, TypeId id, ExpressionListId init);
-        ObjectId            scopeObjectAddFunction(IdentifierId name, TypeId id, StatementId init);
-        ObjectId            scopeConstructorAdd(TypeCListId listId, MemberInitListId init, StatementId code);
-        ObjectId            scopeDestructorAdd(StatementId code);
+        ObjectId            scopeObjectAddFunction(IdentifierId name, TypeId id, StatementCodeBlockId init);
+        ObjectId            scopeConstructorAdd(TypeCListId listId, MemberInitListId init, StatementCodeBlockId code);
+        ObjectId            scopeDestructorAdd(StatementCodeBlockId code);
         MemberInitId        memberInit(IdentifierId, ExpressionListId);
         IdentifierId        identifierCreate();
 
@@ -148,9 +148,9 @@ class Action
         virtual ClassId             scopeClassCloseV(Class&, DeclList list, Reuse&& reuse);
         virtual FunctionId          scopeFunctionAddV(Identifier& id, TypeCList listId, Type const& returnType, Reuse&& reuse);
         virtual CodeBlockId         scopeCodeBlockOpenV();
-        virtual StatementId         scopeCodeBlockCloseV(CodeBlock&, StatementList);
+        virtual StatementCodeBlockId scopeCodeBlockCloseV(CodeBlock&, StatementList);
         virtual ObjectId            scopeObjectAddVariableV(Identifier name, Type const& id, ExpressionList init);
-        virtual ObjectId            scopeObjectAddFunctionV(Identifier name, Type const& id, Statement& code);
+        virtual ObjectId            scopeObjectAddFunctionV(Identifier name, Type const& id, StatementCodeBlock& code);
         virtual MemberInitId        memberInitV(Identifier name, ExpressionList init);
         virtual IdentifierId        identifierCreateV();
     private:
@@ -160,7 +160,7 @@ class Action
         template<typename Dst, typename... Param>
         Id<Base<Dst>> addDeclToScope(Id<Param>... id);
         template<typename Dst, typename... Param>
-        Dst& getOrAddDeclToScope(std::string scopeName, Param... param);
+        Dst& getOrAddDeclToScope(std::string declName, Param... param);
         template<typename Dst, typename... Param>
         ObjectFunction& addFunctionToScope(std::string name, Param&&... param);
         void addDefaultMethodsToScope(Scope& scope, DeclList decl);

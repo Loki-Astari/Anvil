@@ -158,7 +158,8 @@ void Action::addDefaultMethodsToScope(Scope& scope, DeclList declList)
     if (!findCons.first)
     {
         // TODO: Need to add constructors and destructors for members.
-        static Statement initCodeInit(this);
+        CodeBlock&          codeBlock       = scope.add<CodeBlock>(*this);
+        StatementCodeBlock& initCodeInit    = scope.add<StatementCodeBlock>(*this, codeBlock, StatementList{});
         Function& constructorType = scope.add<Function>(*this, "", TypeCList{}, getRefFromScope<Type>(currentScope.front(), "Void"));
         addFunctionToScope<ObjectFunctionConstructor>("$constructor", constructorType, MemberInitList{}, initCodeInit);
     }
@@ -166,17 +167,18 @@ void Action::addDefaultMethodsToScope(Scope& scope, DeclList declList)
     if (!findDest.first)
     {
         // TODO: Need to add constructors and destructors for members.
-        static Statement deinitCodeInit(this);
+        CodeBlock&          codeBlock       = scope.add<CodeBlock>(*this);
+        StatementCodeBlock& deinitCodeInit  = scope.add<StatementCodeBlock>(*this, codeBlock, StatementList{});
         Function& destructorType = scope.add<Function>(*this, "", TypeCList{}, getRefFromScope<Type>(currentScope.front(), "Void"));
         addFunctionToScope<ObjectFunctionDestructor>("$destructor", destructorType, MemberInitList{}, deinitCodeInit);
     }
 
-    std::vector<ObjectCRef>  data;
-    for (auto const& decl: declList)
+    MemberList data;
+    for (auto& decl: declList)
     {
         if (decl.get().storageSize() != 0)
         {
-            Object const& var = dynamic_cast<Object const&>(decl.get());
+            Object& var = dynamic_cast<Object&>(decl.get());
             data.emplace_back(var);
         }
     }
@@ -187,7 +189,7 @@ void Action::addDefaultMethodsToScope(Scope& scope, DeclList declList)
     for (auto& function: constructorList)
     {
         ObjectFunctionConstructor&  constructor = dynamic_cast<ObjectFunctionConstructor&>(function);
-        constructor.addMissingMemberInit(this, scope, data);
+        constructor.addMissingMemberInit(this, scope, data, true);
     }
 
     auto desFind = topScope.get("$destructor");
@@ -195,7 +197,7 @@ void Action::addDefaultMethodsToScope(Scope& scope, DeclList declList)
     for (auto& function: destructorList)
     {
         ObjectFunctionDestructor&  destructor = dynamic_cast<ObjectFunctionDestructor&>(function);
-        destructor.addMissingMemberInit(this, scope, data);
+        destructor.addMissingMemberInit(this, scope, data, false);
     }
 }
 // ------------------
@@ -240,13 +242,13 @@ CodeBlockId Action::scopeCodeBlockOpenV()
 }
 // ------------------
 
-StatementId Action::scopeCodeBlockClose(CodeBlockId id, StatementListId listId)
+StatementCodeBlockId Action::scopeCodeBlockClose(CodeBlockId id, StatementListId listId)
 {
     ScopePrinter scope("scopeCodeBlockClose");
     CodeBlockAccess      access(storage, id);
     return scopeCodeBlockCloseV(access, moveAccess(StatementListAccess(storage, listId)));
 }
-StatementId Action::scopeCodeBlockCloseV(CodeBlock& codeBlock, StatementList list)
+StatementCodeBlockId Action::scopeCodeBlockCloseV(CodeBlock& codeBlock, StatementList list)
 {
     Scope&          topScope = currentScope.back();
     CodeBlock*      topBlock = dynamic_cast<CodeBlock*>(&topScope);
@@ -258,7 +260,7 @@ StatementId Action::scopeCodeBlockCloseV(CodeBlock& codeBlock, StatementList lis
     currentScope.pop_back();
     Scope&          newTop = currentScope.back();
     StatementCodeBlock& result   = newTop.add<StatementCodeBlock>(*this, codeBlock, std::move(list));
-    return storage.add(StatementRef{result});
+    return storage.add(StatementCodeBlockRef{result});
 }
 // ------------------
 
@@ -290,15 +292,15 @@ ObjectId Action::scopeObjectAddVariableV(Identifier name, Type const& type, Expr
 }
 // ------------------
 
-ObjectId Action::scopeObjectAddFunction(IdentifierId name, TypeId type, StatementId init)
+ObjectId Action::scopeObjectAddFunction(IdentifierId name, TypeId type, StatementCodeBlockId init)
 {
     ScopePrinter scope("scopeObjectAddFunction");
-    IdentifierAccess        nameAccess(storage, name);
-    TypeAccess              typeAccess(storage, type);
-    StatementAccess         codeAccess(storage, init);
+    IdentifierAccess         nameAccess(storage, name);
+    TypeAccess               typeAccess(storage, type);
+    StatementCodeBlockAccess codeAccess(storage, init);
     return scopeObjectAddFunctionV(moveAccess(nameAccess), typeAccess, codeAccess);
 }
-ObjectId Action::scopeObjectAddFunctionV(Identifier name, Type const& type, Statement& code)
+ObjectId Action::scopeObjectAddFunctionV(Identifier name, Type const& type, StatementCodeBlock& code)
 {
     Scope&  topScope = currentScope.back();
     auto find = topScope.get(name);
@@ -327,7 +329,7 @@ MemberInitId Action::memberInitV(Identifier name, ExpressionList init)
 }
 // ------------------
 
-ObjectId Action::scopeConstructorAdd(TypeCListId listId, MemberInitListId init, StatementId code)
+ObjectId Action::scopeConstructorAdd(TypeCListId listId, MemberInitListId init, StatementCodeBlockId code)
 {
     ScopePrinter scope("scopeConstructorAdd");
     IdentifierId    voidId      = storage.add<std::string>(std::string("Void"));
@@ -335,9 +337,9 @@ ObjectId Action::scopeConstructorAdd(TypeCListId listId, MemberInitListId init, 
     FunctionId      funcId      = scopeFunctionAdd(anonName(), listId, voidType);
     FunctionAccess  funcAccess(storage, funcId);
 
-    MemberInitListAccess    initAccess(storage, init);
-    StatementAccess         codeAccess(storage, code);
-    Type&                   funcType    = funcAccess;
+    MemberInitListAccess     initAccess(storage, init);
+    StatementCodeBlockAccess codeAccess(storage, code);
+    Type&                    funcType    = funcAccess;
 
     ObjectFunction& object = addFunctionToScope<ObjectFunctionConstructor>("$constructor", funcType, initAccess, codeAccess);
     return storage.add<ObjectRef>(object);
@@ -345,7 +347,7 @@ ObjectId Action::scopeConstructorAdd(TypeCListId listId, MemberInitListId init, 
 
 // ------------------
 
-ObjectId Action::scopeDestructorAdd(StatementId code)
+ObjectId Action::scopeDestructorAdd(StatementCodeBlockId code)
 {
     ScopePrinter scope("scopeDestructorAdd");
     TypeCListId     listId      = storage.add<TypeCList>(TypeCList{});
@@ -354,8 +356,8 @@ ObjectId Action::scopeDestructorAdd(StatementId code)
     FunctionId      funcId      = scopeFunctionAdd(anonName(), listId, voidType);
     FunctionAccess  funcAccess(storage, funcId);
 
-    StatementAccess         codeAccess(storage, code);
-    Type&                   funcType    = funcAccess;
+    StatementCodeBlockAccess codeAccess(storage, code);
+    Type&                    funcType    = funcAccess;
 
     ObjectFunction& object = addFunctionToScope<ObjectFunctionDestructor>("$destructor", funcType, MemberInitList{}, codeAccess);
     return storage.add<ObjectRef>(object);

@@ -47,6 +47,7 @@ using ThorsAnvil::Anvil::Ice::MemberInitId;
 using ThorsAnvil::Anvil::Ice::ObjectId;
 using ThorsAnvil::Anvil::Ice::IdentifierId;
 using ThorsAnvil::Anvil::Ice::StatementId;
+using ThorsAnvil::Anvil::Ice::StatementCodeBlockId;
 using ThorsAnvil::Anvil::Ice::ExpressionId;
 // ---
 using ThorsAnvil::Anvil::Ice::Decl;
@@ -58,6 +59,7 @@ using ThorsAnvil::Anvil::Ice::Function;
 using ThorsAnvil::Anvil::Ice::MemberInit;
 using ThorsAnvil::Anvil::Ice::Object;
 using ThorsAnvil::Anvil::Ice::Statement;
+using ThorsAnvil::Anvil::Ice::StatementCodeBlock;
 using ThorsAnvil::Anvil::Ice::Expression;
 using ThorsAnvil::Anvil::Ice::Id;
 %}
@@ -81,6 +83,7 @@ using ThorsAnvil::Anvil::Ice::Id;
     ObjectId            objectId;
     IdentifierId        identifierId;
     StatementId         statementId;
+    StatementCodeBlockId statementCodeBlockId;
     ExpressionId        expressionId;
     Id<std::string>     assembley;
 }
@@ -158,7 +161,7 @@ using ThorsAnvil::Anvil::Ice::Id;
 %type   <identifierId>          IdentifierObject
 %type   <expressionListId>      VariableInit
 %type   <statementId>           Statement
-%type   <statementId>           CodeBlock
+%type   <statementCodeBlockId>  CodeBlock
 %type   <codeBlockId>           CodeBlockStart
 %type   <expressionId>          Expression
 %type   <expressionId>          AssignmentExpression

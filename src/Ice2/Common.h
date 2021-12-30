@@ -55,6 +55,7 @@ class Object;
 class ObjectVariable;
 class ObjectFunction;
 class Statement;
+class StatementCodeBlock;
 class Expression;
 
 template<typename T, bool valid = true> struct Id;
@@ -138,13 +139,17 @@ using StatementList         = std::list<StatementRef>;
 using StatementListId       = Id<StatementList>;
 using StatementListAccess   = IdAccess<StatementList>;
 
+using StatementCodeBlockId      = Id<StatementCodeBlock>;
+using StatementCodeBlockAccess  = IdAccess<StatementCodeBlock>;
+using StatementCodeBlockRef     = std::reference_wrapper<StatementCodeBlock>;
+
 using ExpressionId          = Id<Expression>;
 using ExpressionRef         = std::reference_wrapper<Expression>;
 using ExpressionList        = std::list<ExpressionRef>;
 using ExpressionListId      = Id<ExpressionList>;
 using ExpressionListAccess  = IdAccess<ExpressionList>;
 
-using MemberList            = std::vector<ObjectCRef>;
+using MemberList            = std::vector<ObjectRef>;
 using OverloadMap           = std::map<TypeCList, std::unique_ptr<ObjectFunction>>;
 using OverloadIter          = OverloadMap::iterator;
 

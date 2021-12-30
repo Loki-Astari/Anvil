@@ -38,7 +38,7 @@ TEST(ConstructorMember, DefaultAll)
 namespace Std
 {
     class Integer {}
-    class String  {}
+    class String  { construct{String}{} construct{}{}}
 }
 namespace Sys
 {
@@ -71,7 +71,7 @@ TEST(ConstructorMember, DefaultEven)
 namespace Std
 {
     class Integer {}
-    class String  {}
+    class String  { construct{String}{} construct{}{}}
 }
 namespace Sys
 {
@@ -102,7 +102,7 @@ TEST(ConstructorMember, DefaultOdd)
 namespace Std
 {
     class Integer {}
-    class String  {}
+    class String  { construct{String}{} construct{}{}}
 }
 namespace Sys
 {
@@ -133,7 +133,7 @@ TEST(ConstructorMember, DefaultOutOfOrderTop)
 namespace Std
 {
     class Integer {}
-    class String  {}
+    class String  { construct{String}{} construct{}{}}
 }
 namespace Sys
 {
@@ -166,7 +166,7 @@ TEST(ConstructorMember, DefaultOutOfOrderBot)
 namespace Std
 {
     class Integer {}
-    class String  {}
+    class String  { construct{String}{} construct{}{}}
 }
 namespace Sys
 {

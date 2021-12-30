@@ -12,6 +12,19 @@ inline T& Scope::add(Action& action, Args&&... args)
     return dynamic_cast<T&>(object);
 }
 
+template<typename T>
+inline void ExpressionLiteral<T>::print(std::ostream& stream, int s, bool showName) const
+{
+    if (showName)
+    {
+        stream << indent(s) << "Decl::Expression::ExpressionLiteral\n";
+    }
+    Expression::print(stream, s, false);
+    stream << indent(s+1) << "literal: >" << literal << "<\n";
+    stream << indent(s+1) << "type:\n";
+    type.print(stream, s+2, true);
+}
+
 
 }
 

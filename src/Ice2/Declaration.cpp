@@ -45,17 +45,20 @@ std::pair<bool, NameRef> Scope::get(std::string const& name) const
     return {true, find};
 }
 
-namespace ThorsAnvil::Anvil::Ice
+void Scope::print(std::ostream& stream, int s, bool showName) const
 {
-    std::ostream& operator<<(std::ostream& str, Scope& data)
+    if (showName)
     {
-        str << "\n\n\n===================\n";
-        for (auto const& member: data.members)
-        {
-            str << member.first << " : " << member.second->declName() << "\n";
-        }
-        str << "===================\n\n\n";
-        return str;
+        stream << indent(s) << "Decl::Scope\n";
+    }
+    stream << indent(s+1) << "nextObjectId:  " << nextObjectId << "\n"
+           << indent(s+1) << "anonNameCount: " << anonNameCount << "\n"
+           << indent(s+1) << "members\n";
+    for (auto const& member: members)
+    {
+        auto find = objectId.find(member.first);
+        stream << indent(s+2) << member.first << "  size: " << find->second << "\n";
+        member.second->print(stream, s+3, true);
     }
 }
 
@@ -112,12 +115,138 @@ Decl& Scope::saveMember(Action& action, std::unique_ptr<Decl>&& member)
     return result;
 }
 
+void CodeBlock::print(std::ostream& stream, int s, bool showName) const
+{
+    if (showName)
+    {
+        stream << indent(s) << "Decl::Scope::CodeBlock\n";
+    }
+    Scope::print(stream, s, false);
+}
+
+void MemberInit::print(std::ostream& stream, int s, bool showName) const
+{
+    if (showName)
+    {
+        stream << indent(s) << "Decl::MemberInit\n";
+    }
+    stream << indent(s+1) << "name: " << name << "\n"
+           << indent(s+1) << "init\n";
+    int count = 0;
+    for (auto const& exp: init)
+    {
+        stream << indent(s+2) << "init " << count << "\n";
+        exp.get().print(stream, s+3, true);
+        ++count;
+    }
+}
+
+void NamedScope::print(std::ostream& stream, int s, bool showName) const
+{
+    if (showName)
+    {
+        stream << indent(s) << "Decl::Scope::NamedScope\n";
+    }
+    stream << indent(s+1) << "name: " << name << "\n"
+           << indent(s+1) << "fullName: " << fullName << "\n";
+    Scope::print(stream, s, false);
+}
+
+void Namespace::print(std::ostream& stream, int s, bool showName) const
+{
+    if (showName)
+    {
+        stream << indent(s) << "Decl::Scope::NamedScope::Namespace\n";
+    }
+    NamedScope::print(stream, s, false);
+}
+
+void Type::print(std::ostream& stream, int s, bool showName) const
+{
+    if (showName)
+    {
+        stream << indent(s) << "Decl::Scope::NamedScope::Type\n";
+    }
+    //NamedScope::print(stream, s, false);
+}
+
 Void::Void(ActionRef action)
     : Type(action, "Void")
 {
-    static Statement voidCodeInit(action);
-    Function& constructorType = add<Function>(*action, "", TypeCList{}, *this);
-    add<ObjectFunction>(*action, "$constructor", constructorType, voidCodeInit);
+    CodeBlock&          codeBlock       = add<CodeBlock>(*action);
+    StatementCodeBlock& statement       = add<StatementCodeBlock>(*action, codeBlock, StatementList{});
+    Function&           funcType        = add<Function>(*action, "", TypeCList{}, *this);
+
+    ObjectOverload&         constructOver   = add<ObjectOverload>(*action, "$constructor");
+    std::unique_ptr<Decl>   construct       = std::make_unique<ObjectFunction>(action, "$constructor", funcType, statement);
+    constructOver.addOverload(std::move(construct));
+
+    ObjectOverload&         destructOver    = add<ObjectOverload>(*action, "$destructor");
+    std::unique_ptr<Decl>   destruct        = std::make_unique<ObjectFunction>(action, "$destructor", funcType, statement);
+    destructOver.addOverload(std::move(destruct));
+}
+
+void Void::print(std::ostream& stream, int s, bool showName) const
+{
+    if (showName)
+    {
+        stream << indent(s) << "Decl::Scope::NamedScope::Type::Void\n";
+    }
+    //Type::print(stream, s, false);
+}
+
+void Class::print(std::ostream& stream, int s, bool showName) const
+{
+    if (showName)
+    {
+        stream << indent(s) << "Decl::Scope::NamedScope::Type::Class\n";
+    }
+    Type::print(stream, s, false);
+}
+
+void Function::print(std::ostream& stream, int s, bool showName) const
+{
+    if (showName)
+    {
+        stream << indent(s) << "Decl::Scope::NamedScope::Type::Function\n";
+    }
+    stream << indent(s+1) << "param\n";
+    int count = 0;
+    for (auto const& p: param)
+    {
+        stream << indent(s+2) << "param " << count << "\n";
+        p.get().print(stream, s+3, true);
+        ++count;
+    }
+    stream << indent(s+1) << "return type\n";
+    returnType.print(stream, s+2, true);
+    Type::print(stream, s, false);
+}
+
+void Overload::print(std::ostream& stream, int s, bool showName) const
+{
+    if (showName)
+    {
+        stream << indent(s) << "Decl::Scope::NamedScope::Type::Overload\n";
+    }
+    int count = 0;
+    stream << indent(s+1) << "overloadData\n";
+    for (auto const& sub: overloadData)
+    {
+        stream << indent(s+2) << "overloadData " << count << "\n";
+        ++count;
+
+        int k = 0;
+        for (auto const& key: sub.first)
+        {
+            stream << indent(s+3) << "Key " << k << "\n";
+            key.get().print(stream, s+4, true);
+            ++k;
+        }
+        stream << indent(s+3) << "Value\n";
+        sub.second.get().print(stream, s+4, true);
+    }
+    Type::print(stream, s, false);
 }
 
 Type const& Overload::getReturnType(ActionRef action, TypeCList const& index) const
@@ -135,7 +264,63 @@ void Overload::addOverload(Function const& type)
     overloadData.emplace(type.getParams(), FunctionCRef{type});
 }
 
-void ObjectFunctionSpecial::addMissingMemberInit(ActionRef action, Scope& scope, MemberList const& members)
+void Object::print(std::ostream& stream, int s, bool showName) const
+{
+    if (showName)
+    {
+        stream << indent(s) << "Decl::Object\n";
+    }
+    stream << indent(s+1) << "name: " << name << "\n";
+    stream << indent(s+1) << "type\n";
+    type.print(stream, s+2, true);
+}
+
+void ObjectVariable::print(std::ostream& stream, int s, bool showName) const
+{
+    if (showName)
+    {
+        stream << indent(s) << "Decl::Object::ObjectVariable\n";
+    }
+    Object::print(stream, s, false);
+    int count = 0;
+    stream << indent(s+1) << "init\n";
+    for (auto const& exp: init)
+    {
+        stream << indent(s+2) << "init " << count << "\n";
+        exp.get().print(stream, s+3, true);
+        ++count;
+    }
+}
+
+void ObjectFunction::print(std::ostream& stream, int s, bool showName) const
+{
+    if (showName)
+    {
+        stream << indent(s) << "Decl::Object::ObjectFunction\n";
+    }
+    Object::print(stream, s, false);
+    stream << indent(s+1) << "code\n";
+    code.print(stream, s+2, true);
+}
+
+void ObjectFunctionSpecial::print(std::ostream& stream, int s, bool showName) const
+{
+    if (showName)
+    {
+        stream << indent(s) << "Decl::Object::ObjectFunction::ObjectFunctionSpecial\n";
+    }
+    ObjectFunction::print(stream, s, false);
+    int count = 0;
+    stream << indent(s+1) << "init\n";
+    for (auto const& i: init)
+    {
+        stream << indent(s+2) << "init " << count << "\n";
+        i.get().print(stream, s+3, true);
+        ++count;
+    }
+}
+
+void ObjectFunctionSpecial::addMissingMemberInit(ActionRef action, Scope& scope, MemberList const& members, bool con)
 {
     MemberInitList::iterator    dstLoop = init.begin();
     MemberInitList::iterator    dstEnd  = init.end();
@@ -146,12 +331,12 @@ void ObjectFunctionSpecial::addMissingMemberInit(ActionRef action, Scope& scope,
     {
         if (dstLoop->get().getName() == srcLoop->get().declName())
         {
+            addMemberInit(action, scope, *srcLoop, std::move(dstLoop->get()), con);
             ++dstLoop;
             ++srcLoop;
             continue;
         }
-        MemberInit& addMember = scope.add<MemberInit>(*action, "", ExpressionList{});
-        init.insert(dstLoop, MemberInitRef{addMember});
+        addMemberInit(action, scope, *srcLoop, MemberInit{action, srcLoop->get().declName(), ExpressionList{}}, con);
         ++srcLoop;
     }
     if (dstLoop != dstEnd)
@@ -160,10 +345,43 @@ void ObjectFunctionSpecial::addMissingMemberInit(ActionRef action, Scope& scope,
     }
     while (srcLoop != srcEnd)
     {
-        MemberInit& addMember = scope.add<MemberInit>(*action, "", ExpressionList{});
-        init.insert(dstLoop, MemberInitRef{addMember});
+        addMemberInit(action, scope, *srcLoop, MemberInit{action, srcLoop->get().declName(), ExpressionList{}}, con);
         ++srcLoop;
     }
+}
+
+void ObjectFunctionSpecial::addMemberInit(ActionRef action, Scope& scope, ObjectRef data, MemberInit&& memberInit, bool con)
+{
+    ObjectFunction* function = dynamic_cast<ObjectFunction*>(&data.get());
+    if (function != nullptr)
+    {
+        std::cerr << "Ignoring: " << function->declName() << "\n";
+        return;
+    }
+    Expression& object      = scope.add<ExpressionObject>(*action, data);
+    std::string methodName = con ? "$constructor" : "$destructor";
+    ExpressionMemberAccess& method = scope.add<ExpressionMemberAccess>(*action, object, std::move(methodName));
+    Expression& callInit    = scope.add<ExpressionFuncCall>(*action, method, std::move(memberInit.expressionList()));
+    Statement&  initMember  = scope.add<StatementExpression>(*action, callInit);
+    code.prefix(initMember);
+}
+
+void ObjectFunctionConstructor::print(std::ostream& stream, int s, bool showName) const
+{
+    if (showName)
+    {
+        stream << indent(s) << "Decl::Object::ObjectFunction::ObjectFunctionSpecial::ObjectFunctionConstructor\n";
+    }
+    ObjectFunctionSpecial::print(stream, s, false);
+}
+
+void ObjectFunctionDestructor::print(std::ostream& stream, int s, bool showName) const
+{
+    if (showName)
+    {
+        stream << indent(s) << "Decl::Object::ObjectFunction::ObjectFunctionSpecial::ObjectFunctionDestructor\n";
+    }
+    ObjectFunctionSpecial::print(stream, s, false);
 }
 
 int ObjectOverload::storageSize() const
@@ -174,6 +392,37 @@ int ObjectOverload::storageSize() const
                                 return lhs + rhs.second->storageSize();
                             });
 }
+
+void ObjectOverload::print(std::ostream& stream, int s, bool showName) const
+{
+    if (showName)
+    {
+        stream << indent(s) << "Decl::Object::ObjectOverload\n";
+    }
+    Object::print(stream, s, false);
+    // Note: This is passed to Object base class where a refernece is held.
+    //       when the Object::print is called it will be printed there.
+    // stream << indent(s+1) << "overloadType\n";
+    // overloadType.print(stream, s+2, true);
+    stream << indent(s+1) << "overloadData\n";
+    int count = 0;
+    for (auto const& data: overloadData)
+    {
+        stream << indent(s+2) << "overloadData " << count << "\n";
+        ++count;
+
+        int k = 0;
+        for (auto const& key: data.first)
+        {
+            stream << indent(s+3) << "Key " << k << "\n";
+            key.get().print(stream, s+4, true);
+            ++k;
+        }
+        stream << indent(s+3) << "Value\n";
+        data.second->print(stream, s+4, true);
+    }
+}
+
 void ObjectOverload::addOverload(std::unique_ptr<Decl>&& decl)
 {
     std::unique_ptr<ObjectFunction> object(dynamic_cast<ObjectFunction*>(decl.release()));
@@ -188,6 +437,90 @@ void ObjectOverload::addOverload(std::unique_ptr<Decl>&& decl)
     overloadData.emplace(objectFunc.getParams(), std::move(object));
 }
 
+void Statement::print(std::ostream& stream, int s, bool showName) const
+{
+    if (showName)
+    {
+        stream << indent(s) << "Decl::Statement\n";
+    }
+}
+
+void StatementExpression::print(std::ostream& stream, int s, bool showName) const
+{
+    if (showName)
+    {
+        stream << indent(s) << "Decl::Statement::StatementExpression\n";
+    }
+    Statement::print(stream, s, false);
+    stream << indent(s+1) << "expression\n";
+    expression.print(stream, s+2, true);
+}
+
+void StatementReturn::print(std::ostream& stream, int s, bool showName) const
+{
+    if (showName)
+    {
+        stream << indent(s) << "Decl::Statement::StatementReturn\n";
+    }
+    Statement::print(stream, s, false);
+    stream << indent(s+1) << "expression\n";
+    expression.print(stream, s+2, true);
+}
+
+void StatementAssembley::print(std::ostream& stream, int s, bool showName) const
+{
+    if (showName)
+    {
+        stream << indent(s) << "Decl::Statement::StatementAssembley\n";
+    }
+    Statement::print(stream, s, false);
+    stream << indent(s+1) << "assembley\n";
+    std::stringstream assembleyStream(assembley);
+    std::string line;
+    while (std::getline(assembleyStream, line))
+    {
+        stream << indent(s+2) << line << "\n";
+    }
+}
+
+void StatementCodeBlock::print(std::ostream& stream, int s, bool showName) const
+{
+    if (showName)
+    {
+        stream << indent(s) << "Decl::Statement::StatementCodeBlock\n";
+    }
+    Statement::print(stream, s, false);
+    stream << indent(s+1) << "codeBlock\n";
+    codeBlock.print(stream, s+2, true);
+    int count = 0;
+    stream << indent(s+1) << "list\n";
+    for (auto const& stat: list)
+    {
+        stream << indent(s+2) << "list " << count << "\n";
+        stat.get().print(stream, s+3, true);
+        ++count;
+    }
+}
+
+void Expression::print(std::ostream& stream, int s, bool showName) const
+{
+    if (showName)
+    {
+        stream << indent(s) << "Decl::Expression\n";
+    }
+}
+
+void ExpressionObject::print(std::ostream& stream, int s, bool showName) const
+{
+    if (showName)
+    {
+        stream << indent(s) << "Decl::Expression::ExpressionObject\n";
+    }
+    Expression::print(stream, s, false);
+    stream << indent(s+1) << "object\n";
+    object.print(stream, s+2, true);
+}
+
 Object& ExpressionMemberAccess::findMember(ActionRef action, Identifier const& memberName)
 {
     Type const& type = src.getType();
@@ -199,6 +532,19 @@ Object& ExpressionMemberAccess::findMember(ActionRef action, Identifier const& m
     Decl&   decl = *find.second->second;
     Object& object = dynamic_cast<Object&>(decl);
     return object;
+}
+
+void ExpressionMemberAccess::print(std::ostream& stream, int s, bool showName) const
+{
+    if (showName)
+    {
+        stream << indent(s) << "Decl::Expression::ExpressionMemberAccess\n";
+    }
+    Expression::print(stream, s, false);
+    stream << indent(s+1) << "src\n";
+    src.print(stream, s+2, true);
+    stream << indent(s+1) << "member\n";
+    member.print(stream, s+2, true);
 }
 
 Type const& ExpressionFuncCall::findType(ActionRef action)
@@ -217,6 +563,29 @@ Type const& ExpressionFuncCall::findType(ActionRef action)
     }
     return functionInfo->getReturnType(action, paramTypes);
 }
+
+void ExpressionFuncCall::print(std::ostream& stream, int s, bool showName) const
+{
+    if (showName)
+    {
+        stream << indent(s) << "Decl::Expression::ExpressionFuncCall\n";
+    }
+    Expression::print(stream, s, false);
+    stream << indent(s+1) << "funcObject\n";
+    funcObject.print(stream, s+2, true);
+    stream << indent(s+1) << "type\n";
+    type.print(stream, s+2, true);
+    int count = 0;
+    stream << indent(s+1) << "params\n";
+    for (auto const& p: params)
+    {
+        stream << indent(s+2) << "params " << count << "\n";
+        ++count;
+
+        p.get().print(stream, s+3, true);
+    }
+}
+
 
 template<typename T>
 Type const& ExpressionLiteral<T>::findType(ActionRef action)

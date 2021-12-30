@@ -24,10 +24,20 @@ class Decl
         virtual std::string const& declName() const;
         virtual int  storageSize() const    {return 0;}
         virtual bool overloadable() const   {return false;}
+        virtual void print(std::ostream&, int indent, bool showName) const = 0;
 
         static constexpr bool valid = true;
         static constexpr Int defaultStorageId = 9;
+    protected:
+        std::string indent(int size) const {return std::string(size * 4, ' ');}
+
 };
+
+inline std::ostream& operator<<(std::ostream& stream, Decl const& decl)
+{
+    decl.print(stream, 0, true);
+    return stream;
+}
 
 class Scope: public Decl
 {
@@ -43,9 +53,9 @@ class Scope: public Decl
         T& add(Action& action, Args&&... args);
 
         virtual bool storeFunctionsInContainer() const {return false;}
+        virtual void print(std::ostream& stream, int indent, bool showName) const override;
         std::string anonName();
 
-        friend std::ostream& operator<<(std::ostream& str, Scope& data);
     private:
         Decl& saveMember(Action& action, std::unique_ptr<Decl>&& member);
         char hex(std::size_t halfByte);
@@ -57,6 +67,7 @@ class CodeBlock: public Scope
     public:
         using Scope::Scope;
         virtual std::string const& declName() const override {static std::string name;return name;}
+        virtual void print(std::ostream& stream, int indent, bool showName) const override;
 
         static constexpr bool valid = true;
         static constexpr Int defaultStorageId = 10;
@@ -73,7 +84,10 @@ class MemberInit: public Decl
             , init(std::move(init))
         {}
         virtual std::string const& declName() const override {static std::string name;return name;}
+        virtual void print(std::ostream& stream, int indent, bool showName) const override;
         Identifier const& getName() {return name;}
+
+        ExpressionList const& expressionList() const {return init;}
 
         static constexpr bool valid = true;
         static constexpr Int defaultStorageId = 11;
@@ -89,6 +103,7 @@ class NamedScope: public Scope
             , name(std::move(name))
         {}
         virtual std::string const& declName() const override {return name;}
+        virtual void print(std::ostream& stream, int indent, bool showName) const override;
         void setPath(std::string path) {fullName = std::move(path);}
 };
 
@@ -99,6 +114,7 @@ class Namespace: public NamedScope
             : NamedScope(action, std::move(name))
         {}
 
+        virtual void print(std::ostream& stream, int indent, bool showName) const override;
         static constexpr bool valid = true;
         static constexpr Int defaultStorageId = 12;
 };
@@ -107,6 +123,7 @@ class Type: public NamedScope
 {
     public:
         using NamedScope::NamedScope;
+        virtual void print(std::ostream& stream, int indent, bool showName) const override;
 
         static constexpr bool valid = true;
         static constexpr Int defaultStorageId = 13;
@@ -116,6 +133,7 @@ class Void: public Type
 {
     public:
         Void(ActionRef action);
+        virtual void print(std::ostream& stream, int indent, bool showName) const override;
 
         static constexpr bool valid = false;
         static constexpr Int defaultStorageId = 14;
@@ -126,6 +144,7 @@ class Class: public Type
     public:
         using Type::Type;
         virtual bool storeFunctionsInContainer() const override {return true;}
+        virtual void print(std::ostream& stream, int indent, bool showName) const override;
 
         static constexpr bool valid = true;
         static constexpr Int defaultStorageId = 15;
@@ -142,6 +161,7 @@ class Function: public Type
             , returnType(returnType)
         {}
         virtual bool storeFunctionsInContainer() const override {return true;}
+        virtual void print(std::ostream& stream, int indent, bool showName) const override;
         Type const& getReturnType(ActionRef /*action*/) const {return returnType;}
         TypeCList getParams() const {return param;}
 
@@ -156,6 +176,7 @@ class Overload: public Type
         Overload(ActionRef action)
             : Type(action, "")
         {}
+        virtual void print(std::ostream& stream, int indent, bool showName) const override;
         Type const& getReturnType(ActionRef action, TypeCList const& index) const;
         void addOverload(Function const& type);
 };
@@ -171,6 +192,7 @@ class Object: public Decl
             , type(type)
         {}
         virtual std::string const& declName() const override {return name;}
+        virtual void print(std::ostream& stream, int indent, bool showName) const override;
         Type const& getType() const {return type;}
 
         static constexpr bool valid = true;
@@ -186,39 +208,46 @@ class ObjectVariable: public Object
             , init(std::move(init))
         {}
         virtual int storageSize() const override {return 1;}
+        virtual void print(std::ostream& stream, int indent, bool showName) const override;
 };
 
 class ObjectFunction: public Object
 {
-    Statement&  code;
+    protected:
+        StatementCodeBlock&  code;
     public:
-        ObjectFunction(ActionRef action, std::string name, Type const& type, Statement& code)
+        ObjectFunction(ActionRef action, std::string name, Type const& type, StatementCodeBlock& code)
             : Object(action, std::move(name), type)
             , code(code)
         {}
         virtual int storageSize() const override {return 1;}
+        virtual void print(std::ostream& stream, int indent, bool showName) const override;
 };
 
 class ObjectFunctionSpecial: public ObjectFunction
 {
     MemberInitList      init;
     public:
-        ObjectFunctionSpecial(ActionRef action, std::string name, Type const& type, MemberInitList init, Statement& code)
+        ObjectFunctionSpecial(ActionRef action, std::string name, Type const& type, MemberInitList init, StatementCodeBlock& code)
             : ObjectFunction(action, std::move(name), type, code)
             , init(std::move(init))
         {}
+        virtual void print(std::ostream& stream, int indent, bool showName) const override;
 
-        void addMissingMemberInit(ActionRef action, Scope& scope, MemberList const& members);
+        void addMissingMemberInit(ActionRef action, Scope& scope, MemberList const& members, bool con);
+        void addMemberInit(ActionRef action, Scope& scope, ObjectRef data, MemberInit&& memberInit, bool con);
 };
 class ObjectFunctionConstructor: public ObjectFunctionSpecial
 {
     public:
         using ObjectFunctionSpecial::ObjectFunctionSpecial;
+        virtual void print(std::ostream& stream, int indent, bool showName) const override;
 };
 class ObjectFunctionDestructor: public ObjectFunctionSpecial
 {
     public:
         using ObjectFunctionSpecial::ObjectFunctionSpecial;
+        virtual void print(std::ostream& stream, int indent, bool showName) const override;
 };
 
 class OverloadIterator
@@ -247,6 +276,7 @@ class ObjectOverload: public Object
         {}
         virtual bool overloadable() const override {return true;}
         virtual int storageSize() const override;
+        virtual void print(std::ostream& stream, int indent, bool showName) const override;
         void addOverload(std::unique_ptr<Decl>&& decl);
 
         OverloadIterator begin()    {return OverloadIterator(overloadData.begin());}
@@ -257,6 +287,7 @@ class Statement: public Decl
 {
     public:
         using Decl::Decl;
+        virtual void print(std::ostream& stream, int indent, bool showName) const override;
 
         static constexpr bool valid = true;
         static constexpr Int defaultStorageId = 18;
@@ -271,6 +302,7 @@ class StatementExpression: public Statement
             : Statement(action)
             , expression(expression)
         {}
+        virtual void print(std::ostream& stream, int indent, bool showName) const override;
 };
 
 class StatementReturn: public Statement
@@ -282,6 +314,7 @@ class StatementReturn: public Statement
             : Statement(action)
             , expression(expression)
         {}
+        virtual void print(std::ostream& stream, int indent, bool showName) const override;
 };
 
 class StatementAssembley: public Statement
@@ -293,6 +326,7 @@ class StatementAssembley: public Statement
             : Statement(action)
             , assembley(std::move(assembley))
         {}
+        virtual void print(std::ostream& stream, int indent, bool showName) const override;
 };
 
 class StatementCodeBlock: public Statement
@@ -306,6 +340,10 @@ class StatementCodeBlock: public Statement
             , codeBlock(codeBlock)
             , list(std::move(list))
         {}
+        virtual void print(std::ostream& stream, int indent, bool showName) const override;
+
+        void prefix(Statement& pre)     {list.emplace_front(pre);}
+        void postfix(Statement& post)   {list.emplace_back(post);}
 };
 
 class Expression: public Decl
@@ -313,6 +351,7 @@ class Expression: public Decl
     public:
         using Decl::Decl;
         virtual Type const& getType() const = 0;
+        virtual void print(std::ostream& stream, int indent, bool showName) const override;
 
         static constexpr bool valid = true;
         static constexpr Int defaultStorageId = 19;
@@ -328,6 +367,7 @@ class ExpressionObject: public Expression
             , object(object)
         {}
         virtual Type const& getType() const override {return object.getType();}
+        virtual void print(std::ostream& stream, int indent, bool showName) const override;
 };
 
 class ExpressionMemberAccess: public Expression
@@ -342,6 +382,7 @@ class ExpressionMemberAccess: public Expression
             , member(findMember(action, memberName))
         {}
         virtual Type const& getType() const override {return member.getType();}
+        virtual void print(std::ostream& stream, int indent, bool showName) const override;
     private:
         Object& findMember(ActionRef action, Identifier const& memberName);
 };
@@ -363,6 +404,7 @@ class ExpressionLiteral: public Expression
             , type(findType(action))
         {}
         virtual Type const& getType() const override {return type;}
+        virtual void print(std::ostream& stream, int indent, bool showName) const override;
     private:
         Type const& findType(ActionRef action);
 };
@@ -381,6 +423,7 @@ class ExpressionFuncCall: public Expression
             , type(findType(action))
         {}
         virtual Type const& getType() const override {return type;}
+        virtual void print(std::ostream& stream, int indent, bool showName) const override;
     private:
         Type const& findType(ActionRef action);
 };
