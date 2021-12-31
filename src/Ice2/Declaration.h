@@ -50,14 +50,14 @@ class Scope: public Decl
 
         std::pair<bool, NameRef> get(std::string const& name) const;
         template<typename T, typename... Args>
-        T& add(Action& action, Args&&... args);
+        T& add(ActionRef action, Args&&... args);
 
         virtual bool storeFunctionsInContainer() const {return false;}
         virtual void print(std::ostream& stream, int indent, bool showName) const override;
         std::string anonName();
 
     private:
-        Decl& saveMember(Action& action, std::unique_ptr<Decl>&& member);
+        Decl& saveMember(ActionRef action, std::unique_ptr<Decl>&& member);
         char hex(std::size_t halfByte);
         void generateHexName(std::string& name, std::size_t count);
 };
@@ -178,6 +178,7 @@ class Overload: public Type
         {}
         virtual void print(std::ostream& stream, int indent, bool showName) const override;
         Type const& getReturnType(ActionRef action, TypeCList const& index) const;
+        bool findMatch(ActionRef, TypeCList const& index) const;
         void addOverload(Function const& type);
 };
 

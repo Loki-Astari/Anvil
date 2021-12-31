@@ -1,5 +1,5 @@
-#ifndef THORSANVIL_ANVIL_ICE_PARSER_TYPES_H
-#define THORSANVIL_ANVIL_ICE_PARSER_TYPES_H
+#ifndef THORSANVIL_ANVIL_ICE_STORAGE_ACCESS_H
+#define THORSANVIL_ANVIL_ICE_STORAGE_ACCESS_H
 
 #include "Common.h"
 
@@ -40,8 +40,8 @@ template<typename T>
 struct IdAccess
 {
     Storage&    storage;
-    Int         index;
-    IdAccess(Storage& storage, Id<T, IdTraits<T>::valid> id);
+    Int&        index;
+    IdAccess(Storage& storage, Id<T, IdTraits<T>::valid>& id);
     ~IdAccess();
 
     Int reuse();

@@ -31,7 +31,7 @@ struct FacadeCompiler
     }
 };
 
-TEST(CallConsole, CallPrintOnConsole)
+TEST(CallConsoleTest, CallPrintOnConsole)
 {
     std::stringstream    result;
     std::stringstream    file = buildStream(R"(

@@ -31,7 +31,7 @@ struct FacadeCompiler
     }
 };
 
-TEST(ConstructorMember, DefaultAll)
+TEST(ConstructorMemberTest, DefaultAll)
 {
     std::stringstream    result;
     std::stringstream    file = buildStream(R"(
@@ -64,7 +64,7 @@ namespace Sys
     EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 }
 
-TEST(ConstructorMember, DefaultEven)
+TEST(ConstructorMemberTest, DefaultEven)
 {
     std::stringstream    result;
     std::stringstream    file = buildStream(R"(
@@ -95,7 +95,7 @@ namespace Sys
     EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 }
 
-TEST(ConstructorMember, DefaultOdd)
+TEST(ConstructorMemberTest, DefaultOdd)
 {
     std::stringstream    result;
     std::stringstream    file = buildStream(R"(
@@ -126,7 +126,7 @@ namespace Sys
     EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 }
 
-TEST(ConstructorMember, DefaultOutOfOrderTop)
+TEST(ConstructorMemberTest, DefaultOutOfOrderTop)
 {
     std::stringstream    result;
     std::stringstream    file = buildStream(R"(
@@ -159,7 +159,7 @@ namespace Sys
 
 }
 
-TEST(ConstructorMember, DefaultOutOfOrderBot)
+TEST(ConstructorMemberTest, DefaultOutOfOrderBot)
 {
     std::stringstream    result;
     std::stringstream    file = buildStream(R"(

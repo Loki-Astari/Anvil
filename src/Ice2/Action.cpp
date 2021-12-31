@@ -26,7 +26,7 @@ Action::Action(Lexer& lexer, Scope& globalScope, Storage& storage, std::ostream&
     , offset(0)
 {
     currentScope.emplace_back(globalScope);
-    globalScope.add<Void>(*this);
+    globalScope.add<Void>(this);
 }
 
 Action::~Action()
@@ -158,18 +158,18 @@ void Action::addDefaultMethodsToScope(Scope& scope, DeclList declList)
     if (!findCons.first)
     {
         // TODO: Need to add constructors and destructors for members.
-        CodeBlock&          codeBlock       = scope.add<CodeBlock>(*this);
-        StatementCodeBlock& initCodeInit    = scope.add<StatementCodeBlock>(*this, codeBlock, StatementList{});
-        Function& constructorType = scope.add<Function>(*this, "", TypeCList{}, getRefFromScope<Type>(currentScope.front(), "Void"));
+        CodeBlock&          codeBlock       = scope.add<CodeBlock>(this);
+        StatementCodeBlock& initCodeInit    = scope.add<StatementCodeBlock>(this, codeBlock, StatementList{});
+        Function& constructorType = scope.add<Function>(this, "", TypeCList{}, getRefFromScope<Type>(currentScope.front(), "Void"));
         addFunctionToScope<ObjectFunctionConstructor>("$constructor", constructorType, MemberInitList{}, initCodeInit);
     }
     auto findDest = scope.get("$destructor");
     if (!findDest.first)
     {
         // TODO: Need to add constructors and destructors for members.
-        CodeBlock&          codeBlock       = scope.add<CodeBlock>(*this);
-        StatementCodeBlock& deinitCodeInit  = scope.add<StatementCodeBlock>(*this, codeBlock, StatementList{});
-        Function& destructorType = scope.add<Function>(*this, "", TypeCList{}, getRefFromScope<Type>(currentScope.front(), "Void"));
+        CodeBlock&          codeBlock       = scope.add<CodeBlock>(this);
+        StatementCodeBlock& deinitCodeInit  = scope.add<StatementCodeBlock>(this, codeBlock, StatementList{});
+        Function& destructorType = scope.add<Function>(this, "", TypeCList{}, getRefFromScope<Type>(currentScope.front(), "Void"));
         addFunctionToScope<ObjectFunctionDestructor>("$destructor", destructorType, MemberInitList{}, deinitCodeInit);
     }
 
@@ -221,7 +221,7 @@ FunctionId Action::scopeFunctionAdd(IdentifierId id, TypeCListId listId, TypeId 
 FunctionId Action::scopeFunctionAddV(Identifier& id, TypeCList list, Type const& returnType, Reuse&& /*reuse*/)
 {
     Scope&      topScope = currentScope.back();
-    Function&   function = topScope.add<Function>(*this, std::move(id), std::move(list), returnType);
+    Function&   function = topScope.add<Function>(this, std::move(id), std::move(list), returnType);
 
     return storage.add(FunctionRef{function});
 }
@@ -235,7 +235,7 @@ CodeBlockId Action::scopeCodeBlockOpen()
 CodeBlockId Action::scopeCodeBlockOpenV()
 {
     Scope&     topScope = currentScope.back();
-    CodeBlock& result  = topScope.add<CodeBlock>(*this);
+    CodeBlock& result  = topScope.add<CodeBlock>(this);
     currentScope.emplace_back(result);
 
     return storage.add(CodeBlockRef{result});
@@ -259,7 +259,7 @@ StatementCodeBlockId Action::scopeCodeBlockCloseV(CodeBlock& codeBlock, Statemen
     }
     currentScope.pop_back();
     Scope&          newTop = currentScope.back();
-    StatementCodeBlock& result   = newTop.add<StatementCodeBlock>(*this, codeBlock, std::move(list));
+    StatementCodeBlock& result   = newTop.add<StatementCodeBlock>(this, codeBlock, std::move(list));
     return storage.add(StatementCodeBlockRef{result});
 }
 // ------------------
@@ -287,7 +287,7 @@ ObjectId Action::scopeObjectAddVariableV(Identifier name, Type const& type, Expr
         error("Object can't find constructor");
     }
 
-    ObjectVariable& object = topScope.add<ObjectVariable>(*this, std::move(name), type, std::move(init));
+    ObjectVariable& object = topScope.add<ObjectVariable>(this, std::move(name), type, std::move(init));
     return storage.add<ObjectRef>(object);
 }
 // ------------------
@@ -306,7 +306,15 @@ ObjectId Action::scopeObjectAddFunctionV(Identifier name, Type const& type, Stat
     auto find = topScope.get(name);
     if (find.first)
     {
-        error("Object Already defined: ", name);
+        ObjectOverload& overloadObj = dynamic_cast<ObjectOverload&>(*find.second->second);
+        Overload const& overload = dynamic_cast<Overload const&>(overloadObj.getType());
+
+        Function const& funcType = dynamic_cast<Function const&>(type);
+        bool found = overload.findMatch(this, funcType.getParams());
+        if (found)
+        {
+            error("Function Already defined: ", name);
+        }
     }
     ObjectFunction& object = addFunctionToScope<ObjectFunction>(std::move(name), type, code);
 
@@ -324,7 +332,7 @@ MemberInitId Action::memberInit(IdentifierId name, ExpressionListId init)
 MemberInitId Action::memberInitV(Identifier name, ExpressionList init)
 {
     Scope&  topScope = currentScope.back();
-    MemberInit& object = topScope.add<MemberInit>(*this, std::move(name), std::move(init));
+    MemberInit& object = topScope.add<MemberInit>(this, std::move(name), std::move(init));
     return storage.add<MemberInitRef>(object);
 }
 // ------------------

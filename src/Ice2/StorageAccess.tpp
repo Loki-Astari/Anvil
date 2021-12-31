@@ -2,7 +2,6 @@
 #define THORSANVIL_ANVIL_ICE_PARSER_TYPES_TPP
 
 #include "Declaration.h"
-#include "Storage.h"
 
 namespace ThorsAnvil::Anvil::Ice
 {
@@ -92,14 +91,20 @@ Id<T, false>::Id(Int v)
 
 template<typename T>
 inline
-IdAccess<T>::IdAccess(Storage& storage, Id<T, IdTraits<T>::valid> id)
+IdAccess<T>::IdAccess(Storage& storage, Id<T, IdTraits<T>::valid>& id)
     : storage(storage)
     , index(id.value)
 {}
 
 template<typename T>
 inline IdAccess<T>::~IdAccess()
-{}
+{
+    if (index != 0)
+    {
+        storage.release(index);
+        index = 0;
+    }
+}
 
 template<typename T>
 IdAccess<T>::operator T&() const

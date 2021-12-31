@@ -129,7 +129,7 @@ template<typename Dst, typename... Param>
 Id<Base<Dst>> Action::addDeclToScope(Id<Param>... id)
 {
     Scope&     topScope = currentScope.back();
-    Base<Dst>& result   = topScope.add<Dst>(*this, static_cast<Param&>(IdAccess<Param>{storage, id})...);
+    Base<Dst>& result   = topScope.add<Dst>(this, static_cast<Param&>(IdAccess<Param>{storage, id})...);
     return storage.add(Ref<Base<Dst>>{result});
 }
 
@@ -148,7 +148,7 @@ Dst& Action::getOrAddDeclToScope(std::string declName, Param... param)
         }
         return *result;
     }
-    Dst& addedScope = topScope.add<Dst>(*this, std::move(declName), std::move(param)...);
+    Dst& addedScope = topScope.add<Dst>(this, std::move(declName), std::move(param)...);
     return addedScope;
 }
 

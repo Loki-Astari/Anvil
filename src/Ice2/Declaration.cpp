@@ -87,7 +87,7 @@ void Scope::generateHexName(std::string& name, std::size_t count)
     }
 }
 
-Decl& Scope::saveMember(Action& action, std::unique_ptr<Decl>&& member)
+Decl& Scope::saveMember(ActionRef action, std::unique_ptr<Decl>&& member)
 {
     Decl& result = *member;
 
@@ -106,7 +106,7 @@ Decl& Scope::saveMember(Action& action, std::unique_ptr<Decl>&& member)
     auto& location = members[index];
     if (location.get() != nullptr)
     {
-        action.error("Location already in use: ", index);
+        action->error("Location already in use: ", index);
     }
     else
     {
@@ -173,15 +173,15 @@ void Type::print(std::ostream& stream, int s, bool showName) const
 Void::Void(ActionRef action)
     : Type(action, "Void")
 {
-    CodeBlock&          codeBlock       = add<CodeBlock>(*action);
-    StatementCodeBlock& statement       = add<StatementCodeBlock>(*action, codeBlock, StatementList{});
-    Function&           funcType        = add<Function>(*action, "", TypeCList{}, *this);
+    CodeBlock&          codeBlock       = add<CodeBlock>(action);
+    StatementCodeBlock& statement       = add<StatementCodeBlock>(action, codeBlock, StatementList{});
+    Function&           funcType        = add<Function>(action, "", TypeCList{}, *this);
 
-    ObjectOverload&         constructOver   = add<ObjectOverload>(*action, "$constructor");
+    ObjectOverload&         constructOver   = add<ObjectOverload>(action, "$constructor");
     std::unique_ptr<Decl>   construct       = std::make_unique<ObjectFunction>(action, "$constructor", funcType, statement);
     constructOver.addOverload(std::move(construct));
 
-    ObjectOverload&         destructOver    = add<ObjectOverload>(*action, "$destructor");
+    ObjectOverload&         destructOver    = add<ObjectOverload>(action, "$destructor");
     std::unique_ptr<Decl>   destruct        = std::make_unique<ObjectFunction>(action, "$destructor", funcType, statement);
     destructOver.addOverload(std::move(destruct));
 }
@@ -257,6 +257,12 @@ Type const& Overload::getReturnType(ActionRef action, TypeCList const& index) co
         action->error("Did not find overlaad");
     }
     return find->second.get().getReturnType(action);
+}
+
+bool Overload::findMatch(ActionRef, TypeCList const& index) const
+{
+    auto find = overloadData.find(index);
+    return find != overloadData.end();
 }
 
 void Overload::addOverload(Function const& type)
@@ -358,11 +364,11 @@ void ObjectFunctionSpecial::addMemberInit(ActionRef action, Scope& scope, Object
         std::cerr << "Ignoring: " << function->declName() << "\n";
         return;
     }
-    Expression& object      = scope.add<ExpressionObject>(*action, data);
+    Expression& object      = scope.add<ExpressionObject>(action, data);
     std::string methodName = con ? "$constructor" : "$destructor";
-    ExpressionMemberAccess& method = scope.add<ExpressionMemberAccess>(*action, object, std::move(methodName));
-    Expression& callInit    = scope.add<ExpressionFuncCall>(*action, method, std::move(memberInit.expressionList()));
-    Statement&  initMember  = scope.add<StatementExpression>(*action, callInit);
+    ExpressionMemberAccess& method = scope.add<ExpressionMemberAccess>(action, object, std::move(methodName));
+    Expression& callInit    = scope.add<ExpressionFuncCall>(action, method, std::move(memberInit.expressionList()));
+    Statement&  initMember  = scope.add<StatementExpression>(action, callInit);
     code.prefix(initMember);
 }
 
@@ -502,12 +508,14 @@ void StatementCodeBlock::print(std::ostream& stream, int s, bool showName) const
     }
 }
 
-void Expression::print(std::ostream& stream, int s, bool showName) const
+void Expression::print(std::ostream& /*stream*/, int /*s*/, bool showName) const
 {
-    if (showName)
+    // Expression is a virtual class so can not be printed.
+    if (showName == true)
     {
-        stream << indent(s) << "Decl::Expression\n";
+        throw std::runtime_error("Should never be called with true");
     }
+    // The next class down is Decl (there is no implementation of print so no further action).
 }
 
 void ExpressionObject::print(std::ostream& stream, int s, bool showName) const
@@ -586,15 +594,6 @@ void ExpressionFuncCall::print(std::ostream& stream, int s, bool showName) const
     }
 }
 
-
-template<typename T>
-Type const& ExpressionLiteral<T>::findType(ActionRef action)
-{
-    Namespace& global = action->getRefFromScopeStack<Namespace>("::");
-    Namespace& stdns  = action->getRefFromScope<Namespace>(global, "Std");
-    Type&      string = action->getRefFromScope<Type>(stdns, ExpressionLiteralTypeName<T>::standardName);
-    return string;
-}
 
 namespace ThorsAnvil::Anvil::Ice
 {
