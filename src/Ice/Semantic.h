@@ -22,6 +22,14 @@ class Semantic: public Action
         virtual ~Semantic() override;
 
         virtual NamespaceId scopeNamespaceOpenV(std::string namespaceName, Reuse&& reuse) override;
+        virtual NamespaceId scopeNamespaceCloseV(Namespace& ns, DeclList decl, Reuse&& reuse) override;
+        virtual ClassId     scopeClassOpenV(Identifier className, Reuse&& reuse) override;
+        virtual ClassId     scopeClassCloseV(Class& cl, DeclList decl, Reuse&& reuse) override;
+        virtual ObjectId    scopeObjectAddVariableV(Identifier name, Type const& type, ExpressionList init) override;
+        virtual ObjectId    scopeObjectAddFunctionV(Identifier name, Type const& type, StatementCodeBlock& code) override;
+    private:
+        void addDefaultMethodsToScope(Scope& scope, DeclList declList);
+
 };
 
 }

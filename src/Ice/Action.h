@@ -160,10 +160,13 @@ class Action
         template<typename Dst, typename... Param>
         Id<Base<Dst>> addDeclToScope(Id<Param>... id);
         template<typename Dst, typename... Param>
-        Dst& getOrAddDeclToScope(std::string declName, Param... param);
+        Dst& getOrAddDeclToScope(Scope& scope, std::string declName, Param... param);
+    protected:
         template<typename Dst, typename... Param>
-        ObjectFunction& addFunctionToScope(std::string name, Param&&... param);
-        void addDefaultMethodsToScope(Scope& scope, DeclList decl);
+        ObjectFunction& addFunctionToScope(Scope& scope, std::string name, Param&&... param);
+        Scope& getGlobalScope() const {return currentScope.front();}
+        Scope& getCurrentScope() const {return currentScope.back();}
+
         std::string getCurrentScopeFullName() const;
 };
 

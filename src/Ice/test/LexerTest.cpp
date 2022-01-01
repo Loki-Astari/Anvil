@@ -1,12 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "Lexer.h"
-#include "Storage.h"
-#include "Declaration.h"
-#include "ice.tab.hpp"
 #include "test/Utility.h"
-
-#include <fstream>
 
 TEST(LexerTest, GetLexemeFromNotStartedLexer)
 {

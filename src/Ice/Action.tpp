@@ -134,10 +134,9 @@ Id<Base<Dst>> Action::addDeclToScope(Id<Param>... id)
 }
 
 template<typename Dst, typename... Param>
-Dst& Action::getOrAddDeclToScope(std::string declName, Param... param)
+Dst& Action::getOrAddDeclToScope(Scope& scope, std::string declName, Param... param)
 {
-    Scope& topScope = currentScope.back();
-    auto find = topScope.get(declName);
+    auto find = scope.get(declName);
     if (find.first)
     {
         Decl*       foundDeclWithSameName = find.second->second.get();
@@ -148,14 +147,14 @@ Dst& Action::getOrAddDeclToScope(std::string declName, Param... param)
         }
         return *result;
     }
-    Dst& addedScope = topScope.add<Dst>(this, std::move(declName), std::move(param)...);
+    Dst& addedScope = scope.add<Dst>(this, std::move(declName), std::move(param)...);
     return addedScope;
 }
 
 template<typename Dst, typename... Param>
-ObjectFunction& Action::addFunctionToScope(std::string name, Param&&... param)
+ObjectFunction& Action::addFunctionToScope(Scope& scope, std::string name, Param&&... param)
 {
-    ObjectOverload& objectOverload = getOrAddDeclToScope<ObjectOverload>(name);
+    ObjectOverload& objectOverload = getOrAddDeclToScope<ObjectOverload>(scope, name);
 
     std::unique_ptr<Dst> func = std::make_unique<Dst>(this, std::move(name), std::forward<Param>(param)...);
     ObjectFunction&      result = *func;

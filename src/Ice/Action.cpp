@@ -86,8 +86,7 @@ NamespaceId Action::scopeNamespaceOpen(IdentifierId id)
 }
 NamespaceId Action::scopeNamespaceOpenV(Identifier namespaceName, Reuse&& /*reuse*/)
 {
-    Namespace& newNameSpace = getOrAddDeclToScope<Namespace>(std::move(namespaceName));
-    newNameSpace.setPath(getCurrentScopeFullName());
+    Namespace& newNameSpace = getOrAddDeclToScope<Namespace>(currentScope.back(), std::move(namespaceName));
     currentScope.emplace_back(newNameSpace);
 
     return storage.add(NamespaceRef{newNameSpace});
@@ -100,7 +99,7 @@ NamespaceId Action::scopeNamespaceClose(NamespaceId id, DeclListId listId)
     NamespaceAccess     access(storage, id);
     return scopeNamespaceCloseV(access, moveAccess(DeclListAccess(storage, listId)), [&access](){return access.reuse();});
 }
-NamespaceId Action::scopeNamespaceCloseV(Namespace& ns, DeclList decl, Reuse&& reuse)
+NamespaceId Action::scopeNamespaceCloseV(Namespace& ns, DeclList /*decl*/, Reuse&& reuse)
 {
     Scope&          topScope = currentScope.back();
     Namespace*      topNS = dynamic_cast<Namespace*>(&topScope);
@@ -109,7 +108,6 @@ NamespaceId Action::scopeNamespaceCloseV(Namespace& ns, DeclList decl, Reuse&& r
     {
         error("Internal Error: Scope Note correctly aligned from Namespace");
     }
-    addDefaultMethodsToScope(ns, std::move(decl));
     currentScope.pop_back();
     return reuse();;
 }
@@ -123,8 +121,7 @@ ClassId Action::scopeClassOpen(IdentifierId id)
 }
 ClassId Action::scopeClassOpenV(Identifier className, Reuse&& /*reuse*/)
 {
-    Class& newClass = getOrAddDeclToScope<Class>(std::move(className));
-    newClass.setPath(getCurrentScopeFullName());
+    Class& newClass = getOrAddDeclToScope<Class>(currentScope.back(), std::move(className));
     currentScope.emplace_back(newClass);
 
     return storage.add(ClassRef{newClass});
@@ -137,7 +134,7 @@ ClassId Action::scopeClassClose(ClassId id, DeclListId listId)
     ClassAccess     access(storage, id);
     return scopeClassCloseV(access, moveAccess(DeclListAccess(storage, listId)), [&access](){return access.reuse();});
 }
-ClassId Action::scopeClassCloseV(Class& cl, DeclList decl, Reuse&& reuse)
+ClassId Action::scopeClassCloseV(Class& cl, DeclList /*decl*/, Reuse&& reuse)
 {
     Scope&          topScope = currentScope.back();
     Class*          topClass = dynamic_cast<Class*>(&topScope);
@@ -146,61 +143,11 @@ ClassId Action::scopeClassCloseV(Class& cl, DeclList decl, Reuse&& reuse)
     {
         error("Internal Error: Scope Note correctly aligned from Class");
     }
-    addDefaultMethodsToScope(cl, std::move(decl));
     currentScope.pop_back();
     return reuse();
 }
 // ------------------
 
-void Action::addDefaultMethodsToScope(Scope& scope, DeclList declList)
-{
-    auto findCons = scope.get("$constructor");
-    if (!findCons.first)
-    {
-        // TODO: Need to add constructors and destructors for members.
-        CodeBlock&          codeBlock       = scope.add<CodeBlock>(this);
-        StatementCodeBlock& initCodeInit    = scope.add<StatementCodeBlock>(this, codeBlock, StatementList{});
-        Function& constructorType = scope.add<Function>(this, "", TypeCList{}, getRefFromScope<Type>(currentScope.front(), "Void"));
-        addFunctionToScope<ObjectFunctionConstructor>("$constructor", constructorType, MemberInitList{}, initCodeInit);
-    }
-    auto findDest = scope.get("$destructor");
-    if (!findDest.first)
-    {
-        // TODO: Need to add constructors and destructors for members.
-        CodeBlock&          codeBlock       = scope.add<CodeBlock>(this);
-        StatementCodeBlock& deinitCodeInit  = scope.add<StatementCodeBlock>(this, codeBlock, StatementList{});
-        Function& destructorType = scope.add<Function>(this, "", TypeCList{}, getRefFromScope<Type>(currentScope.front(), "Void"));
-        addFunctionToScope<ObjectFunctionDestructor>("$destructor", destructorType, MemberInitList{}, deinitCodeInit);
-    }
-
-    MemberList data;
-    for (auto& decl: declList)
-    {
-        if (decl.get().storageSize() != 0)
-        {
-            Object& var = dynamic_cast<Object&>(decl.get());
-            data.emplace_back(var);
-        }
-    }
-    Scope& topScope = currentScope.back();
-
-    auto conFind = topScope.get("$constructor");
-    ObjectOverload&  constructorList = dynamic_cast<ObjectOverload&>(*conFind.second->second);
-    for (auto& function: constructorList)
-    {
-        ObjectFunctionConstructor&  constructor = dynamic_cast<ObjectFunctionConstructor&>(function);
-        constructor.addMissingMemberInit(this, scope, data, true);
-    }
-
-    auto desFind = topScope.get("$destructor");
-    ObjectOverload&  destructorList = dynamic_cast<ObjectOverload&>(*desFind.second->second);
-    for (auto& function: destructorList)
-    {
-        ObjectFunctionDestructor&  destructor = dynamic_cast<ObjectFunctionDestructor&>(function);
-        destructor.addMissingMemberInit(this, scope, data, false);
-    }
-}
-// ------------------
 
 ClassId Action::scopeClassAnon()
 {
@@ -281,12 +228,6 @@ ObjectId Action::scopeObjectAddVariableV(Identifier name, Type const& type, Expr
         error("Object Already defined: ", name);
     }
 
-    auto constructor = type.get("$constructor");
-    if (!constructor.first)
-    {
-        error("Object can't find constructor");
-    }
-
     ObjectVariable& object = topScope.add<ObjectVariable>(this, std::move(name), type, std::move(init));
     return storage.add<ObjectRef>(object);
 }
@@ -302,22 +243,7 @@ ObjectId Action::scopeObjectAddFunction(IdentifierId name, TypeId type, Statemen
 }
 ObjectId Action::scopeObjectAddFunctionV(Identifier name, Type const& type, StatementCodeBlock& code)
 {
-    Scope&  topScope = currentScope.back();
-    auto find = topScope.get(name);
-    if (find.first)
-    {
-        ObjectOverload& overloadObj = dynamic_cast<ObjectOverload&>(*find.second->second);
-        Overload const& overload = dynamic_cast<Overload const&>(overloadObj.getType());
-
-        Function const& funcType = dynamic_cast<Function const&>(type);
-        bool found = overload.findMatch(this, funcType.getParams());
-        if (found)
-        {
-            error("Function Already defined: ", name);
-        }
-    }
-    ObjectFunction& object = addFunctionToScope<ObjectFunction>(std::move(name), type, code);
-
+    ObjectFunction& object = addFunctionToScope<ObjectFunction>(getCurrentScope(), std::move(name), type, code);
     return storage.add<ObjectRef>(object);
 }
 // ------------------
@@ -349,7 +275,7 @@ ObjectId Action::scopeConstructorAdd(TypeCListId listId, MemberInitListId init, 
     StatementCodeBlockAccess codeAccess(storage, code);
     Type&                    funcType    = funcAccess;
 
-    ObjectFunction& object = addFunctionToScope<ObjectFunctionConstructor>("$constructor", funcType, initAccess, codeAccess);
+    ObjectFunction& object = addFunctionToScope<ObjectFunctionConstructor>(currentScope.back(), "$constructor", funcType, initAccess, codeAccess);
     return storage.add<ObjectRef>(object);
 }
 
@@ -367,7 +293,7 @@ ObjectId Action::scopeDestructorAdd(StatementCodeBlockId code)
     StatementCodeBlockAccess codeAccess(storage, code);
     Type&                    funcType    = funcAccess;
 
-    ObjectFunction& object = addFunctionToScope<ObjectFunctionDestructor>("$destructor", funcType, MemberInitList{}, codeAccess);
+    ObjectFunction& object = addFunctionToScope<ObjectFunctionDestructor>(currentScope.back(), "$destructor", funcType, MemberInitList{}, codeAccess);
     return storage.add<ObjectRef>(object);
 }
 // ------------------

@@ -2,8 +2,6 @@
 
 #include "Action.h"
 #include "StorageAccess.h"
-//#include "Storage.h"
-//#include "test/Utility.h"
 
 using namespace ThorsAnvil::Anvil::Ice;
 

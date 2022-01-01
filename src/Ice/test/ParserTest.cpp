@@ -1,34 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "Parser.h"
-#include "Lexer.h"
-#include "Storage.h"
-#include "ice.tab.hpp"
 #include "test/Utility.h"
-
-#include <fstream>
-#include <sstream>
-
-struct ParserCompiler
-{
-    ThorsAnvil::Anvil::Ice::Lexer           lexer;
-    ThorsAnvil::Anvil::Ice::Namespace       globalScope;
-    ThorsAnvil::Anvil::Ice::Storage         storage;
-    ThorsAnvil::Anvil::Ice::Action          action;
-    ThorsAnvil::Anvil::Ice::Parser          parser;
-
-    ParserCompiler(std::istream& input, std::ostream& output)
-        : lexer(input, output)
-        , globalScope(ThorsAnvil::Anvil::Ice::ActionRef{}, "GlobalScope")
-        , action(lexer, globalScope, storage, output)
-        , parser(lexer, action)
-    {}
-
-    bool compile()
-    {
-        return parser.parse();
-    }
-};
 
 TEST(ParserTest, NameSpaceOnly)
 {
@@ -39,7 +11,7 @@ namespace Name_Space
 }
     )");
 
-    ParserCompiler  compiler(file, result);
+    FacadeCompiler  compiler(file, result);
 
     EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
     EXPECT_TRUE_OR_DEBUG(compiler.globalScope.get("Name_Space").first, result);
@@ -57,7 +29,7 @@ namespace Name_Space
 }
     )");
 
-    ParserCompiler  compiler(file, result);
+    FacadeCompiler  compiler(file, result);
 
     EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
     EXPECT_TRUE_OR_DEBUG(compiler.globalScope.get("Name_Space").first, result);
@@ -79,7 +51,7 @@ namespace Twice_Space
 }
     )");
 
-    ParserCompiler  compiler(file, result);
+    FacadeCompiler  compiler(file, result);
 
     EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
     EXPECT_TRUE_OR_DEBUG(compiler.globalScope.get("Name_Space").first, result);
@@ -97,7 +69,7 @@ namespace Name_Space
 }
     )");
 
-    ParserCompiler  compiler(file, result);
+    FacadeCompiler  compiler(file, result);
 
     EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 }
@@ -112,7 +84,7 @@ namespace Name_Space
 }
     )");
 
-    ParserCompiler  compiler(file, result);
+    FacadeCompiler  compiler(file, result);
 
     EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 }
@@ -133,7 +105,7 @@ namespace Name_Space
 }
     )");
 
-    ParserCompiler  compiler(file, result);
+    FacadeCompiler  compiler(file, result);
 
     EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 }
@@ -156,7 +128,7 @@ namespace Name_Space
 }
     )");
 
-    ParserCompiler  compiler(file, result);
+    FacadeCompiler  compiler(file, result);
 
     EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 }
@@ -179,7 +151,7 @@ namespace Name_Space
 }
     )");
 
-    ParserCompiler  compiler(file, result);
+    FacadeCompiler  compiler(file, result);
 
     EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 }
@@ -202,7 +174,7 @@ namespace Name_Space
 }
     )");
 
-    ParserCompiler  compiler(file, result);
+    FacadeCompiler  compiler(file, result);
 
     EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 }
@@ -217,7 +189,7 @@ namespace Name_Space
 }
     )");
 
-    ParserCompiler  compiler(file, result);
+    FacadeCompiler  compiler(file, result);
     auto action = [&](){compiler.compile();};
     EXPECT_THROW_OR_DEBUG(action(), "Invalid Type Name:", result);
 }
@@ -235,7 +207,7 @@ namespace Name_Space
 }
     )");
 
-    ParserCompiler  compiler(file, result);
+    FacadeCompiler  compiler(file, result);
     auto action = [&](){compiler.compile();};
     EXPECT_THROW_OR_DEBUG(action(), "Invalid Type Name:", result);
 }
@@ -250,7 +222,7 @@ namespace Name_Space
 }
     )");
 
-    ParserCompiler  compiler(file, result);
+    FacadeCompiler  compiler(file, result);
     auto action = [&](){compiler.compile();};
     EXPECT_THROW_OR_DEBUG(action(), "Invalid Type Name:", result);
 }
@@ -266,7 +238,7 @@ namespace Name_Space
 }
     )");
 
-    ParserCompiler  compiler(file, result);
+    FacadeCompiler  compiler(file, result);
     auto action = [&](){compiler.compile();};
     EXPECT_THROW_OR_DEBUG(action(), "Invalid Type Name:", result);
 }
@@ -282,7 +254,7 @@ namespace Name_Space
 }
     )");
 
-    ParserCompiler  compiler(file, result);
+    FacadeCompiler  compiler(file, result);
 
     EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 }
@@ -300,7 +272,7 @@ namespace Name_Space
 }
     )");
 
-    ParserCompiler  compiler(file, result);
+    FacadeCompiler  compiler(file, result);
 
     EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 }
@@ -324,7 +296,7 @@ namespace Name_Space
 }
     )");
 
-    ParserCompiler  compiler(file, result);
+    FacadeCompiler  compiler(file, result);
 
     EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 }
@@ -340,7 +312,7 @@ namespace Name_Space
 }
     )");
 
-    ParserCompiler  compiler(file, result);
+    FacadeCompiler  compiler(file, result);
 
     EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 }
@@ -363,7 +335,7 @@ namespace Name_Space
 }
     )");
 
-    ParserCompiler  compiler(file, result);
+    FacadeCompiler  compiler(file, result);
 
     EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 }
@@ -379,7 +351,7 @@ namespace Name_Space
 }
     )");
 
-    ParserCompiler  compiler(file, result);
+    FacadeCompiler  compiler(file, result);
 
     EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 }
@@ -404,7 +376,7 @@ namespace Name_Space
 }
     )");
 
-    ParserCompiler  compiler(file, result);
+    FacadeCompiler  compiler(file, result);
 
     EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 }
@@ -423,7 +395,7 @@ namespace Name_Space
 }
     )");
 
-    ParserCompiler  compiler(file, result);
+    FacadeCompiler  compiler(file, result);
 
     EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 }

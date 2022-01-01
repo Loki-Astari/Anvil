@@ -1,7 +1,60 @@
 #ifndef TEST_UTILITY_H
 #define TEST_UTILITY_H
 
+#include "Parser.h"
+#include "Lexer.h"
+#include "Storage.h"
+#include "Declaration.h"
+#include "Semantic.h"
+#include "ice.tab.hpp"
+#include "test/Utility.h"
+
 #include <sstream>
+// #include <fstream>
+
+struct FacadeCompiler
+{
+    ThorsAnvil::Anvil::Ice::Lexer           lexer;
+    ThorsAnvil::Anvil::Ice::Namespace       globalScope;
+    ThorsAnvil::Anvil::Ice::Storage         storage;
+    ThorsAnvil::Anvil::Ice::Action          action;
+    ThorsAnvil::Anvil::Ice::Parser          parser;
+
+    FacadeCompiler(std::istream& input, std::ostream& output)
+        : lexer(input, output)
+        , globalScope(ThorsAnvil::Anvil::Ice::ActionRef{}, "GlobalScope")
+        , action(lexer, globalScope, storage, output)
+        , parser(lexer, action)
+    {}
+
+    bool compile()
+    {
+        return parser.parse();
+    }
+};
+
+struct SemanticCompiler
+{
+    ThorsAnvil::Anvil::Ice::Lexer               lexer;
+    ThorsAnvil::Anvil::Ice::Namespace           globalScope;
+    ThorsAnvil::Anvil::Ice::Storage             storage;
+    ThorsAnvil::Anvil::Ice::NamespaceDecOrder   order;
+    ThorsAnvil::Anvil::Ice::Semantic            action;
+    ThorsAnvil::Anvil::Ice::Parser              parser;
+
+    SemanticCompiler(std::istream& input, std::ostream& output)
+        : lexer(input, output)
+        , globalScope(ThorsAnvil::Anvil::Ice::ActionRef{}, "GlobalScope")
+        , action(lexer, order, globalScope, storage, output)
+        , parser(lexer, action)
+    {}
+
+    bool compile()
+    {
+        return parser.parse();
+    }
+};
+
 
 #define EXPECT_EQ_OR_LOG(save, test, value, output) \
                                     do                                  \
