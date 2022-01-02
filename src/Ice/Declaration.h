@@ -6,6 +6,7 @@
 #include <map>
 #include <string>
 #include <numeric>
+#include <sstream>
 
 namespace ThorsAnvil::Anvil::Ice
 {
@@ -124,19 +125,10 @@ class Type: public NamedScope
     public:
         using NamedScope::NamedScope;
         virtual void print(std::ostream& stream, int indent, bool showName) const override;
+        virtual std::string getExtension() const {return declName();}
 
         static constexpr bool valid = true;
         static constexpr Int defaultStorageId = 13;
-};
-
-class Void: public Type
-{
-    public:
-        Void(ActionRef action);
-        virtual void print(std::ostream& stream, int indent, bool showName) const override;
-
-        static constexpr bool valid = false;
-        static constexpr Int defaultStorageId = 14;
 };
 
 class Class: public Type
@@ -148,6 +140,16 @@ class Class: public Type
 
         static constexpr bool valid = true;
         static constexpr Int defaultStorageId = 15;
+};
+
+class Void: public Class
+{
+    public:
+        Void(ActionRef action);
+        virtual void print(std::ostream& stream, int indent, bool showName) const override;
+
+        static constexpr bool valid = false;
+        static constexpr Int defaultStorageId = 14;
 };
 
 class Function: public Type
@@ -162,6 +164,7 @@ class Function: public Type
         {}
         virtual bool storeFunctionsInContainer() const override {return true;}
         virtual void print(std::ostream& stream, int indent, bool showName) const override;
+        virtual std::string getExtension() const override;
         Type const& getReturnType(ActionRef /*action*/) const {return returnType;}
         TypeCList getParams() const {return param;}
 
@@ -216,40 +219,20 @@ class ObjectFunction: public Object
 {
     protected:
         StatementCodeBlock&  code;
+        MemberInitList       init;
     public:
-        ObjectFunction(ActionRef action, std::string name, Type const& type, StatementCodeBlock& code)
-            : Object(action, std::move(name), type)
+        ObjectFunction(ActionRef action, std::string name, Type const& type, StatementCodeBlock& code, MemberInitList init)
+            : Object(action, name += type.getExtension(), type)
             , code(code)
-        {}
-        virtual int storageSize() const override {return 1;}
-        virtual void print(std::ostream& stream, int indent, bool showName) const override;
-};
-
-class ObjectFunctionSpecial: public ObjectFunction
-{
-    MemberInitList      init;
-    public:
-        ObjectFunctionSpecial(ActionRef action, std::string name, Type const& type, MemberInitList init, StatementCodeBlock& code)
-            : ObjectFunction(action, std::move(name), type, code)
             , init(std::move(init))
         {}
+        virtual int storageSize() const override {return 1;}
         virtual void print(std::ostream& stream, int indent, bool showName) const override;
 
         void addMissingMemberInit(ActionRef action, Scope& scope, MemberList const& members, bool con);
         void addMemberInit(ActionRef action, Scope& scope, ObjectRef data, MemberInit&& memberInit, bool con);
 };
-class ObjectFunctionConstructor: public ObjectFunctionSpecial
-{
-    public:
-        using ObjectFunctionSpecial::ObjectFunctionSpecial;
-        virtual void print(std::ostream& stream, int indent, bool showName) const override;
-};
-class ObjectFunctionDestructor: public ObjectFunctionSpecial
-{
-    public:
-        using ObjectFunctionSpecial::ObjectFunctionSpecial;
-        virtual void print(std::ostream& stream, int indent, bool showName) const override;
-};
+
 
 class OverloadIterator
 {
@@ -261,7 +244,7 @@ class OverloadIterator
         OverloadIterator(OverloadIter iter): iter(iter) {}
         OverloadIterator operator++(){++iter;return *this;}
         OverloadIterator operator++(int){OverloadIterator tmp(iter);++iter;return tmp;}
-        ObjectFunction& operator*() {return *iter->second;}
+        ObjectFunction& operator*() {return iter->second.get();}
         bool operator==(OverloadIterator const& rhs) const {return iter == rhs.iter;}
         bool operator!=(OverloadIterator const& rhs) const {return iter != rhs.iter;}
 };
@@ -278,7 +261,7 @@ class ObjectOverload: public Object
         virtual bool overloadable() const override {return true;}
         virtual int storageSize() const override;
         virtual void print(std::ostream& stream, int indent, bool showName) const override;
-        void addOverload(std::unique_ptr<Decl>&& decl);
+        void addOverload(ObjectFunction& func);
 
         OverloadIterator begin()    {return OverloadIterator(overloadData.begin());}
         OverloadIterator end()      {return OverloadIterator(overloadData.end());}

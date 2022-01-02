@@ -61,7 +61,7 @@ class Action
         CodeBlockId         scopeCodeBlockOpen();
         StatementCodeBlockId scopeCodeBlockClose(CodeBlockId, StatementListId);
         ObjectId            scopeObjectAddVariable(IdentifierId name, TypeId id, ExpressionListId init);
-        ObjectId            scopeObjectAddFunction(IdentifierId name, TypeId id, StatementCodeBlockId init);
+        ObjectId            scopeObjectAddFunction(IdentifierId name, TypeId id, StatementCodeBlockId code, MemberInitListId init);
         ObjectId            scopeConstructorAdd(TypeCListId listId, MemberInitListId init, StatementCodeBlockId code);
         ObjectId            scopeDestructorAdd(StatementCodeBlockId code);
         MemberInitId        memberInit(IdentifierId, ExpressionListId);
@@ -141,31 +141,28 @@ class Action
         void                assembleyAppend(Id<std::string> id);
         // Parsing virtual methods
         using Reuse = std::function<Int()>;
-        virtual VoidId              anvilProgramV(NamespaceList, Reuse&& reuse);
-        virtual NamespaceId         scopeNamespaceOpenV(Identifier, Reuse&& reuse);
-        virtual NamespaceId         scopeNamespaceCloseV(Namespace&, DeclList list, Reuse&& reuse);
-        virtual ClassId             scopeClassOpenV(Identifier, Reuse&& reuse);
-        virtual ClassId             scopeClassCloseV(Class&, DeclList list, Reuse&& reuse);
-        virtual FunctionId          scopeFunctionAddV(Identifier& id, TypeCList listId, Type const& returnType, Reuse&& reuse);
-        virtual CodeBlockId         scopeCodeBlockOpenV();
-        virtual StatementCodeBlockId scopeCodeBlockCloseV(CodeBlock&, StatementList);
-        virtual ObjectId            scopeObjectAddVariableV(Identifier name, Type const& id, ExpressionList init);
-        virtual ObjectId            scopeObjectAddFunctionV(Identifier name, Type const& id, StatementCodeBlock& code);
-        virtual MemberInitId        memberInitV(Identifier name, ExpressionList init);
-        virtual IdentifierId        identifierCreateV();
+        virtual VoidId              anvilProgramV(Scope& top, NamespaceList, Reuse&& reuse);
+        virtual NamespaceId         scopeNamespaceOpenV(Scope& top, Identifier, Reuse&& reuse);
+        virtual NamespaceId         scopeNamespaceCloseV(Scope& top, Namespace&, DeclList list, Reuse&& reuse);
+        virtual ClassId             scopeClassOpenV(Scope& top, Identifier, Reuse&& reuse);
+        virtual ClassId             scopeClassCloseV(Scope& top, Class&, DeclList list, Reuse&& reuse);
+        virtual FunctionId          scopeFunctionAddV(Scope& top, Identifier id, TypeCList listId, Type const& returnType, Reuse&& reuse);
+        virtual CodeBlockId         scopeCodeBlockOpenV(Scope& top);
+        virtual StatementCodeBlockId scopeCodeBlockCloseV(Scope& top, CodeBlock&, StatementList);
+        virtual ObjectId            scopeObjectAddVariableV(Scope& top, Identifier name, Type const& id, ExpressionList init);
+        virtual ObjectId            scopeObjectAddFunctionV(Scope& top, Identifier name, Type const& id, StatementCodeBlock& code, MemberInitList init);
+        virtual MemberInitId        memberInitV(Scope& top, Identifier name, ExpressionList init);
+        virtual IdentifierId        identifierCreateV(Scope& top, std::string identifier);
     private:
         void addToLine();
         void resetLine();
 
         template<typename Dst, typename... Param>
         Id<Base<Dst>> addDeclToScope(Id<Param>... id);
-        template<typename Dst, typename... Param>
-        Dst& getOrAddDeclToScope(Scope& scope, std::string declName, Param... param);
     protected:
         template<typename Dst, typename... Param>
-        ObjectFunction& addFunctionToScope(Scope& scope, std::string name, Param&&... param);
+        Dst& getOrAddDeclToScope(Scope& scope, std::string declName, Param... param);
         Scope& getGlobalScope() const {return currentScope.front();}
-        Scope& getCurrentScope() const {return currentScope.back();}
 
         std::string getCurrentScopeFullName() const;
 };

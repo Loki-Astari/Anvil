@@ -151,16 +151,6 @@ Dst& Action::getOrAddDeclToScope(Scope& scope, std::string declName, Param... pa
     return addedScope;
 }
 
-template<typename Dst, typename... Param>
-ObjectFunction& Action::addFunctionToScope(Scope& scope, std::string name, Param&&... param)
-{
-    ObjectOverload& objectOverload = getOrAddDeclToScope<ObjectOverload>(scope, name);
-
-    std::unique_ptr<Dst> func = std::make_unique<Dst>(this, std::move(name), std::forward<Param>(param)...);
-    ObjectFunction&      result = *func;
-    objectOverload.addOverload(std::move(func));
-    return result;
-}
 
 }
 

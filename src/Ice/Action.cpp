@@ -26,7 +26,6 @@ Action::Action(Lexer& lexer, Scope& globalScope, Storage& storage, std::ostream&
     , offset(0)
 {
     currentScope.emplace_back(globalScope);
-    globalScope.add<Void>(this);
 }
 
 Action::~Action()
@@ -70,9 +69,9 @@ VoidId Action::anvilProgram(NamespaceListId id)
 {
     ScopePrinter scope("anvilProgram");
     NamespaceListAccess     access(storage, id);
-    return anvilProgramV(moveAccess(access), [&access](){return access.reuse();});
+    return anvilProgramV(currentScope.back(), moveAccess(access), [&access](){return access.reuse();});
 }
-VoidId Action::anvilProgramV(NamespaceList /*list*/, Reuse&& /*reuse*/)
+VoidId Action::anvilProgramV(Scope& /*top*/, NamespaceList /*list*/, Reuse&& /*reuse*/)
 {
     return 0;
 }
@@ -82,11 +81,11 @@ NamespaceId Action::scopeNamespaceOpen(IdentifierId id)
 {
     ScopePrinter scope("scopeNamespaceOpen");
     IdentifierAccess    access(storage, id);
-    return scopeNamespaceOpenV(moveAccess(access), [&access](){return access.reuse();});
+    return scopeNamespaceOpenV(currentScope.back(), moveAccess(access), [&access](){return access.reuse();});
 }
-NamespaceId Action::scopeNamespaceOpenV(Identifier namespaceName, Reuse&& /*reuse*/)
+NamespaceId Action::scopeNamespaceOpenV(Scope& top, Identifier namespaceName, Reuse&& /*reuse*/)
 {
-    Namespace& newNameSpace = getOrAddDeclToScope<Namespace>(currentScope.back(), std::move(namespaceName));
+    Namespace& newNameSpace = getOrAddDeclToScope<Namespace>(top, std::move(namespaceName));
     currentScope.emplace_back(newNameSpace);
 
     return storage.add(NamespaceRef{newNameSpace});
@@ -97,12 +96,11 @@ NamespaceId Action::scopeNamespaceClose(NamespaceId id, DeclListId listId)
 {
     ScopePrinter scope("scopeNamespaceClose");
     NamespaceAccess     access(storage, id);
-    return scopeNamespaceCloseV(access, moveAccess(DeclListAccess(storage, listId)), [&access](){return access.reuse();});
+    return scopeNamespaceCloseV(currentScope.back(), access, moveAccess(DeclListAccess(storage, listId)), [&access](){return access.reuse();});
 }
-NamespaceId Action::scopeNamespaceCloseV(Namespace& ns, DeclList /*decl*/, Reuse&& reuse)
+NamespaceId Action::scopeNamespaceCloseV(Scope& top, Namespace& ns, DeclList /*decl*/, Reuse&& reuse)
 {
-    Scope&          topScope = currentScope.back();
-    Namespace*      topNS = dynamic_cast<Namespace*>(&topScope);
+    Namespace*      topNS = dynamic_cast<Namespace*>(&top);
 
     if (&ns != topNS)
     {
@@ -117,11 +115,11 @@ ClassId Action::scopeClassOpen(IdentifierId id)
 {
     ScopePrinter scope("scopeClassOpen");
     IdentifierAccess     access(storage, id);
-    return scopeClassOpenV(moveAccess(access), [&access](){return access.reuse();});
+    return scopeClassOpenV(currentScope.back(), moveAccess(access), [&access](){return access.reuse();});
 }
-ClassId Action::scopeClassOpenV(Identifier className, Reuse&& /*reuse*/)
+ClassId Action::scopeClassOpenV(Scope& top, Identifier className, Reuse&& /*reuse*/)
 {
-    Class& newClass = getOrAddDeclToScope<Class>(currentScope.back(), std::move(className));
+    Class& newClass = getOrAddDeclToScope<Class>(top, std::move(className));
     currentScope.emplace_back(newClass);
 
     return storage.add(ClassRef{newClass});
@@ -132,12 +130,11 @@ ClassId Action::scopeClassClose(ClassId id, DeclListId listId)
 {
     ScopePrinter scope("scopeClassClose");
     ClassAccess     access(storage, id);
-    return scopeClassCloseV(access, moveAccess(DeclListAccess(storage, listId)), [&access](){return access.reuse();});
+    return scopeClassCloseV(currentScope.back(), access, moveAccess(DeclListAccess(storage, listId)), [&access](){return access.reuse();});
 }
-ClassId Action::scopeClassCloseV(Class& cl, DeclList /*decl*/, Reuse&& reuse)
+ClassId Action::scopeClassCloseV(Scope& top, Class& cl, DeclList /*decl*/, Reuse&& reuse)
 {
-    Scope&          topScope = currentScope.back();
-    Class*          topClass = dynamic_cast<Class*>(&topScope);
+    Class*          topClass = dynamic_cast<Class*>(&top);
 
     if (&cl != topClass)
     {
@@ -163,12 +160,11 @@ FunctionId Action::scopeFunctionAdd(IdentifierId id, TypeCListId listId, TypeId 
     ScopePrinter scope("scopeFunctionAdd");
     IdentifierAccess    access(storage, id);
 
-    return scopeFunctionAddV(access, moveAccess(TypeCListAccess(storage, listId)), TypeAccess(storage, returnType), [&access](){return access.reuse();});
+    return scopeFunctionAddV(currentScope.back(), access, moveAccess(TypeCListAccess(storage, listId)), TypeAccess(storage, returnType), [&access](){return access.reuse();});
 }
-FunctionId Action::scopeFunctionAddV(Identifier& id, TypeCList list, Type const& returnType, Reuse&& /*reuse*/)
+FunctionId Action::scopeFunctionAddV(Scope& top, Identifier id, TypeCList list, Type const& returnType, Reuse&& /*reuse*/)
 {
-    Scope&      topScope = currentScope.back();
-    Function&   function = topScope.add<Function>(this, std::move(id), std::move(list), returnType);
+    Function&   function = top.add<Function>(this, std::move(id), std::move(list), returnType);
 
     return storage.add(FunctionRef{function});
 }
@@ -177,12 +173,11 @@ FunctionId Action::scopeFunctionAddV(Identifier& id, TypeCList list, Type const&
 CodeBlockId Action::scopeCodeBlockOpen()
 {
     ScopePrinter scope("scopeCodeBlockOpen");
-    return scopeCodeBlockOpenV();
+    return scopeCodeBlockOpenV(currentScope.back());
 }
-CodeBlockId Action::scopeCodeBlockOpenV()
+CodeBlockId Action::scopeCodeBlockOpenV(Scope& top)
 {
-    Scope&     topScope = currentScope.back();
-    CodeBlock& result  = topScope.add<CodeBlock>(this);
+    CodeBlock& result  = top.add<CodeBlock>(this);
     currentScope.emplace_back(result);
 
     return storage.add(CodeBlockRef{result});
@@ -193,12 +188,11 @@ StatementCodeBlockId Action::scopeCodeBlockClose(CodeBlockId id, StatementListId
 {
     ScopePrinter scope("scopeCodeBlockClose");
     CodeBlockAccess      access(storage, id);
-    return scopeCodeBlockCloseV(access, moveAccess(StatementListAccess(storage, listId)));
+    return scopeCodeBlockCloseV(currentScope.back(), access, moveAccess(StatementListAccess(storage, listId)));
 }
-StatementCodeBlockId Action::scopeCodeBlockCloseV(CodeBlock& codeBlock, StatementList list)
+StatementCodeBlockId Action::scopeCodeBlockCloseV(Scope& top, CodeBlock& codeBlock, StatementList list)
 {
-    Scope&          topScope = currentScope.back();
-    CodeBlock*      topBlock = dynamic_cast<CodeBlock*>(&topScope);
+    CodeBlock*      topBlock = dynamic_cast<CodeBlock*>(&top);
 
     if (&codeBlock != topBlock)
     {
@@ -217,27 +211,27 @@ ObjectId Action::scopeObjectAddVariable(IdentifierId name, TypeId type, Expressi
     IdentifierAccess        nameAccess(storage, name);
     TypeAccess              typeAccess(storage, type);
     ExpressionListAccess    listAccess(storage, init);
-    return scopeObjectAddVariableV(moveAccess(nameAccess), typeAccess, moveAccess(listAccess));
+    return scopeObjectAddVariableV(currentScope.back(), moveAccess(nameAccess), typeAccess, moveAccess(listAccess));
 }
-ObjectId Action::scopeObjectAddVariableV(Identifier name, Type const& type, ExpressionList init)
+ObjectId Action::scopeObjectAddVariableV(Scope& top, Identifier name, Type const& type, ExpressionList init)
 {
-    Scope&  topScope = currentScope.back();
-    ObjectVariable& object = topScope.add<ObjectVariable>(this, std::move(name), type, std::move(init));
+    ObjectVariable& object = top.add<ObjectVariable>(this, std::move(name), type, std::move(init));
     return storage.add<ObjectRef>(object);
 }
 // ------------------
 
-ObjectId Action::scopeObjectAddFunction(IdentifierId name, TypeId type, StatementCodeBlockId init)
+ObjectId Action::scopeObjectAddFunction(IdentifierId name, TypeId type, StatementCodeBlockId code, MemberInitListId init)
 {
     ScopePrinter scope("scopeObjectAddFunction");
     IdentifierAccess         nameAccess(storage, name);
     TypeAccess               typeAccess(storage, type);
-    StatementCodeBlockAccess codeAccess(storage, init);
-    return scopeObjectAddFunctionV(moveAccess(nameAccess), typeAccess, codeAccess);
+    StatementCodeBlockAccess codeAccess(storage, code);
+    MemberInitListAccess     initAccess(storage, init);
+    return scopeObjectAddFunctionV(currentScope.back(), moveAccess(nameAccess), typeAccess, codeAccess, moveAccess(initAccess));
 }
-ObjectId Action::scopeObjectAddFunctionV(Identifier name, Type const& type, StatementCodeBlock& code)
+ObjectId Action::scopeObjectAddFunctionV(Scope& top, Identifier name, Type const& type, StatementCodeBlock& code, MemberInitList init)
 {
-    ObjectFunction& object = addFunctionToScope<ObjectFunction>(getCurrentScope(), std::move(name), type, code);
+    ObjectFunction& object = top.add<ObjectFunction>(this, std::move(name), type, code, std::move(init));
     return storage.add<ObjectRef>(object);
 }
 // ------------------
@@ -247,12 +241,11 @@ MemberInitId Action::memberInit(IdentifierId name, ExpressionListId init)
     ScopePrinter scope("memberInit");
     IdentifierAccess        nameAccess(storage, name);
     ExpressionListAccess    initAccess(storage, init);
-    return memberInitV(moveAccess(nameAccess), moveAccess(initAccess));
+    return memberInitV(currentScope.back(), moveAccess(nameAccess), moveAccess(initAccess));
 }
-MemberInitId Action::memberInitV(Identifier name, ExpressionList init)
+MemberInitId Action::memberInitV(Scope& top, Identifier name, ExpressionList init)
 {
-    Scope&  topScope = currentScope.back();
-    MemberInit& object = topScope.add<MemberInit>(this, std::move(name), std::move(init));
+    MemberInit& object = top.add<MemberInit>(this, std::move(name), std::move(init));
     return storage.add<MemberInitRef>(object);
 }
 // ------------------
@@ -260,17 +253,13 @@ MemberInitId Action::memberInitV(Identifier name, ExpressionList init)
 ObjectId Action::scopeConstructorAdd(TypeCListId listId, MemberInitListId init, StatementCodeBlockId code)
 {
     ScopePrinter scope("scopeConstructorAdd");
+    IdentifierId    conId       = storage.add<std::string>(std::string("$constructor"));
     IdentifierId    voidId      = storage.add<std::string>(std::string("Void"));
     TypeId          voidType    = getNameFromScopeStack<Type>(voidId);
     FunctionId      funcId      = scopeFunctionAdd(anonName(), listId, voidType);
-    FunctionAccess  funcAccess(storage, funcId);
 
-    MemberInitListAccess     initAccess(storage, init);
-    StatementCodeBlockAccess codeAccess(storage, code);
-    Type&                    funcType    = funcAccess;
 
-    ObjectFunction& object = addFunctionToScope<ObjectFunctionConstructor>(currentScope.back(), "$constructor", funcType, initAccess, codeAccess);
-    return storage.add<ObjectRef>(object);
+    return scopeObjectAddFunction(conId, convert<Function, Type>(funcId), code, init);
 }
 
 // ------------------
@@ -278,28 +267,25 @@ ObjectId Action::scopeConstructorAdd(TypeCListId listId, MemberInitListId init, 
 ObjectId Action::scopeDestructorAdd(StatementCodeBlockId code)
 {
     ScopePrinter scope("scopeDestructorAdd");
-    TypeCListId     listId      = storage.add<TypeCList>(TypeCList{});
-    IdentifierId    voidId      = storage.add<std::string>(std::string("Void"));
-    TypeId          voidType    = getNameFromScopeStack<Type>(voidId);
-    FunctionId      funcId      = scopeFunctionAdd(anonName(), listId, voidType);
-    FunctionAccess  funcAccess(storage, funcId);
+    IdentifierId        desId       = storage.add<std::string>(std::string("$destructor"));
+    TypeCListId         listId      = storage.add<TypeCList>(TypeCList{});
+    IdentifierId        voidId      = storage.add<std::string>(std::string("Void"));
+    TypeId              voidType    = getNameFromScopeStack<Type>(voidId);
+    FunctionId          funcId      = scopeFunctionAdd(anonName(), listId, voidType);
+    MemberInitListId    initId      = storage.add(MemberInitList{});
 
-    StatementCodeBlockAccess codeAccess(storage, code);
-    Type&                    funcType    = funcAccess;
-
-    ObjectFunction& object = addFunctionToScope<ObjectFunctionDestructor>(currentScope.back(), "$destructor", funcType, MemberInitList{}, codeAccess);
-    return storage.add<ObjectRef>(object);
+    return scopeObjectAddFunction(desId, convert<Function, Type>(funcId), code, initId);
 }
 // ------------------
 
 IdentifierId Action::identifierCreate()
 {
     ScopePrinter scope("identifierCreate");
-    return identifierCreateV();
+    return identifierCreateV(currentScope.back(), std::string(lexer.lexem()));
 }
-IdentifierId Action::identifierCreateV()
+IdentifierId Action::identifierCreateV(Scope& /*top*/, std::string identifier)
 {
-    return storage.add<std::string>(std::string(lexer.lexem()));
+    return storage.add(std::move(identifier));
 }
 // ------------------
 

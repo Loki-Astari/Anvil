@@ -800,7 +800,7 @@ namespace Name_Space
 }
     )");
 
-    FacadeCompiler  compiler(file, result);
+    SemanticCompiler  compiler(file, result);
 
     EXPECT_TRUE_OR_DEBUG(compiler.compile(), result);
 }

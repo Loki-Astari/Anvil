@@ -246,7 +246,7 @@ VariableInit:                                                               {$$ 
                     |   '=' Expression                                      {$$ = action.listAppend<Expression>(action.listCreate<Expression>(), $2);}
                     |   '(' ExpressionListOpt ')'                           {$$ = $2;}
 
-FunctionDecl:           IdentifierObject ':' TypeDecl CodeBlock             {$$ = action.scopeObjectAddFunction($1, $3, $4);}
+FunctionDecl:           IdentifierObject ':' TypeDecl CodeBlock             {$$ = action.scopeObjectAddFunction($1, $3, $4, action.listCreate<MemberInit>());}
 
 Statement:              Expression ';'                                      {$$ = action.statmentExpression($1);}
                     |   RETURN Expression ';'                               {$$ = action.statmentReturn($2);}

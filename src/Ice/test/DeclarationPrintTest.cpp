@@ -158,62 +158,12 @@ TEST(DeclarationPrintTest, ObjectFunction)
     ExpressionLiteral<void*>    value(nullptr, nullptr);
     CodeBlock                   codeBlock(nullptr);
     StatementCodeBlock          code(nullptr, codeBlock, StatementList{});
-    ObjectFunction              function(nullptr, "Function", voidType, code);
+    ObjectFunction              function(nullptr, "Function", voidType, code, MemberInitList{});
     std::string output = (std::stringstream{} << function).str();
     auto find = output.find("Decl::Object::ObjectFunction\n");
     EXPECT_TRUE(find != std::string::npos);
 }
 
-TEST(DeclarationPrintTest, ObjectFunctionSpecial)
-{
-    Void                        voidType(nullptr);
-    ExpressionLiteral<void*>    value(nullptr, nullptr);
-    CodeBlock                   codeBlock(nullptr);
-    StatementCodeBlock          code(nullptr, codeBlock, StatementList{});
-    ObjectFunctionSpecial       function(nullptr, "Function", voidType, MemberInitList{}, code);
-    std::string output = (std::stringstream{} << function).str();
-    auto find = output.find("Decl::Object::ObjectFunction::ObjectFunctionSpecial\n");
-    EXPECT_TRUE(find != std::string::npos);
-}
-
-TEST(DeclarationPrintTest, ObjectFunctionSpecialWithInit)
-{
-    Void                        voidType(nullptr);
-    ExpressionLiteral<void*>    value(nullptr, nullptr);
-    CodeBlock                   codeBlock(nullptr);
-    StatementCodeBlock          code(nullptr, codeBlock, StatementList{});
-    MemberInit                  member(nullptr, "Member", ExpressionList{});
-    ObjectFunctionSpecial       function(nullptr, "Function", voidType, MemberInitList{MemberInitRef{member}}, code);
-    std::string output = (std::stringstream{} << function).str();
-    auto find = output.find("Decl::Object::ObjectFunction::ObjectFunctionSpecial\n");
-    EXPECT_TRUE(find != std::string::npos);
-}
-
-TEST(DeclarationPrintTest, ObjectFunctionConstructor)
-{
-    Void                        voidType(nullptr);
-    ExpressionLiteral<void*>    value(nullptr, nullptr);
-    CodeBlock                   codeBlock(nullptr);
-    StatementCodeBlock          code(nullptr, codeBlock, StatementList{});
-    MemberInit                  member(nullptr, "Member", ExpressionList{});
-    ObjectFunctionConstructor   function(nullptr, "Function", voidType, MemberInitList{MemberInitRef{member}}, code);
-    std::string output = (std::stringstream{} << function).str();
-    auto find = output.find("Decl::Object::ObjectFunction::ObjectFunctionSpecial::ObjectFunctionConstructor\n");
-    EXPECT_TRUE(find != std::string::npos);
-}
-
-TEST(DeclarationPrintTest, ObjectFunctionDestructor)
-{
-    Void                        voidType(nullptr);
-    ExpressionLiteral<void*>    value(nullptr, nullptr);
-    CodeBlock                   codeBlock(nullptr);
-    StatementCodeBlock          code(nullptr, codeBlock, StatementList{});
-    MemberInit                  member(nullptr, "Member", ExpressionList{});
-    ObjectFunctionDestructor    function(nullptr, "Function", voidType, MemberInitList{MemberInitRef{member}}, code);
-    std::string output = (std::stringstream{} << function).str();
-    auto find = output.find("Decl::Object::ObjectFunction::ObjectFunctionSpecial::ObjectFunctionDestructor\n");
-    EXPECT_TRUE(find != std::string::npos);
-}
 
 TEST(DeclarationPrintTest, ObjectOverload)
 {
@@ -231,8 +181,8 @@ TEST(DeclarationPrintTest, ObjectOverloadWithMember)
     CodeBlock           codeBlock(nullptr);
     StatementCodeBlock  code(nullptr, codeBlock, StatementList{});
     ObjectOverload      functionOverload(nullptr, "function");
-    std::unique_ptr<Decl> function = std::make_unique<ObjectFunction>(nullptr, "function", functionType, code);
-    functionOverload.addOverload(std::move(function));
+    ObjectFunction      function(nullptr, "function", functionType, code, MemberInitList{});
+    functionOverload.addOverload(function);
 
     std::string output = (std::stringstream{} << functionOverload).str();
     auto find = output.find("Decl::Object::ObjectOverload\n");
@@ -327,8 +277,8 @@ TEST(DeclarationPrintTest, ExpressionFuncCall)
     StatementCodeBlock  code(nullptr, codeBlock, StatementList{});
     ObjectOverload&     functionOverload = classType.add<ObjectOverload>(nullptr, "function");
 
-    std::unique_ptr<Decl> function = std::make_unique<ObjectFunction>(nullptr, "function", functionType, code);
-    functionOverload.addOverload(std::move(function));
+    ObjectFunction      function(nullptr, "function", functionType, code, MemberInitList{});
+    functionOverload.addOverload(function);
 
     Object            object(nullptr, "Object", classType);
 
@@ -349,8 +299,8 @@ TEST(DeclarationPrintTest, ExpressionFuncCallWithParam)
     StatementCodeBlock  code(nullptr, codeBlock, StatementList{});
     ObjectOverload&     functionOverload = classType.add<ObjectOverload>(nullptr, "function");
 
-    std::unique_ptr<Decl> function = std::make_unique<ObjectFunction>(nullptr, "function", functionType, code);
-    functionOverload.addOverload(std::move(function));
+    ObjectFunction      function(nullptr, "function", functionType, code, MemberInitList{});
+    functionOverload.addOverload(function);
 
     Object              object(nullptr, "Object", classType);
     Object              param(nullptr, "Param", voidType);

@@ -14,9 +14,9 @@ Semantic::~Semantic()
 }
 
 // Action Override
-NamespaceId Semantic::scopeNamespaceOpenV(std::string namespaceName, Reuse&& reuse)
+NamespaceId Semantic::scopeNamespaceOpenV(Scope& top, std::string namespaceName, Reuse&& reuse)
 {
-    NamespaceId         id = Action::scopeNamespaceOpenV(std::move(namespaceName), std::move(reuse));
+    NamespaceId         id = Action::scopeNamespaceOpenV(top, std::move(namespaceName), std::move(reuse));
     NamespaceAccess     access(storage, id);
     Namespace&          ns = access;
 
@@ -27,16 +27,16 @@ NamespaceId Semantic::scopeNamespaceOpenV(std::string namespaceName, Reuse&& reu
     return access.reuse();;
 }
 
-NamespaceId Semantic::scopeNamespaceCloseV(Namespace& ns, DeclList decl, Reuse&& reuse)
+NamespaceId Semantic::scopeNamespaceCloseV(Scope& top, Namespace& ns, DeclList decl, Reuse&& reuse)
 {
-    NamespaceId         id = Action::scopeNamespaceCloseV(ns, decl, std::move(reuse));
+    NamespaceId         id = Action::scopeNamespaceCloseV(top, ns, decl, std::move(reuse));
     addDefaultMethodsToScope(ns, std::move(decl));
     return id;
 }
 
-ClassId Semantic::scopeClassOpenV(Identifier className, Reuse&& reuse)
+ClassId Semantic::scopeClassOpenV(Scope& top, Identifier className, Reuse&& reuse)
 {
-    ClassId             id = Action::scopeClassOpenV(std::move(className), std::move(reuse));
+    ClassId             id = Action::scopeClassOpenV(top, std::move(className), std::move(reuse));
     ClassAccess         access(storage, id);
     Class&              cl = access;
 
@@ -45,23 +45,22 @@ ClassId Semantic::scopeClassOpenV(Identifier className, Reuse&& reuse)
     return access.reuse();
 }
 
-ClassId Semantic::scopeClassCloseV(Class& cl, DeclList decl, Reuse&& reuse)
+ClassId Semantic::scopeClassCloseV(Scope& top, Class& cl, DeclList decl, Reuse&& reuse)
 {
-    ClassId             id = Action::scopeClassCloseV(cl, decl, std::move(reuse));
+    ClassId             id = Action::scopeClassCloseV(top, cl, decl, std::move(reuse));
     addDefaultMethodsToScope(cl, std::move(decl));
     return id;
 }
 
-ObjectId Semantic::scopeObjectAddVariableV(Identifier name, Type const& type, ExpressionList init)
+ObjectId Semantic::scopeObjectAddVariableV(Scope& top, Identifier name, Type const& type, ExpressionList init)
 {
-    Scope&  scope = getCurrentScope();
-    auto find = scope.get(name);
+    auto find = top.get(name);
     if (find.first)
     {
         error("Object Already defined: ", name);
     }
 
-    ObjectId objectId = Action::scopeObjectAddVariableV(std::move(name), type, std::move(init));
+    ObjectId objectId = Action::scopeObjectAddVariableV(top, std::move(name), type, std::move(init));
 
     auto constructor = type.get("$constructor");
     if (!constructor.first)
@@ -72,25 +71,25 @@ ObjectId Semantic::scopeObjectAddVariableV(Identifier name, Type const& type, Ex
     return objectId;
 }
 
-ObjectId Semantic::scopeObjectAddFunctionV(Identifier name, Type const& type, StatementCodeBlock& code)
+ObjectId Semantic::scopeObjectAddFunctionV(Scope& top, Identifier name, Type const& type, StatementCodeBlock& code, MemberInitList init)
 {
-    Scope&  topScope = getCurrentScope();
-    auto find = topScope.get(name);
-    if (find.first)
-    {
-        ObjectOverload& overloadObj = dynamic_cast<ObjectOverload&>(*find.second->second);
-        Overload const& overload = dynamic_cast<Overload const&>(overloadObj.getType());
+    ObjectOverload& objectOverload = getOrAddDeclToScope<ObjectOverload>(top, name);
+    Overload const& overload = dynamic_cast<Overload const&>(objectOverload.getType());
 
-        Function const& funcType = dynamic_cast<Function const&>(type);
-        bool found = overload.findMatch(this, funcType.getParams());
-        if (found)
-        {
-            error("Function Already defined: ", name);
-        }
+    Function const& funcType = dynamic_cast<Function const&>(type);
+    bool found = overload.findMatch(this, funcType.getParams());
+    if (found)
+    {
+        error("Function Already defined: ", name);
     }
 
-    ObjectId objectId = Action::scopeObjectAddFunctionV(std::move(name), type, code);
-    return objectId;
+    ObjectId        objectId = Action::scopeObjectAddFunctionV(top, std::move(name), type, code, std::move(init));
+    ObjectAccess    objectAccess(storage, objectId);
+    Object&         object = objectAccess;
+    ObjectFunction& func = dynamic_cast<ObjectFunction&>(object);
+
+    objectOverload.addOverload(func);
+    return objectAccess.reuse();
 }
 
 void Semantic::addDefaultMethodsToScope(Scope& scope, DeclList declList)
@@ -103,7 +102,7 @@ void Semantic::addDefaultMethodsToScope(Scope& scope, DeclList declList)
         CodeBlock&          codeBlock       = scope.add<CodeBlock>(this);
         StatementCodeBlock& initCodeInit    = scope.add<StatementCodeBlock>(this, codeBlock, StatementList{});
         Function& constructorType = scope.add<Function>(this, "", TypeCList{}, getRefFromScope<Type>(getGlobalScope(), "Void"));
-        addFunctionToScope<ObjectFunctionConstructor>(scope, "$constructor", constructorType, MemberInitList{}, initCodeInit);
+        scopeObjectAddFunctionV(scope, "$constructor", constructorType, initCodeInit, MemberInitList{});
     }
     auto findDest = scope.get("$destructor");
     if (!findDest.first)
@@ -112,7 +111,7 @@ void Semantic::addDefaultMethodsToScope(Scope& scope, DeclList declList)
         CodeBlock&          codeBlock       = scope.add<CodeBlock>(this);
         StatementCodeBlock& deinitCodeInit  = scope.add<StatementCodeBlock>(this, codeBlock, StatementList{});
         Function& destructorType = scope.add<Function>(this, "", TypeCList{}, getRefFromScope<Type>(getGlobalScope(), "Void"));
-        addFunctionToScope<ObjectFunctionDestructor>(scope, "$destructor", destructorType, MemberInitList{}, deinitCodeInit);
+        scopeObjectAddFunctionV(scope, "$destructor", destructorType, deinitCodeInit, MemberInitList{});
     }
 
     MemberList data;
@@ -133,7 +132,7 @@ void Semantic::addDefaultMethodsToScope(Scope& scope, DeclList declList)
     ObjectOverload&  constructorList = dynamic_cast<ObjectOverload&>(*conFind.second->second);
     for (auto& function: constructorList)
     {
-        ObjectFunctionConstructor&  constructor = dynamic_cast<ObjectFunctionConstructor&>(function);
+        ObjectFunction&  constructor = dynamic_cast<ObjectFunction&>(function);
         constructor.addMissingMemberInit(this, scope, data, true);
     }
 
@@ -141,7 +140,7 @@ void Semantic::addDefaultMethodsToScope(Scope& scope, DeclList declList)
     ObjectOverload&  destructorList = dynamic_cast<ObjectOverload&>(*desFind.second->second);
     for (auto& function: destructorList)
     {
-        ObjectFunctionDestructor&  destructor = dynamic_cast<ObjectFunctionDestructor&>(function);
+        ObjectFunction&  destructor = dynamic_cast<ObjectFunction&>(function);
         destructor.addMissingMemberInit(this, scope, data, false);
     }
 }

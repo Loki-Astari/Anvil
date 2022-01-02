@@ -171,19 +171,8 @@ void Type::print(std::ostream& stream, int s, bool showName) const
 }
 
 Void::Void(ActionRef action)
-    : Type(action, "Void")
+    : Class(action, "Void")
 {
-    CodeBlock&          codeBlock       = add<CodeBlock>(action);
-    StatementCodeBlock& statement       = add<StatementCodeBlock>(action, codeBlock, StatementList{});
-    Function&           funcType        = add<Function>(action, "", TypeCList{}, *this);
-
-    ObjectOverload&         constructOver   = add<ObjectOverload>(action, "$constructor");
-    std::unique_ptr<Decl>   construct       = std::make_unique<ObjectFunction>(action, "$constructor", funcType, statement);
-    constructOver.addOverload(std::move(construct));
-
-    ObjectOverload&         destructOver    = add<ObjectOverload>(action, "$destructor");
-    std::unique_ptr<Decl>   destruct        = std::make_unique<ObjectFunction>(action, "$destructor", funcType, statement);
-    destructOver.addOverload(std::move(destruct));
 }
 
 void Void::print(std::ostream& stream, int s, bool showName) const
@@ -221,6 +210,20 @@ void Function::print(std::ostream& stream, int s, bool showName) const
     stream << indent(s+1) << "return type\n";
     returnType.print(stream, s+2, true);
     Type::print(stream, s, false);
+}
+
+std::string Function::getExtension() const
+{
+    std::stringstream ext;
+    std::string sep = "";
+    ext << "{";
+    for (auto const& p: param)
+    {
+        ext << sep << p.get().declName();
+        sep = ",";
+    }
+    ext << "}";
+    return ext.str();
 }
 
 void Overload::print(std::ostream& stream, int s, bool showName) const
@@ -307,16 +310,6 @@ void ObjectFunction::print(std::ostream& stream, int s, bool showName) const
     Object::print(stream, s, false);
     stream << indent(s+1) << "code\n";
     code.print(stream, s+2, true);
-}
-
-void ObjectFunctionSpecial::print(std::ostream& stream, int s, bool showName) const
-{
-    if (showName)
-    {
-        stream << indent(s) << "Decl::Object::ObjectFunction::ObjectFunctionSpecial\n";
-    }
-    ObjectFunction::print(stream, s, false);
-    int count = 0;
     stream << indent(s+1) << "init\n";
     for (auto const& i: init)
     {
@@ -326,7 +319,7 @@ void ObjectFunctionSpecial::print(std::ostream& stream, int s, bool showName) co
     }
 }
 
-void ObjectFunctionSpecial::addMissingMemberInit(ActionRef action, Scope& scope, MemberList const& members, bool con)
+void ObjectFunction::addMissingMemberInit(ActionRef action, Scope& scope, MemberList const& members, bool con)
 {
     MemberInitList::iterator    dstLoop = init.begin();
     MemberInitList::iterator    dstEnd  = init.end();
@@ -356,7 +349,7 @@ void ObjectFunctionSpecial::addMissingMemberInit(ActionRef action, Scope& scope,
     }
 }
 
-void ObjectFunctionSpecial::addMemberInit(ActionRef action, Scope& scope, ObjectRef data, MemberInit&& memberInit, bool con)
+void ObjectFunction::addMemberInit(ActionRef action, Scope& scope, ObjectRef data, MemberInit&& memberInit, bool con)
 {
     ObjectFunction* function = dynamic_cast<ObjectFunction*>(&data.get());
     if (function != nullptr)
@@ -372,30 +365,13 @@ void ObjectFunctionSpecial::addMemberInit(ActionRef action, Scope& scope, Object
     code.prefix(initMember);
 }
 
-void ObjectFunctionConstructor::print(std::ostream& stream, int s, bool showName) const
-{
-    if (showName)
-    {
-        stream << indent(s) << "Decl::Object::ObjectFunction::ObjectFunctionSpecial::ObjectFunctionConstructor\n";
-    }
-    ObjectFunctionSpecial::print(stream, s, false);
-}
-
-void ObjectFunctionDestructor::print(std::ostream& stream, int s, bool showName) const
-{
-    if (showName)
-    {
-        stream << indent(s) << "Decl::Object::ObjectFunction::ObjectFunctionSpecial::ObjectFunctionDestructor\n";
-    }
-    ObjectFunctionSpecial::print(stream, s, false);
-}
 
 int ObjectOverload::storageSize() const
 {
     return std::accumulate(std::begin(overloadData), std::end(overloadData), 0,
                             [](int lhs, auto const& rhs)
                             {
-                                return lhs + rhs.second->storageSize();
+                                return lhs + rhs.second.get().storageSize();
                             });
 }
 
@@ -425,22 +401,20 @@ void ObjectOverload::print(std::ostream& stream, int s, bool showName) const
             ++k;
         }
         stream << indent(s+3) << "Value\n";
-        data.second->print(stream, s+4, true);
+        data.second.get().print(stream, s+4, true);
     }
 }
 
-void ObjectOverload::addOverload(std::unique_ptr<Decl>&& decl)
+void ObjectOverload::addOverload(ObjectFunction& func)
 {
-    std::unique_ptr<ObjectFunction> object(dynamic_cast<ObjectFunction*>(decl.release()));
-
     Type&       type = const_cast<Type&>(getType());
     Overload&   overload = dynamic_cast<Overload&>(type);
 
-    Type&       objectType = const_cast<Type&>(object->getType());
+    Type&       objectType = const_cast<Type&>(func.getType());
     Function&   objectFunc = dynamic_cast<Function&>(objectType);
 
     overload.addOverload(objectFunc);
-    overloadData.emplace(objectFunc.getParams(), std::move(object));
+    overloadData.emplace(objectFunc.getParams(), ObjectFunctionRef{func});
 }
 
 void Statement::print(std::ostream& stream, int s, bool showName) const

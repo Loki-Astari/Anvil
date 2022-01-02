@@ -7,6 +7,7 @@
 #include "Declaration.h"
 #include "Semantic.h"
 #include "Generator.h"
+#include "GlobalScopeInit.h"
 #include "ice.tab.hpp"
 #include "test/Utility.h"
 
@@ -19,12 +20,14 @@ struct FacadeCompiler
     ThorsAnvil::Anvil::Ice::Namespace       globalScope;
     ThorsAnvil::Anvil::Ice::Storage         storage;
     ThorsAnvil::Anvil::Ice::Action          action;
+    ThorsAnvil::Anvil::Ice::GlobalScopeInit init;
     ThorsAnvil::Anvil::Ice::Parser          parser;
 
     FacadeCompiler(std::istream& input, std::ostream& output)
         : lexer(input, output)
         , globalScope(ThorsAnvil::Anvil::Ice::ActionRef{}, "GlobalScope")
         , action(lexer, globalScope, storage, output)
+        , init(action, globalScope)
         , parser(lexer, action)
     {}
 
@@ -41,12 +44,14 @@ struct SemanticCompiler
     ThorsAnvil::Anvil::Ice::Storage             storage;
     ThorsAnvil::Anvil::Ice::NamespaceDecOrder   order;
     ThorsAnvil::Anvil::Ice::Semantic            action;
+    ThorsAnvil::Anvil::Ice::GlobalScopeInit     init;
     ThorsAnvil::Anvil::Ice::Parser              parser;
 
     SemanticCompiler(std::istream& input, std::ostream& output)
         : lexer(input, output)
         , globalScope(ThorsAnvil::Anvil::Ice::ActionRef{}, "GlobalScope")
         , action(lexer, order, globalScope, storage, output)
+        , init(action, globalScope)
         , parser(lexer, action)
     {}
 
@@ -63,6 +68,7 @@ struct GeneratorCompiler
     ThorsAnvil::Anvil::Ice::Storage             storage;
     ThorsAnvil::Anvil::Ice::NamespaceDecOrder   order;
     ThorsAnvil::Anvil::Ice::Semantic            action;
+    ThorsAnvil::Anvil::Ice::GlobalScopeInit     init;
     ThorsAnvil::Anvil::Ice::Parser              parser;
     ThorsAnvil::Anvil::Ice::Generator           generator;
 
@@ -70,6 +76,7 @@ struct GeneratorCompiler
         : lexer(input, output)
         , globalScope(ThorsAnvil::Anvil::Ice::ActionRef{}, "GlobalScope")
         , action(lexer, order, globalScope, storage, output)
+        , init(action, globalScope)
         , parser(lexer, action)
         , generator(globalScope, order)
     {}
