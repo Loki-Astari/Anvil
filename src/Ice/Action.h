@@ -66,6 +66,7 @@ class Action
         ObjectId            scopeDestructorAdd(StatementCodeBlockId code);
         MemberInitId        memberInit(IdentifierId, ExpressionListId);
         IdentifierId        identifierCreate();
+        IdentifierId        identifierCreate(std::string identifier);
 
         StatementId         statmentExpression(ExpressionId id);
         StatementId         statmentReturn(ExpressionId id);
@@ -141,18 +142,18 @@ class Action
         void                assembleyAppend(Id<std::string> id);
         // Parsing virtual methods
         using Reuse = std::function<Int()>;
-        virtual VoidId              anvilProgramV(Scope& top, NamespaceList, Reuse&& reuse);
-        virtual NamespaceId         scopeNamespaceOpenV(Scope& top, Identifier, Reuse&& reuse);
-        virtual NamespaceId         scopeNamespaceCloseV(Scope& top, Namespace&, DeclList list, Reuse&& reuse);
-        virtual ClassId             scopeClassOpenV(Scope& top, Identifier, Reuse&& reuse);
-        virtual ClassId             scopeClassCloseV(Scope& top, Class&, DeclList list, Reuse&& reuse);
-        virtual FunctionId          scopeFunctionAddV(Scope& top, Identifier id, TypeCList listId, Type const& returnType, Reuse&& reuse);
-        virtual CodeBlockId         scopeCodeBlockOpenV(Scope& top);
-        virtual StatementCodeBlockId scopeCodeBlockCloseV(Scope& top, CodeBlock&, StatementList);
-        virtual ObjectId            scopeObjectAddVariableV(Scope& top, Identifier name, Type const& id, ExpressionList init);
-        virtual ObjectId            scopeObjectAddFunctionV(Scope& top, Identifier name, Type const& id, StatementCodeBlock& code, MemberInitList init);
-        virtual MemberInitId        memberInitV(Scope& top, Identifier name, ExpressionList init);
-        virtual IdentifierId        identifierCreateV(Scope& top, std::string identifier);
+        virtual VoidId              anvilProgramV(Scope& top, NamespaceList);
+        virtual Namespace&          scopeNamespaceOpenV(Scope& top, Identifier);
+        virtual Namespace&          scopeNamespaceCloseV(Scope& top, Namespace&, DeclList list);
+        virtual Class&              scopeClassOpenV(Scope& top, Identifier);
+        virtual Class&              scopeClassCloseV(Scope& top, Class&, DeclList list);
+        virtual Function&           scopeFunctionAddV(Scope& top, Identifier id, TypeCList listId, Type const& returnType);
+        virtual CodeBlock&          scopeCodeBlockOpenV(Scope& top);
+        virtual StatementCodeBlock& scopeCodeBlockCloseV(Scope& top, CodeBlock&, StatementList);
+        virtual ObjectVariable&     scopeObjectAddVariableV(Scope& top, Identifier name, Type const& id, ExpressionList init);
+        virtual ObjectFunction&     scopeObjectAddFunctionV(Scope& top, Identifier name, Type const& id, StatementCodeBlock& code, MemberInitList init);
+        virtual MemberInit&         memberInitV(Scope& top, Identifier name, ExpressionList init);
+        virtual Identifier          identifierCreateV(Scope& top, std::string identifier);
     private:
         void addToLine();
         void resetLine();

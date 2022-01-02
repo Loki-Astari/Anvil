@@ -19,12 +19,12 @@ class Semantic: public Action
         Semantic(Lexer& lexer, NamespaceDecOrder& namespaceDecOrder, Scope& globalScope, Storage& storage, std::ostream& output = std::cerr);
         virtual ~Semantic() override;
 
-        virtual NamespaceId scopeNamespaceOpenV(Scope& top, std::string namespaceName, Reuse&& reuse) override;
-        virtual NamespaceId scopeNamespaceCloseV(Scope& top, Namespace& ns, DeclList decl, Reuse&& reuse) override;
-        virtual ClassId     scopeClassOpenV(Scope& top, Identifier className, Reuse&& reuse) override;
-        virtual ClassId     scopeClassCloseV(Scope& top, Class& cl, DeclList decl, Reuse&& reuse) override;
-        virtual ObjectId    scopeObjectAddVariableV(Scope& top, Identifier name, Type const& type, ExpressionList init) override;
-        virtual ObjectId    scopeObjectAddFunctionV(Scope& top, Identifier name, Type const& type, StatementCodeBlock& code, MemberInitList init) override;
+        virtual Namespace&      scopeNamespaceOpenV(Scope& top, std::string namespaceName) override;
+        virtual Namespace&      scopeNamespaceCloseV(Scope& top, Namespace& ns, DeclList decl) override;
+        virtual Class&          scopeClassOpenV(Scope& top, Identifier className) override;
+        virtual Class&          scopeClassCloseV(Scope& top, Class& cl, DeclList decl) override;
+        virtual ObjectVariable& scopeObjectAddVariableV(Scope& top, Identifier name, Type const& type, ExpressionList init) override;
+        virtual ObjectFunction& scopeObjectAddFunctionV(Scope& top, Identifier name, Type const& type, StatementCodeBlock& code, MemberInitList init) override;
     private:
         void addDefaultMethodsToScope(Scope& scope, DeclList declList);
         ObjectFunction& addFunctionToScope(Scope& scope, std::string name, Type const& type, StatementCodeBlock& code, MemberInitList init);

@@ -11,9 +11,9 @@ namespace ThorsAnvil::Anvil::Ice
 
 struct GlobalScopeInit
 {
-    GlobalScopeInit(Action& action, Scope& scope)
+    GlobalScopeInit(Action& action, Scope& /*scope*/)
     {
-        IdentifierId         voidName   = action.identifierCreateV(scope, "Void");
+        IdentifierId         voidName   = action.identifierCreate("Void");
         ClassId              voidId     = action.scopeClassOpen(voidName);
 
         TypeCListId          typeListId = action.listCreate<Type const>();

@@ -310,6 +310,7 @@ void ObjectFunction::print(std::ostream& stream, int s, bool showName) const
     Object::print(stream, s, false);
     stream << indent(s+1) << "code\n";
     code.print(stream, s+2, true);
+    int count = 0;
     stream << indent(s+1) << "init\n";
     for (auto const& i: init)
     {

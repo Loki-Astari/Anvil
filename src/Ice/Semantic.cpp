@@ -14,45 +14,38 @@ Semantic::~Semantic()
 }
 
 // Action Override
-NamespaceId Semantic::scopeNamespaceOpenV(Scope& top, std::string namespaceName, Reuse&& reuse)
+Namespace& Semantic::scopeNamespaceOpenV(Scope& top, std::string namespaceName)
 {
-    NamespaceId         id = Action::scopeNamespaceOpenV(top, std::move(namespaceName), std::move(reuse));
-    NamespaceAccess     access(storage, id);
-    Namespace&          ns = access;
-
+    Namespace& ns = Action::scopeNamespaceOpenV(top, std::move(namespaceName));
     namespaceDecOrder.emplace_back(ns);
-
     ns.setPath(getCurrentScopeFullName());
 
-    return access.reuse();;
+    return ns;
 }
 
-NamespaceId Semantic::scopeNamespaceCloseV(Scope& top, Namespace& ns, DeclList decl, Reuse&& reuse)
+Namespace& Semantic::scopeNamespaceCloseV(Scope& top, Namespace& ns, DeclList decl)
 {
-    NamespaceId         id = Action::scopeNamespaceCloseV(top, ns, decl, std::move(reuse));
-    addDefaultMethodsToScope(ns, std::move(decl));
-    return id;
+    Namespace& updatedNS = Action::scopeNamespaceCloseV(top, ns, decl);
+    addDefaultMethodsToScope(updatedNS, std::move(decl));
+    return updatedNS;
 }
 
-ClassId Semantic::scopeClassOpenV(Scope& top, Identifier className, Reuse&& reuse)
+Class& Semantic::scopeClassOpenV(Scope& top, Identifier className)
 {
-    ClassId             id = Action::scopeClassOpenV(top, std::move(className), std::move(reuse));
-    ClassAccess         access(storage, id);
-    Class&              cl = access;
-
+    Class&  cl = Action::scopeClassOpenV(top, std::move(className));
     cl.setPath(getCurrentScopeFullName());
 
-    return access.reuse();
+    return cl;
 }
 
-ClassId Semantic::scopeClassCloseV(Scope& top, Class& cl, DeclList decl, Reuse&& reuse)
+Class& Semantic::scopeClassCloseV(Scope& top, Class& cl, DeclList decl)
 {
-    ClassId             id = Action::scopeClassCloseV(top, cl, decl, std::move(reuse));
-    addDefaultMethodsToScope(cl, std::move(decl));
-    return id;
+    Class&  updatedClass = Action::scopeClassCloseV(top, cl, decl);
+    addDefaultMethodsToScope(updatedClass, std::move(decl));
+    return updatedClass;
 }
 
-ObjectId Semantic::scopeObjectAddVariableV(Scope& top, Identifier name, Type const& type, ExpressionList init)
+ObjectVariable& Semantic::scopeObjectAddVariableV(Scope& top, Identifier name, Type const& type, ExpressionList init)
 {
     auto find = top.get(name);
     if (find.first)
@@ -60,7 +53,7 @@ ObjectId Semantic::scopeObjectAddVariableV(Scope& top, Identifier name, Type con
         error("Object Already defined: ", name);
     }
 
-    ObjectId objectId = Action::scopeObjectAddVariableV(top, std::move(name), type, std::move(init));
+    ObjectVariable& object = Action::scopeObjectAddVariableV(top, std::move(name), type, std::move(init));
 
     auto constructor = type.get("$constructor");
     if (!constructor.first)
@@ -68,10 +61,10 @@ ObjectId Semantic::scopeObjectAddVariableV(Scope& top, Identifier name, Type con
         error("Object can't find constructor");
     }
 
-    return objectId;
+    return object;
 }
 
-ObjectId Semantic::scopeObjectAddFunctionV(Scope& top, Identifier name, Type const& type, StatementCodeBlock& code, MemberInitList init)
+ObjectFunction& Semantic::scopeObjectAddFunctionV(Scope& top, Identifier name, Type const& type, StatementCodeBlock& code, MemberInitList init)
 {
     ObjectOverload& objectOverload = getOrAddDeclToScope<ObjectOverload>(top, name);
     Overload const& overload = dynamic_cast<Overload const&>(objectOverload.getType());
@@ -83,13 +76,10 @@ ObjectId Semantic::scopeObjectAddFunctionV(Scope& top, Identifier name, Type con
         error("Function Already defined: ", name);
     }
 
-    ObjectId        objectId = Action::scopeObjectAddFunctionV(top, std::move(name), type, code, std::move(init));
-    ObjectAccess    objectAccess(storage, objectId);
-    Object&         object = objectAccess;
-    ObjectFunction& func = dynamic_cast<ObjectFunction&>(object);
+    ObjectFunction& func = Action::scopeObjectAddFunctionV(top, std::move(name), type, code, std::move(init));
 
     objectOverload.addOverload(func);
-    return objectAccess.reuse();
+    return func;
 }
 
 void Semantic::addDefaultMethodsToScope(Scope& scope, DeclList declList)
