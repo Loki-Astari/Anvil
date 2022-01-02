@@ -54,6 +54,13 @@ ClassId Semantic::scopeClassCloseV(Class& cl, DeclList decl, Reuse&& reuse)
 
 ObjectId Semantic::scopeObjectAddVariableV(Identifier name, Type const& type, ExpressionList init)
 {
+    Scope&  scope = getCurrentScope();
+    auto find = scope.get(name);
+    if (find.first)
+    {
+        error("Object Already defined: ", name);
+    }
+
     ObjectId objectId = Action::scopeObjectAddVariableV(std::move(name), type, std::move(init));
 
     auto constructor = type.get("$constructor");

@@ -6,6 +6,7 @@
 #include "Storage.h"
 #include "Declaration.h"
 #include "Semantic.h"
+#include "Generator.h"
 #include "ice.tab.hpp"
 #include "test/Utility.h"
 
@@ -52,6 +53,32 @@ struct SemanticCompiler
     bool compile()
     {
         return parser.parse();
+    }
+};
+
+struct GeneratorCompiler
+{
+    ThorsAnvil::Anvil::Ice::Lexer               lexer;
+    ThorsAnvil::Anvil::Ice::Namespace           globalScope;
+    ThorsAnvil::Anvil::Ice::Storage             storage;
+    ThorsAnvil::Anvil::Ice::NamespaceDecOrder   order;
+    ThorsAnvil::Anvil::Ice::Semantic            action;
+    ThorsAnvil::Anvil::Ice::Parser              parser;
+    ThorsAnvil::Anvil::Ice::Generator           generator;
+
+    GeneratorCompiler(std::istream& input, std::ostream& output)
+        : lexer(input, output)
+        , globalScope(ThorsAnvil::Anvil::Ice::ActionRef{}, "GlobalScope")
+        , action(lexer, order, globalScope, storage, output)
+        , parser(lexer, action)
+        , generator(globalScope, order)
+    {}
+
+    bool compile(std::ostream& stream)
+    {
+        return parser.parse();
+
+        generator.generate(stream);
     }
 };
 

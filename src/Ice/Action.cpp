@@ -222,12 +222,6 @@ ObjectId Action::scopeObjectAddVariable(IdentifierId name, TypeId type, Expressi
 ObjectId Action::scopeObjectAddVariableV(Identifier name, Type const& type, ExpressionList init)
 {
     Scope&  topScope = currentScope.back();
-    auto find = topScope.get(name);
-    if (find.first)
-    {
-        error("Object Already defined: ", name);
-    }
-
     ObjectVariable& object = topScope.add<ObjectVariable>(this, std::move(name), type, std::move(init));
     return storage.add<ObjectRef>(object);
 }

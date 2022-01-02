@@ -152,6 +152,7 @@ using ExpressionListAccess  = IdAccess<ExpressionList>;
 using MemberList            = std::vector<ObjectRef>;
 using OverloadMap           = std::map<TypeCList, std::unique_ptr<ObjectFunction>>;
 using OverloadIter          = OverloadMap::iterator;
+using NamespaceDecOrder     = std::vector<NamespaceRef>;
 
 inline bool operator<(TypeCRef const& lhs, TypeCRef const& rhs)
 {

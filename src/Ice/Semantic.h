@@ -4,13 +4,11 @@
 #include "Action.h"
 #include "Lexer.h"
 #include "Declaration.h"
+#include "Common.h"
 
 
 namespace ThorsAnvil::Anvil::Ice
 {
-class Namespace;
-using NamespaceRef      = std::reference_wrapper<Namespace>;
-using NamespaceDecOrder = std::vector<NamespaceRef>;
 
 class Storage;
 class Semantic: public Action
