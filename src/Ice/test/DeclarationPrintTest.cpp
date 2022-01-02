@@ -73,8 +73,7 @@ TEST(DeclarationPrintTest, Type)
 
 TEST(DeclarationPrintTest, Void)
 {
-    Void   voidType(nullptr);
-    std::string output = (std::stringstream{} << voidType).str();
+    std::string output = (std::stringstream{} << Void::getInstance()).str();
     auto find = output.find("Decl::Scope::NamedScope::Type::Void\n");
     EXPECT_TRUE(find != std::string::npos);
 }
@@ -89,8 +88,7 @@ TEST(DeclarationPrintTest, Class)
 
 TEST(DeclarationPrintTest, Function)
 {
-    Void       voidType(nullptr);
-    Function   funcType(nullptr, "Function", TypeCList{}, voidType);
+    Function   funcType(nullptr, "Function", TypeCList{}, Void::getInstance());
     std::string output = (std::stringstream{} << funcType).str();
     auto find = output.find("Decl::Scope::NamedScope::Type::Function\n");
     EXPECT_TRUE(find != std::string::npos);
@@ -98,8 +96,7 @@ TEST(DeclarationPrintTest, Function)
 
 TEST(DeclarationPrintTest, FunctionParam)
 {
-    Void       voidType(nullptr);
-    Function   funcType(nullptr, "Function", TypeCList{TypeCRef{voidType}}, voidType);
+    Function   funcType(nullptr, "Function", TypeCList{TypeCRef{Void::getInstance()}}, Void::getInstance());
     std::string output = (std::stringstream{} << funcType).str();
     auto find = output.find("Decl::Scope::NamedScope::Type::Function\n");
     EXPECT_TRUE(find != std::string::npos);
@@ -115,8 +112,7 @@ TEST(DeclarationPrintTest, Overload)
 
 TEST(DeclarationPrintTest, OverloadWithFunc)
 {
-    Void       voidType(nullptr);
-    Function   funcType(nullptr, "Function", TypeCList{TypeCRef{voidType}}, voidType);
+    Function   funcType(nullptr, "Function", TypeCList{TypeCRef{Void::getInstance()}}, Void::getInstance());
     Overload   overload(nullptr);
     overload.addOverload(funcType);
     std::string output = (std::stringstream{} << overload).str();
@@ -126,8 +122,7 @@ TEST(DeclarationPrintTest, OverloadWithFunc)
 
 TEST(DeclarationPrintTest, Object)
 {
-    Void       voidType(nullptr);
-    Object     object(nullptr, "Object", voidType);
+    Object     object(nullptr, "Object", Void::getInstance());
     std::string output = (std::stringstream{} << object).str();
     auto find = output.find("Decl::Object\n");
     EXPECT_TRUE(find != std::string::npos);
@@ -135,8 +130,7 @@ TEST(DeclarationPrintTest, Object)
 
 TEST(DeclarationPrintTest, ObjectVariable)
 {
-    Void            voidType(nullptr);
-    ObjectVariable  variable(nullptr, "Object", voidType, ExpressionList{});
+    ObjectVariable  variable(nullptr, "Object", Void::getInstance(), ExpressionList{});
     std::string output = (std::stringstream{} << variable).str();
     auto find = output.find("Decl::Object::ObjectVariable\n");
     EXPECT_TRUE(find != std::string::npos);
@@ -144,9 +138,8 @@ TEST(DeclarationPrintTest, ObjectVariable)
 
 TEST(DeclarationPrintTest, ObjectVariableWithInit)
 {
-    Void                        voidType(nullptr);
     ExpressionLiteral<void*>    value(nullptr, nullptr);
-    ObjectVariable              variable(nullptr, "Object", voidType, ExpressionList{ExpressionRef{value}});
+    ObjectVariable              variable(nullptr, "Object", Void::getInstance(), ExpressionList{ExpressionRef{value}});
     std::string output = (std::stringstream{} << variable).str();
     auto find = output.find("Decl::Object::ObjectVariable\n");
     EXPECT_TRUE(find != std::string::npos);
@@ -154,11 +147,10 @@ TEST(DeclarationPrintTest, ObjectVariableWithInit)
 
 TEST(DeclarationPrintTest, ObjectFunction)
 {
-    Void                        voidType(nullptr);
     ExpressionLiteral<void*>    value(nullptr, nullptr);
     CodeBlock                   codeBlock(nullptr);
     StatementCodeBlock          code(nullptr, codeBlock, StatementList{});
-    ObjectFunction              function(nullptr, "Function", voidType, code, MemberInitList{});
+    ObjectFunction              function(nullptr, "Function", Void::getInstance(), code, MemberInitList{});
     std::string output = (std::stringstream{} << function).str();
     auto find = output.find("Decl::Object::ObjectFunction\n");
     EXPECT_TRUE(find != std::string::npos);
@@ -175,8 +167,7 @@ TEST(DeclarationPrintTest, ObjectOverload)
 
 TEST(DeclarationPrintTest, ObjectOverloadWithMember)
 {
-    Void                voidType(nullptr);
-    Function            functionType(nullptr, "Function", TypeCList{}, voidType);
+    Function            functionType(nullptr, "Function", TypeCList{}, Void::getInstance());
     Class               classType(nullptr, "Class");
     CodeBlock           codeBlock(nullptr);
     StatementCodeBlock  code(nullptr, codeBlock, StatementList{});
@@ -246,8 +237,7 @@ TEST(DeclarationPrintTest, StatementCodeBlockWithStatment)
 
 TEST(DeclarationPrintTest, ExpressionObject)
 {
-    Void              voidType(nullptr);
-    Object            object(nullptr, "Object", voidType);
+    Object            object(nullptr, "Object", Void::getInstance());
     ExpressionObject  expression(nullptr, object);
     std::string output = (std::stringstream{} << expression).str();
     auto find = output.find("Decl::Expression::ExpressionObject\n");
@@ -256,9 +246,8 @@ TEST(DeclarationPrintTest, ExpressionObject)
 
 TEST(DeclarationPrintTest, ExpressionMemberAccess)
 {
-    Void              voidType(nullptr);
     Class             classType(nullptr, "Class");
-    classType.add<ObjectVariable>(nullptr, "data", voidType, ExpressionList{});
+    classType.add<ObjectVariable>(nullptr, "data", Void::getInstance(), ExpressionList{});
     Object            object(nullptr, "Object", classType);
 
     ExpressionObject  expressionObject(nullptr, object);
@@ -270,8 +259,7 @@ TEST(DeclarationPrintTest, ExpressionMemberAccess)
 
 TEST(DeclarationPrintTest, ExpressionFuncCall)
 {
-    Void                voidType(nullptr);
-    Function            functionType(nullptr, "Function", TypeCList{}, voidType);
+    Function            functionType(nullptr, "Function", TypeCList{}, Void::getInstance());
     Class               classType(nullptr, "Class");
     CodeBlock           codeBlock(nullptr);
     StatementCodeBlock  code(nullptr, codeBlock, StatementList{});
@@ -292,8 +280,7 @@ TEST(DeclarationPrintTest, ExpressionFuncCall)
 
 TEST(DeclarationPrintTest, ExpressionFuncCallWithParam)
 {
-    Void                voidType(nullptr);
-    Function            functionType(nullptr, "Function", TypeCList{TypeCRef{voidType}, TypeCRef{voidType}}, voidType);
+    Function            functionType(nullptr, "Function", TypeCList{TypeCRef{Void::getInstance()}, TypeCRef{Void::getInstance()}}, Void::getInstance());
     Class               classType(nullptr, "Class");
     CodeBlock           codeBlock(nullptr);
     StatementCodeBlock  code(nullptr, codeBlock, StatementList{});
@@ -303,7 +290,7 @@ TEST(DeclarationPrintTest, ExpressionFuncCallWithParam)
     functionOverload.addOverload(function);
 
     Object              object(nullptr, "Object", classType);
-    Object              param(nullptr, "Param", voidType);
+    Object              param(nullptr, "Param", Void::getInstance());
 
     ExpressionObject        expressionObject(nullptr, object);
     ExpressionObject        expressionParam(nullptr, param);

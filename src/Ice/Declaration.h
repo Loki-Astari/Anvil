@@ -142,10 +142,12 @@ class Class: public Type
         static constexpr Int defaultStorageId = 15;
 };
 
-class Void: public Class
+class Void: public Type
 {
+    private:
+        Void();
     public:
-        Void(ActionRef action);
+        static Void& getInstance();
         virtual void print(std::ostream& stream, int indent, bool showName) const override;
 
         static constexpr bool valid = false;

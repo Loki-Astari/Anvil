@@ -170,8 +170,14 @@ void Type::print(std::ostream& stream, int s, bool showName) const
     //NamedScope::print(stream, s, false);
 }
 
-Void::Void(ActionRef action)
-    : Class(action, "Void")
+Void& Void::getInstance()
+{
+    static Void instance;
+    return instance;
+}
+
+Void::Void()
+    : Type(nullptr, "Void")
 {
 }
 

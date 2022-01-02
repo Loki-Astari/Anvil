@@ -165,7 +165,7 @@ TEST(StorageTest, Decl)
     Id<Decl> id(-1);
     Int     save;
     {
-        Void    value{nullptr};
+        Void&   value = Void::getInstance();
         id = store.add(DeclRef(value));
         save = id.value;
         EXPECT_NE(id.value, -1);
@@ -185,7 +185,7 @@ TEST(StorageTest, Scope)
     Id<Scope> id(-1);
     Int     save;
     {
-        Void    value{nullptr};
+        Void&   value = Void::getInstance();
         id = store.add(ScopeRef(value));
         save = id.value;
         EXPECT_NE(id.value, -1);
@@ -265,7 +265,7 @@ TEST(StorageTest, Type)
     Id<Type> id(-1);
     Int     save;
     {
-        Void    value{nullptr};
+        Void&   value = Void::getInstance();
         id = store.add(TypeRef(value));
         save = id.value;
         EXPECT_NE(id.value, -1);
@@ -305,7 +305,7 @@ TEST(StorageTest, Function)
     Id<Function> id(-1);
     Int     save;
     {
-        Void        voidType(nullptr);
+        Void&       voidType = Void::getInstance();
         Function    value{nullptr, "Function", TypeCList{}, voidType};
         id = store.add(FunctionRef(value));
         save = id.value;
@@ -326,7 +326,7 @@ TEST(StorageTest, Object)
     Id<Object> id(-1);
     Int     save;
     {
-        Void        voidType(nullptr);
+        Void&       voidType = Void::getInstance();
         ObjectVariable    value{nullptr, "data", voidType, ExpressionList{}};
         id = store.add(ObjectRef(value));
         save = id.value;
@@ -389,7 +389,7 @@ TEST(StorageTest, Expression)
     Id<Expression> id(-1);
     Int     save;
     {
-        Void                voidType(nullptr);
+        Void&               voidType = Void::getInstance();
         Object              object(nullptr, "Data", voidType);
         ExpressionObject    value{nullptr, object};
         id = store.add(ExpressionRef(value));

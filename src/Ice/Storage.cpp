@@ -11,10 +11,10 @@ Storage::Storage()
     static CodeBlock        defaultCodeBlock(ActionRef{});
     static MemberInit       defaultMemberInit(ActionRef{}, "Invalid Member", ExpressionList{});
     static Namespace        defaultNamespace(ActionRef{}, "Invalid Namespace");
-    static Void             defaultType(ActionRef{});
-    static Void             defaultVoid(ActionRef{});
+    //static Void             defaultType(ActionRef{});
+    //static Void             defaultVoid(ActionRef{});
     static Class            defaultClass(ActionRef{}, "Invalid Class");
-    static Function         defaultFunction(ActionRef{}, "Invalid Function", TypeCList{}, defaultVoid);
+    static Function         defaultFunction(ActionRef{}, "Invalid Function", TypeCList{}, Void::getInstance());
     static ObjectVariable   defaultObject(ActionRef{}, "Invalid Object", defaultClass, ExpressionList{});
     static Statement        defaultStatement(ActionRef{});
     static ExpressionObject defaultExpression(ActionRef{}, defaultObject);
@@ -39,8 +39,8 @@ Storage::Storage()
     data.emplace_back(CodeBlockRef{defaultCodeBlock});
     data.emplace_back(MemberInitRef{defaultMemberInit});
     data.emplace_back(NamespaceRef{defaultNamespace});
-    data.emplace_back(TypeRef{defaultType});
-    data.emplace_back(VoidRef{defaultVoid});
+    data.emplace_back(Int(0));//dynamic_cast<Type&>(Void::getInstance()));    // Type
+    data.emplace_back(Int(0));//Void::getInstance());                         // Void
     data.emplace_back(ClassRef{defaultClass});
     data.emplace_back(FunctionRef{defaultFunction});
     data.emplace_back(ObjectRef{defaultObject});

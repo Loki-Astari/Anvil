@@ -39,8 +39,7 @@ inline Type const& ExpressionLiteral<T>::findType(ActionRef action)
 template<>
 inline Type const& ExpressionLiteral<void*>::findType(ActionRef /*action*/)
 {
-    static const Void   voidType(nullptr);
-    return voidType;
+    return Void::getInstance();
 }
 
 
