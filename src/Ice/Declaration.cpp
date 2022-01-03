@@ -106,7 +106,10 @@ Decl& Scope::saveMember(ActionRef action, std::unique_ptr<Decl>&& member)
     auto& location = members[index];
     if (location.get() != nullptr)
     {
-        action->error("Location already in use: ", index);
+        action->error("Location already in use: ", index, "\n",
+                      "\n"
+                      "DeclarationName: ", location.get()->declName(), "\n"
+                     );
     }
     else
     {

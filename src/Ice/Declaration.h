@@ -28,10 +28,8 @@ class Decl
         virtual void print(std::ostream&, int indent, bool showName) const = 0;
 
         static constexpr bool valid = true;
-        static constexpr Int defaultStorageId = 9;
     protected:
         std::string indent(int size) const {return std::string(size * 4, ' ');}
-
 };
 
 inline std::ostream& operator<<(std::ostream& stream, Decl const& decl)
@@ -71,7 +69,6 @@ class CodeBlock: public Scope
         virtual void print(std::ostream& stream, int indent, bool showName) const override;
 
         static constexpr bool valid = true;
-        static constexpr Int defaultStorageId = 10;
 };
 
 class MemberInit: public Decl
@@ -91,7 +88,6 @@ class MemberInit: public Decl
         ExpressionList const& expressionList() const {return init;}
 
         static constexpr bool valid = true;
-        static constexpr Int defaultStorageId = 11;
 };
 
 class NamedScope: public Scope
@@ -117,7 +113,6 @@ class Namespace: public NamedScope
 
         virtual void print(std::ostream& stream, int indent, bool showName) const override;
         static constexpr bool valid = true;
-        static constexpr Int defaultStorageId = 12;
 };
 
 class Type: public NamedScope
@@ -128,7 +123,6 @@ class Type: public NamedScope
         virtual std::string getExtension() const {return declName();}
 
         static constexpr bool valid = true;
-        static constexpr Int defaultStorageId = 13;
 };
 
 class Class: public Type
@@ -139,7 +133,6 @@ class Class: public Type
         virtual void print(std::ostream& stream, int indent, bool showName) const override;
 
         static constexpr bool valid = true;
-        static constexpr Int defaultStorageId = 15;
 };
 
 class Void: public Type
@@ -151,7 +144,6 @@ class Void: public Type
         virtual void print(std::ostream& stream, int indent, bool showName) const override;
 
         static constexpr bool valid = false;
-        static constexpr Int defaultStorageId = 14;
 };
 
 class Function: public Type
@@ -171,7 +163,6 @@ class Function: public Type
         TypeCList getParams() const {return param;}
 
         static constexpr bool valid = true;
-        static constexpr Int defaultStorageId = 16;
 };
 
 class Overload: public Type
@@ -202,7 +193,6 @@ class Object: public Decl
         Type const& getType() const {return type;}
 
         static constexpr bool valid = true;
-        static constexpr Int defaultStorageId = 17;
 };
 
 class ObjectVariable: public Object
@@ -276,7 +266,6 @@ class Statement: public Decl
         virtual void print(std::ostream& stream, int indent, bool showName) const override;
 
         static constexpr bool valid = true;
-        static constexpr Int defaultStorageId = 18;
 };
 
 class StatementExpression: public Statement
@@ -340,7 +329,6 @@ class Expression: public Decl
         virtual void print(std::ostream& stream, int indent, bool showName) const override;
 
         static constexpr bool valid = true;
-        static constexpr Int defaultStorageId = 19;
 };
 
 class ExpressionObject: public Expression

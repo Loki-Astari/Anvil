@@ -74,7 +74,7 @@ T& Action::getRefFromView(Identifier const& key, V view, E&& genError)
     // The genError should never return.
     // It is supposed to generate a call to error() with a detailed
     // error message specific to the caller.
-    throw domain_error("Error occurred but no exception generated.");
+    throw std::domain_error("Error occurred but no exception generated.");
 }
 // -----------
 
@@ -153,7 +153,9 @@ Dst& Action::getOrAddDeclToScope(Scope& scope, std::string declName, Param... pa
         Dst*        result = dynamic_cast<Dst*>(foundDeclWithSameName);
         if (result == nullptr)
         {
-            error("Object With name already exists: ", declName);
+            error("Object With name already exists: ", foundDeclWithSameName->declName(), "\n",
+                  "\n",
+                  "Note: Namespace/Class can be re-opened\n");
         }
         return *result;
     }
