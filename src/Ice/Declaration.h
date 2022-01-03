@@ -22,7 +22,7 @@ class Decl
         Decl(Decl&&) = delete;
         Decl& operator=(Decl&&) = delete;
 
-        virtual std::string const& declName() const;
+        virtual std::string const& declName(bool = false) const;
         virtual int  storageSize() const    {return 0;}
         virtual bool overloadable() const   {return false;}
         virtual void print(std::ostream&, int indent, bool showName) const = 0;
@@ -67,7 +67,7 @@ class CodeBlock: public Scope
 {
     public:
         using Scope::Scope;
-        virtual std::string const& declName() const override {static std::string name;return name;}
+        virtual std::string const& declName(bool = false) const override {static std::string name;return name;}
         virtual void print(std::ostream& stream, int indent, bool showName) const override;
 
         static constexpr bool valid = true;
@@ -84,7 +84,7 @@ class MemberInit: public Decl
             , name(std::move(name))
             , init(std::move(init))
         {}
-        virtual std::string const& declName() const override {static std::string name;return name;}
+        virtual std::string const& declName(bool = false) const override {static std::string name;return name;}
         virtual void print(std::ostream& stream, int indent, bool showName) const override;
         Identifier const& getName() {return name;}
 
@@ -103,7 +103,7 @@ class NamedScope: public Scope
             : Scope(action)
             , name(std::move(name))
         {}
-        virtual std::string const& declName() const override {return name;}
+        virtual std::string const& declName(bool full = false) const override {return full && fullName != "" ? fullName : name;}
         virtual void print(std::ostream& stream, int indent, bool showName) const override;
         void setPath(std::string path) {fullName = std::move(path);}
 };
@@ -197,7 +197,7 @@ class Object: public Decl
             , name(std::move(name))
             , type(type)
         {}
-        virtual std::string const& declName() const override {return name;}
+        virtual std::string const& declName(bool = false) const override {return name;}
         virtual void print(std::ostream& stream, int indent, bool showName) const override;
         Type const& getType() const {return type;}
 

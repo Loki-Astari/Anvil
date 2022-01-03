@@ -72,16 +72,12 @@ class Action
         StatementId         statmentReturn(ExpressionId id);
         StatementId         statmentAssembley(Id<std::string> id);
 
-        template<typename T, typename V>
-        Id<T> getNameFromView(IdentifierId id, V view);
         template<typename T>
         Id<T> getNameFromScopeStack(IdentifierId id);
         template<typename T>
         Id<T> getNameFromScope(ScopeId scopeId, IdentifierId id);
         // -------
 
-        template<typename T, typename V>
-        T& getRefFromView(Identifier const& id, V view);
         template<typename T>
         T& getRefFromScopeStack(Identifier const& id);
         template<typename T>
@@ -154,18 +150,19 @@ class Action
         virtual ObjectFunction&     scopeObjectAddFunctionV(Scope& top, Identifier name, Type const& id, StatementCodeBlock& code, MemberInitList init);
         virtual MemberInit&         memberInitV(Scope& top, Identifier name, ExpressionList init);
         virtual Identifier          identifierCreateV(Scope& top, std::string identifier);
+    protected:
+        template<typename Dst, typename... Param>
+        Dst& getOrAddDeclToScope(Scope& scope, std::string declName, Param... param);
+        Scope& getGlobalScope() const {return currentScope.front();}
+        std::string getCurrentScopeFullName() const;
     private:
         void addToLine();
         void resetLine();
 
         template<typename Dst, typename... Param>
         Id<Base<Dst>> addDeclToScope(Id<Param>... id);
-    protected:
-        template<typename Dst, typename... Param>
-        Dst& getOrAddDeclToScope(Scope& scope, std::string declName, Param... param);
-        Scope& getGlobalScope() const {return currentScope.front();}
-
-        std::string getCurrentScopeFullName() const;
+        template<typename T, typename V, typename E>
+        T& getRefFromView(Identifier const& id, V view, E&& genError);
 };
 
 }

@@ -105,7 +105,7 @@ Namespace& Action::scopeNamespaceCloseV(Scope& top, Namespace& ns, DeclList /*de
 
     if (&ns != topNS)
     {
-        error("Internal Error: Scope Note correctly aligned from Namespace");
+        throw std::domain_error("Internal Error: Scope Note correctly aligned from Namespace");
     }
     currentScope.pop_back();
     return ns;
@@ -141,7 +141,7 @@ Class& Action::scopeClassCloseV(Scope& top, Class& cl, DeclList /*decl*/)
 
     if (&cl != topClass)
     {
-        error("Internal Error: Scope Note correctly aligned from Class");
+        throw std::domain_error("Internal Error: Scope Note correctly aligned from Class");
     }
     currentScope.pop_back();
     return cl;
@@ -200,7 +200,7 @@ StatementCodeBlock& Action::scopeCodeBlockCloseV(Scope& top, CodeBlock& codeBloc
 
     if (&codeBlock != topBlock)
     {
-        error("Internal Error: Scope Note correctly aligned from CodeBlock");
+        throw std::domain_error("Internal Error: Scope Note correctly aligned from CodeBlock");
     }
     currentScope.pop_back();
     Scope&          newTop = currentScope.back();
@@ -351,11 +351,22 @@ namespace ThorsAnvil::Anvil::Ice
 
 std::ostream& operator<<(std::ostream& str, Action const& action)
 {
-    return str
-             << "Last Token: >" << action.lexer.lexem() << "<\n"
-             << "Line:  " << action.lineNo << " : " << action.currentLine.size() << "     FileOffset: " << action.offset << "\n"
-             << action.currentLine << "\n"
-             << "\n";
+    str << "Lexer State:\n"
+        << "============\n"
+        << "Last Token: >" << action.lexer.lexem() << "<\n"
+        << "Line:  " << action.lineNo << " : " << action.currentLine.size() << "     FileOffset: " << action.offset << "\n"
+        << action.currentLine << "\n"
+        << "\n"
+        << "Parser State:\n"
+        << "=============\n"
+        << "\tOpen Scopes Searchable\n"
+        << "\t----------------------\n";
+
+    for (auto const& scopeRef: make_View<Forward>(action.currentScope))
+    {
+        str << "\t" << scopeRef.get().declName() << "\n";
+    }
+    return str;
 }
 
 }

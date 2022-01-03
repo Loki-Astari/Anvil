@@ -191,7 +191,7 @@ namespace Name_Space
 
     FacadeCompiler  compiler(file, result);
     auto action = [&](){compiler.compile();};
-    EXPECT_THROW_OR_DEBUG(action(), "Invalid Type Name:", result);
+    EXPECT_THROW_OR_DEBUG(action(), "Invalid Identifier Name: Std (Namespace)", result);
 }
 
 TEST(ParserTest,InvalidNamespaceInNamespace)
@@ -209,7 +209,7 @@ namespace Name_Space
 
     FacadeCompiler  compiler(file, result);
     auto action = [&](){compiler.compile();};
-    EXPECT_THROW_OR_DEBUG(action(), "Invalid Type Name:", result);
+    EXPECT_THROW_OR_DEBUG(action(), "The Identifier >Ext< can not be found in >Std<", result);
 }
 
 TEST(ParserTest,InvalidType)
@@ -224,7 +224,7 @@ namespace Name_Space
 
     FacadeCompiler  compiler(file, result);
     auto action = [&](){compiler.compile();};
-    EXPECT_THROW_OR_DEBUG(action(), "Invalid Type Name:", result);
+    EXPECT_THROW_OR_DEBUG(action(), "Error: Invalid Identifier Name: Integer (Type)", result);
 }
 
 TEST(ParserTest,InvalidTypeInScope)
@@ -240,7 +240,7 @@ namespace Name_Space
 
     FacadeCompiler  compiler(file, result);
     auto action = [&](){compiler.compile();};
-    EXPECT_THROW_OR_DEBUG(action(), "Invalid Type Name:", result);
+    EXPECT_THROW_OR_DEBUG(action(), "The Identifier >Integer< can not be found in >Std<", result);
 }
 
 #if 0

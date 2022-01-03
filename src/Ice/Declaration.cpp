@@ -22,7 +22,7 @@ Decl::~Decl()
     // std::cerr << "Destroying: " << this << "\n";
 }
 
-std::string const& Decl::declName() const
+std::string const& Decl::declName(bool) const
 {
     static std::string emptyName;  // using an empty name forces the scope to generate
                                    // an anonymous name for the object. See: Scope::add

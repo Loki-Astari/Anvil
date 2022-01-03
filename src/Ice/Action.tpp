@@ -18,9 +18,9 @@ template<typename... Args>
 void Action::error(Args const&... args) const
 {
     std::stringstream extended;
-    extended << "Error: '";
+    extended << "Error: ";
     (extended << ... << args);
-    extended << "'\n" << *this;
+    extended << "\n" << *this;
     throw std::runtime_error(extended.str());
 }
 
@@ -43,52 +43,26 @@ ListId<T> Action::listAppend(ListId<T> listId, Id<S> id)
     return listAccess.reuse();
 }
 
-template<typename T, typename V>
-Id<T> Action::getNameFromView(IdentifierId id, V view)
+inline std::string identifierType(std::string const& key)
 {
-    using Ref = std::reference_wrapper<T>;
-    //ScopePrinter scope("getTypeFromName");
-    IdentifierAccess    access(storage, id);
-
-    for (auto const& scope: view)
+    if (std::islower(key[0]))
     {
-        auto find = scope.get().get(access);
-        if (find.first)
-        {
-            Decl& decl = *find.second->second;
-            T& value = dynamic_cast<T&>(decl);
-            return storage.add<Ref>(Ref{value});
-        }
+        return "Object";
     }
-    error("Invalid Type Name: ", static_cast<std::string>(access));
-}
-
-template<typename T>
-Id<T> Action::getNameFromScopeStack(IdentifierId id)
-{
-    if (storage.get<Identifier>(id.value) == "::")
+    if (key.length() <= 3 || key.find('_') != std::string::npos)
     {
-        Scope&  global = currentScope.front();
-        T& result = dynamic_cast<T&>(global);
-        return storage.add<Ref<T>>(result);
+        return "Namespace";
     }
-    return getNameFromView<T>(id, make_View<Reverse>(currentScope));
+    return "Type";
 }
-template<typename T>
-Id<T> Action::getNameFromScope(ScopeId scopeId, IdentifierId id)
-{
-    ScopeAccess     scopeAccess(storage, scopeId);
-    ScopeRef        scope = ScopeRef(scopeAccess);
-    return getNameFromView<T>(id, make_View<Reverse>(&scope, &scope+1));
-}
-// -------
 
-template<typename T, typename V>
-T& Action::getRefFromView(Identifier const& id, V view)
+
+template<typename T, typename V, typename E>
+T& Action::getRefFromView(Identifier const& key, V view, E&& genError)
 {
     for (auto const& scope: view)
     {
-        auto find = scope.get().get(id);
+        auto find = scope.get().get(key);
         if (find.first)
         {
             Decl& decl = *find.second->second;
@@ -96,7 +70,20 @@ T& Action::getRefFromView(Identifier const& id, V view)
             return value;
         }
     }
-    error("Invalid Type Name: ", id);
+    genError(key);
+    // The genError should never return.
+    // It is supposed to generate a call to error() with a detailed
+    // error message specific to the caller.
+    throw domain_error("Error occurred but no exception generated.");
+}
+// -----------
+
+template<typename T>
+Id<T> Action::getNameFromScopeStack(IdentifierId id)
+{
+    IdentifierAccess    idAccess(storage, id);
+    T& value = getRefFromScopeStack<T>(idAccess);
+    return storage.add<Ref<T>>(value);
 }
 template<typename T>
 T& Action::getRefFromScopeStack(Identifier const& id)
@@ -106,12 +93,35 @@ T& Action::getRefFromScopeStack(Identifier const& id)
         Scope&  global = currentScope.front();
         return dynamic_cast<T&>(global);
     }
-    return getRefFromView<T>(id, make_View<Reverse>(currentScope));
+    return getRefFromView<T>(id, make_View<Reverse>(currentScope), [&](std::string const& key)
+        {
+            error("Invalid Identifier Name: ", key, " (", identifierType(key), ")\n",
+                  "\n",
+                  "The Identifier >", key, "< can not be found in the current scope stack (see 'Parser State' below)\n"
+                 );
+        });
+}
+// -----------
+
+template<typename T>
+Id<T> Action::getNameFromScope(ScopeId scopeId, IdentifierId id)
+{
+    IdentifierAccess    idAccess(storage, id);
+    ScopeAccess         scopeAccess(storage, scopeId);
+    ScopeRef            scope = ScopeRef(scopeAccess);
+    T&                  value = getRefFromScope<T>(scope, idAccess);
+    return storage.add<Ref<T>>(value);
 }
 template<typename T>
 T& Action::getRefFromScope(ScopeRef const& scope, Identifier const& id)
 {
-    return getRefFromView<T>(id, make_View<Reverse>(&scope, &scope+1));
+    return getRefFromView<T>(id, make_View<Reverse>(&scope, &scope+1), [&](std::string const& key)
+        {
+            error("Invalid Identifier Name: ", key, " (", identifierType(key), ")\n",
+                  "\n",
+                  "The Identifier >", key, "< can not be found in >", scope.get().declName(true), "<\n"
+                 );
+        });
 }
 // --------
 
