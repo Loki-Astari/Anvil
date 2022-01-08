@@ -80,6 +80,7 @@ using ActionRef             = Action*;      // Pointer because Storage uses null
 using MemberStorage         = std::map<std::string, std::unique_ptr<Decl>>;
 using MemberIndex           = std::map<std::string, std::size_t>;
 using NameRef               = MemberStorage::const_iterator;
+using ScopeIter             = MemberStorage::const_iterator;
 
 using DeclId                = Id<Decl>;
 using DeclRef               = std::reference_wrapper<Decl>;

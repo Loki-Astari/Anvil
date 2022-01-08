@@ -323,10 +323,12 @@ ExpressionId Action::expressionLiteralInt()
 std::string Action::getCurrentScopeFullName() const
 {
     std::string result;
+    std::string sep;
     for (auto& scopeRefForward: currentScope)
     {
         auto& scopeForward = scopeRefForward.get();
-        result += (scopeForward.declName() + "-");
+        result += (sep + scopeForward.declName());
+        sep = "-";
     }
 
     return result;

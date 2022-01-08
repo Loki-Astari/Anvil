@@ -83,9 +83,10 @@ struct GeneratorCompiler
 
     bool compile(std::ostream& stream)
     {
-        return parser.parse();
+        parser.parse();
 
         generator.generate(stream);
+        return true;
     }
 };
 

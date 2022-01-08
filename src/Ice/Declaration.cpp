@@ -261,14 +261,20 @@ void Overload::print(std::ostream& stream, int s, bool showName) const
     Type::print(stream, s, false);
 }
 
-Type const& Overload::getReturnType(ActionRef action, TypeCList const& index) const
+Function const& Overload::getOverload(ActionRef action, TypeCList const& index) const
 {
     auto find = overloadData.find(index);
     if (find == overloadData.end())
     {
         action->error("Did not find overlaad");
     }
-    return find->second.get().getReturnType(action);
+    return find->second.get();
+}
+
+Type const& Overload::getReturnType(ActionRef action, TypeCList const& index) const
+{
+    Function const& func = getOverload(action, index);
+    return func.getReturnType(action);
 }
 
 bool Overload::findMatch(ActionRef, TypeCList const& index) const

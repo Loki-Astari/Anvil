@@ -38,6 +38,22 @@ inline std::ostream& operator<<(std::ostream& stream, Decl const& decl)
     return stream;
 }
 
+class ScopeIterator
+{
+    ScopeIter    iter;
+    public:
+        ScopeIterator(){}
+        ScopeIterator(ScopeIterator const& copy): iter(copy.iter) {}
+        ScopeIterator operator=(ScopeIterator const& copy) {iter = copy.iter;return *this;}
+        ScopeIterator(ScopeIter iter): iter(iter) {}
+        ScopeIterator operator++(){++iter;return *this;}
+        ScopeIterator operator++(int){ScopeIterator tmp(iter);++iter;return tmp;}
+        Decl& operator*() {return *iter->second;}
+        bool operator==(ScopeIterator const& rhs) const {return iter == rhs.iter;}
+        bool operator!=(ScopeIterator const& rhs) const {return iter != rhs.iter;}
+};
+
+
 class Scope: public Decl
 {
     MemberStorage   members;
@@ -55,6 +71,10 @@ class Scope: public Decl
         virtual void print(std::ostream& stream, int indent, bool showName) const override;
         std::string anonName();
 
+        std::size_t getMemberSize() const {return nextObjectId;}
+
+        ScopeIterator begin()   const   {return ScopeIterator(members.begin());}
+        ScopeIterator end()     const   {return ScopeIterator(members.end());}
     private:
         Decl& saveMember(ActionRef action, std::unique_ptr<Decl>&& member);
         char hex(std::size_t halfByte);
@@ -173,6 +193,7 @@ class Overload: public Type
             : Type(action, "")
         {}
         virtual void print(std::ostream& stream, int indent, bool showName) const override;
+        Function const& getOverload(ActionRef action, TypeCList const& index) const;
         Type const& getReturnType(ActionRef action, TypeCList const& index) const;
         bool findMatch(ActionRef, TypeCList const& index) const;
         void addOverload(Function const& type);
@@ -181,6 +202,7 @@ class Overload: public Type
 class Object: public Decl
 {
     std::string     name;
+    std::string     fullName;
     Type const&     type;
     public:
         Object(ActionRef action, std::string name, Type const& type)
@@ -188,9 +210,10 @@ class Object: public Decl
             , name(std::move(name))
             , type(type)
         {}
-        virtual std::string const& declName(bool = false) const override {return name;}
+        virtual std::string const& declName(bool full = false) const override {return full && fullName != "" ? fullName : name;}
         virtual void print(std::ostream& stream, int indent, bool showName) const override;
         Type const& getType() const {return type;}
+        void setPath(std::string path) {fullName = std::move(path);}
 
         static constexpr bool valid = true;
 };
@@ -218,7 +241,7 @@ class ObjectFunction: public Object
             , code(code)
             , init(std::move(init))
         {}
-        virtual int storageSize() const override {return 1;}
+        virtual int storageSize() const override {return 0;}
         virtual void print(std::ostream& stream, int indent, bool showName) const override;
 
         void addMissingMemberInit(ActionRef action, Scope& scope, MemberList const& members, bool con);
