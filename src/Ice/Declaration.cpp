@@ -3,7 +3,6 @@
 #include "Action.h"
 
 #include <vector>
-#include <iostream>
 #include <set>
 
 using namespace ThorsAnvil::Anvil::Ice;

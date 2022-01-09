@@ -85,7 +85,6 @@ ObjectFunction& Semantic::scopeObjectAddFunctionV(Scope& top, Identifier name, T
 
 void Semantic::addDefaultMethodsToScope(Scope& scope, DeclList declList)
 {
-    std::cerr << "addDefaultMethodsToScope: " << std::size(declList) << "\n";
     auto findCons = scope.get("$constructor");
     if (!findCons.first)
     {
@@ -106,18 +105,14 @@ void Semantic::addDefaultMethodsToScope(Scope& scope, DeclList declList)
     }
 
     MemberList data;
-    std::cerr << "Build Members\n";
     for (auto& decl: declList)
     {
-        std::cerr << "Try\n";
         if (decl.get().storageSize() != 0)
         {
-            std::cerr << "Add\n";
             Object& var = dynamic_cast<Object&>(decl.get());
             data.emplace_back(var);
         }
     }
-    std::cerr << "Build Members: Done\n";
 
     auto conFind = scope.get("$constructor");
     ObjectOverload&  constructorList = dynamic_cast<ObjectOverload&>(*conFind.second->second);
