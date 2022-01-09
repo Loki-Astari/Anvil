@@ -27,7 +27,7 @@ class Decl
         virtual int  storageSize() const    {return 0;}
         virtual bool overloadable() const   {return false;}
         virtual void print(std::ostream&, int indent, bool showName) const = 0;
-        virtual void generateCode(Generator& gen, std::ostream& output);
+        virtual void generateCode(Generator& gen, std::ostream& output) const;
 
         static constexpr bool valid = true;
     protected:
@@ -89,6 +89,7 @@ class CodeBlock: public Scope
         using Scope::Scope;
         virtual std::string const& declName(bool = false) const override {static std::string name;return name;}
         virtual void print(std::ostream& stream, int indent, bool showName) const override;
+        virtual void generateCode(Generator& gen, std::ostream& output) const override;
 
         static constexpr bool valid = true;
 };
@@ -134,6 +135,7 @@ class Namespace: public NamedScope
         {}
 
         virtual void print(std::ostream& stream, int indent, bool showName) const override;
+        virtual void generateCode(Generator& gen, std::ostream& output) const override;
         static constexpr bool valid = true;
 };
 
@@ -143,6 +145,7 @@ class Type: public NamedScope
         using NamedScope::NamedScope;
         virtual void print(std::ostream& stream, int indent, bool showName) const override;
         virtual std::string getExtension() const {return declName();}
+        virtual void generateCode(Generator& /*gen*/, std::ostream& /*output*/) const override {/* Do Nothing */}
 
         static constexpr bool valid = true;
 };
@@ -201,21 +204,16 @@ class Overload: public Type
         void addOverload(Function const& type);
 };
 
-class Object: public Decl
+class Object: public NamedScope
 {
-    std::string     name;
-    std::string     fullName;
     Type const&     type;
     public:
         Object(ActionRef action, std::string name, Type const& type)
-            : Decl(action)
-            , name(std::move(name))
+            : NamedScope(action, std::move(name))
             , type(type)
         {}
-        virtual std::string const& declName(bool full = false) const override {return full && fullName != "" ? fullName : name;}
         virtual void print(std::ostream& stream, int indent, bool showName) const override;
         Type const& getType() const {return type;}
-        void setPath(std::string path) {fullName = std::move(path);}
 
         static constexpr bool valid = true;
 };
@@ -230,21 +228,28 @@ class ObjectVariable: public Object
         {}
         virtual int storageSize() const override {return 1;}
         virtual void print(std::ostream& stream, int indent, bool showName) const override;
+        virtual void generateCode(Generator& /*gen*/, std::ostream& /*output*/) const override {/* Do Nothing */}
 };
 
 class ObjectFunction: public Object
 {
+    friend class Generator;
     protected:
-        StatementCodeBlock&  code;
+        StatementCodeBlock*  code;
         MemberInitList       init;
     public:
-        ObjectFunction(ActionRef action, std::string name, Type const& type, StatementCodeBlock& code, MemberInitList init)
+        ObjectFunction(ActionRef action, std::string name, Type const& type)
             : Object(action, name += type.getExtension(), type)
-            , code(code)
-            , init(std::move(init))
+            , code(nullptr)
         {}
+        void addCode(StatementCodeBlock& codeRef, MemberInitList initList)
+        {
+            code    = &codeRef;
+            init    = std::move(initList);
+        }
         virtual int storageSize() const override {return 0;}
         virtual void print(std::ostream& stream, int indent, bool showName) const override;
+        virtual void generateCode(Generator& gen, std::ostream& output) const override;
 
         void addMissingMemberInit(ActionRef action, Scope& scope, MemberList const& members, bool con);
         void addMemberInit(ActionRef action, Scope& scope, ObjectRef data, MemberInit&& memberInit, bool con);
@@ -278,6 +283,7 @@ class ObjectOverload: public Object
         virtual bool overloadable() const override {return true;}
         virtual int storageSize() const override;
         virtual void print(std::ostream& stream, int indent, bool showName) const override;
+        virtual void generateCode(Generator& /*gen*/, std::ostream& /*output*/) const override {/* Do Nothing */}
         void addOverload(ObjectFunction& func);
 
         OverloadIterator begin()    {return OverloadIterator(overloadData.begin());}
@@ -331,6 +337,7 @@ class StatementAssembley: public Statement
 
 class StatementCodeBlock: public Statement
 {
+    friend class Generator;
     CodeBlock&      codeBlock;
     StatementList   list;
     public:
@@ -341,6 +348,7 @@ class StatementCodeBlock: public Statement
             , list(std::move(list))
         {}
         virtual void print(std::ostream& stream, int indent, bool showName) const override;
+        virtual void generateCode(Generator& gen, std::ostream& output) const override;
 
         void prefix(Statement& pre)     {list.emplace_front(pre);}
         void postfix(Statement& post)   {list.emplace_back(post);}

@@ -9,7 +9,7 @@
 namespace ThorsAnvil::Anvil::Ice
 {
 
-using Data = std::variant<Int, DeclList, NamespaceList, TypeCList, ExpressionList, StatementList, MemberInitList, DeclRef, ScopeRef, CodeBlockRef, MemberInitRef, NamespaceRef, TypeRef, VoidRef, ClassRef, FunctionRef, ObjectRef, StatementRef, StatementCodeBlockRef, ExpressionRef, Identifier>;
+using Data = std::variant<Int, DeclList, NamespaceList, TypeCList, ExpressionList, StatementList, MemberInitList, DeclRef, ScopeRef, CodeBlockRef, MemberInitRef, NamespaceRef, TypeRef, VoidRef, ClassRef, FunctionRef, ObjectRef, ObjectFunctionRef, StatementRef, StatementCodeBlockRef, ExpressionRef, Identifier>;
 
 class Storage
 {

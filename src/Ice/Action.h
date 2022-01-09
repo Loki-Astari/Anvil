@@ -61,9 +61,10 @@ class Action
         CodeBlockId         scopeCodeBlockOpen();
         StatementCodeBlockId scopeCodeBlockClose(CodeBlockId, StatementListId);
         ObjectId            scopeObjectAddVariable(IdentifierId name, TypeId id, ExpressionListId init);
-        ObjectId            scopeObjectAddFunction(IdentifierId name, TypeId id, StatementCodeBlockId code, MemberInitListId init);
-        ObjectId            scopeConstructorAdd(TypeCListId listId, MemberInitListId init, StatementCodeBlockId code);
-        ObjectId            scopeDestructorAdd(StatementCodeBlockId code);
+        ObjectFunctionId    scopeFunctionOpen(IdentifierId name, TypeId id);
+        ObjectFunctionId    scopeFunctionClose(ObjectFunctionId id, StatementCodeBlockId code, MemberInitListId init);
+        ObjectFunctionId    scopeConstructorOpen(TypeCListId listId);
+        ObjectFunctionId    scopeDestructorOpen();
         MemberInitId        memberInit(IdentifierId, ExpressionListId);
         IdentifierId        identifierCreate();
         IdentifierId        identifierCreate(std::string identifier);
@@ -146,12 +147,13 @@ class Action
         virtual CodeBlock&          scopeCodeBlockOpenV(Scope& top);
         virtual StatementCodeBlock& scopeCodeBlockCloseV(Scope& top, CodeBlock&, StatementList);
         virtual ObjectVariable&     scopeObjectAddVariableV(Scope& top, Identifier name, Type const& id, ExpressionList init);
-        virtual ObjectFunction&     scopeObjectAddFunctionV(Scope& top, Identifier name, Type const& id, StatementCodeBlock& code, MemberInitList init);
+        virtual ObjectFunction&     scopeFunctionOpenV(Scope& top, Identifier name, Type const& id);
+        virtual ObjectFunction&     scopeFunctionCloseV(Scope& top, ObjectFunction& id, StatementCodeBlock& code, MemberInitList init);
         virtual MemberInit&         memberInitV(Scope& top, Identifier name, ExpressionList init);
         virtual Identifier          identifierCreateV(Scope& top, std::string identifier);
     protected:
         template<typename Dst, typename... Param>
-        Dst& getOrAddDeclToScope(Scope& scope, std::string declName, Param... param);
+        Dst& getOrAddDeclToScope(Scope& scope, std::string declName, Param&&... param);
         Scope& getGlobalScope() const {return currentScope.front();}
         std::string getCurrentScopeFullName() const;
     private:

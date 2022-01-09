@@ -45,6 +45,7 @@ using ThorsAnvil::Anvil::Ice::FunctionId;
 using ThorsAnvil::Anvil::Ice::CodeBlockId;
 using ThorsAnvil::Anvil::Ice::MemberInitId;
 using ThorsAnvil::Anvil::Ice::ObjectId;
+using ThorsAnvil::Anvil::Ice::ObjectFunctionId;
 using ThorsAnvil::Anvil::Ice::IdentifierId;
 using ThorsAnvil::Anvil::Ice::StatementId;
 using ThorsAnvil::Anvil::Ice::StatementCodeBlockId;
@@ -58,6 +59,7 @@ using ThorsAnvil::Anvil::Ice::Class;
 using ThorsAnvil::Anvil::Ice::Function;
 using ThorsAnvil::Anvil::Ice::MemberInit;
 using ThorsAnvil::Anvil::Ice::Object;
+using ThorsAnvil::Anvil::Ice::ObjectFunction;
 using ThorsAnvil::Anvil::Ice::Statement;
 using ThorsAnvil::Anvil::Ice::StatementCodeBlock;
 using ThorsAnvil::Anvil::Ice::Expression;
@@ -81,6 +83,7 @@ using ThorsAnvil::Anvil::Ice::Id;
     CodeBlockId         codeBlockId;
     MemberInitId        memberInitId;
     ObjectId            objectId;
+    ObjectFunctionId    objectFunctionId;
     IdentifierId        identifierId;
     StatementId         statementId;
     StatementCodeBlockId statementCodeBlockId;
@@ -151,10 +154,13 @@ using ThorsAnvil::Anvil::Ice::Id;
 %type   <typeId>                AnonType
 %type   <typeId>                Type
 %type   <objectId>              VariableDecl
-%type   <objectId>              FunctionDecl
+%type   <objectFunctionId>      FunctionDecl
+%type   <objectFunctionId>      FunctionDeclStart
 %type   <objectId>              Object
-%type   <objectId>              Constructor
-%type   <objectId>              Destructor
+%type   <objectFunctionId>      Constructor
+%type   <objectFunctionId>      ConstructorStart
+%type   <objectFunctionId>      Destructor
+%type   <objectFunctionId>      DestructorStart
 %type   <identifierId>          ScopeIdentifier
 %type   <identifierId>          IdentifierNamespace
 %type   <identifierId>          IdentifierType
@@ -220,10 +226,10 @@ NamespaceStart:         NAMESPACE IdentifierNamespace                       {$$ 
 Decl:                   Namespace                                           {$$ = action.convert<Namespace, Decl>($1);}
                     |   Class                                               {$$ = action.convert<Class, Decl>($1);}
                     |   Function                                            {$$ = action.convert<Function, Decl>($1);}
-                    |   Constructor                                         {$$ = action.convert<Object, Decl>($1);}
-                    |   Destructor                                          {$$ = action.convert<Object, Decl>($1);}
                     |   VariableDecl                                        {$$ = action.convert<Object, Decl>($1);}
-                    |   FunctionDecl                                        {$$ = action.convert<Object, Decl>($1);}
+                    |   Constructor                                         {$$ = action.convert<ObjectFunction, Decl>($1);}
+                    |   Destructor                                          {$$ = action.convert<ObjectFunction, Decl>($1);}
+                    |   FunctionDecl                                        {$$ = action.convert<ObjectFunction, Decl>($1);}
 
 Class:                  ClassStart '{' DeclListOpt '}'                      {$$ = action.scopeClassClose($1, $3);}
 ClassStart:             CLASS IdentifierType                                {$$ = action.scopeClassOpen($2);}
@@ -233,20 +239,23 @@ ClassAnonStart:         CLASS                                               {$$ 
 Function:               FUNC IdentifierType '{' TypeListOpt ARROW Type '}'  {$$ = action.scopeFunctionAdd($2, $4, $6);}
 FunctionAnon:           FUNC '{' TypeListOpt ARROW Type '}'                 {$$ = action.scopeFunctionAdd(action.anonName(), $3, $5);}
 
-Constructor:            CONSTRUCT '{' TypeListOpt '}' MemberInitListOpt CodeBlock      {$$ = action.scopeConstructorAdd($3, $5, $6);}
+Constructor:            ConstructorStart MemberInitListOpt CodeBlock        {$$ = action.scopeFunctionClose($1, $3, $2);}
+ConstructorStart:       CONSTRUCT '{' TypeListOpt '}'                       {$$ = action.scopeConstructorOpen($3);}
 MemberInitListOpt:                                                          {$$ = action.listCreate<MemberInit>();}
                     |   ':' MemberInitList                                  {$$ = $2;}
 MemberInitList:         MemberInit                                          {$$ = action.listAppend<MemberInit>(action.listCreate<MemberInit>(), $1);}
                     |   MemberInitList ',' MemberInit                       {$$ = action.listAppend<MemberInit>($1, $3);}
 MemberInit:             IdentifierObject '(' ExpressionListOpt ')'          {$$ = action.memberInit($1, $3);}
-Destructor :            DESTRUCT CodeBlock                                  {$$ = action.scopeDestructorAdd($2);}
+Destructor:             DestructorStart CodeBlock                           {$$ = action.scopeFunctionClose($1, $2, action.listCreate<MemberInit>());}
+DestructorStart:        DESTRUCT                                            {$$ = action.scopeDestructorOpen();}
 
 VariableDecl:           IdentifierObject ':' TypeDecl VariableInit ';'      {$$ = action.scopeObjectAddVariable($1, $3, $4);}
 VariableInit:                                                               {$$ = action.listCreate<Expression>();}
                     |   '=' Expression                                      {$$ = action.listAppend<Expression>(action.listCreate<Expression>(), $2);}
                     |   '(' ExpressionListOpt ')'                           {$$ = $2;}
 
-FunctionDecl:           IdentifierObject ':' TypeDecl CodeBlock             {$$ = action.scopeObjectAddFunction($1, $3, $4, action.listCreate<MemberInit>());}
+FunctionDecl:           FunctionDeclStart CodeBlock                         {$$ = action.scopeFunctionClose($1, $2, action.listCreate<MemberInit>());}
+FunctionDeclStart:      IdentifierObject ':' TypeDecl                       {$$ = action.scopeFunctionOpen($1, $3);}
 
 Statement:              Expression ';'                                      {$$ = action.statmentExpression($1);}
                     |   RETURN Expression ';'                               {$$ = action.statmentReturn($2);}

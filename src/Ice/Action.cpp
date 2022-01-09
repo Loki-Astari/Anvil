@@ -225,21 +225,44 @@ ObjectVariable& Action::scopeObjectAddVariableV(Scope& top, Identifier name, Typ
 }
 // ------------------
 
-ObjectId Action::scopeObjectAddFunction(IdentifierId name, TypeId type, StatementCodeBlockId code, MemberInitListId init)
+ObjectFunctionId Action::scopeFunctionOpen(IdentifierId name, TypeId type)
 {
-    ScopePrinter scope("scopeObjectAddFunction");
-    IdentifierAccess         nameAccess(storage, name);
-    TypeAccess               typeAccess(storage, type);
-    StatementCodeBlockAccess codeAccess(storage, code);
-    MemberInitListAccess     initAccess(storage, init);
-    ObjectFunction& object = scopeObjectAddFunctionV(currentScope.back(), moveAccess(nameAccess), typeAccess, codeAccess, moveAccess(initAccess));
-    return storage.add<ObjectRef>(object);
+    ScopePrinter scope("scopeFunctionOpen");
+    IdentifierAccess        nameAccess(storage, name);
+    TypeAccess              typeAccess(storage, type);
+    ObjectFunction& function = scopeFunctionOpenV(currentScope.back(), moveAccess(nameAccess), typeAccess);
+    return storage.add<ObjectFunctionRef>(function);
 }
-ObjectFunction& Action::scopeObjectAddFunctionV(Scope& top, Identifier name, Type const& type, StatementCodeBlock& code, MemberInitList init)
+ObjectFunction& Action::scopeFunctionOpenV(Scope& top, Identifier name, Type const& type)
 {
-    ObjectFunction& object = top.add<ObjectFunction>(this, std::move(name), type, code, std::move(init));
-    return object;
+    ObjectFunction& newFunction = top.add<ObjectFunction>(this, std::move(name), type);
+    currentScope.emplace_back(newFunction);
+    return newFunction;
 }
+// ------------------
+
+ObjectFunctionId Action::scopeFunctionClose(ObjectFunctionId id, StatementCodeBlockId code, MemberInitListId init)
+{
+    ScopePrinter scope("scopeFunctionClose");
+    ObjectFunctionAccess        function(storage, id);
+    StatementCodeBlockAccess    codeBlock(storage, code);
+    MemberInitListAccess        memberInitList(storage, init);
+    scopeFunctionCloseV(currentScope.back(), function, codeBlock, moveAccess(memberInitList));
+    return function.reuse();
+}
+ObjectFunction& Action::scopeFunctionCloseV(Scope& top, ObjectFunction& func, StatementCodeBlock& code, MemberInitList init)
+{
+    ObjectFunction*     topFunction = dynamic_cast<ObjectFunction*>(&top);
+
+    if (&func != topFunction)
+    {
+        throw std::domain_error("Internal Error: Scope Note correctly aligned from Function");
+    }
+    func.addCode(code, init);
+    currentScope.pop_back();
+    return func;
+}
+
 // ------------------
 
 MemberInitId Action::memberInit(IdentifierId name, ExpressionListId init)
@@ -257,21 +280,19 @@ MemberInit& Action::memberInitV(Scope& top, Identifier name, ExpressionList init
 }
 // ------------------
 
-ObjectId Action::scopeConstructorAdd(TypeCListId listId, MemberInitListId init, StatementCodeBlockId code)
+ObjectFunctionId Action::scopeConstructorOpen(TypeCListId listId)
 {
-    ScopePrinter scope("scopeConstructorAdd");
+    ScopePrinter scope("scopeConstructorOpen");
     IdentifierId    conId       = storage.add<std::string>(std::string("$constructor"));
     IdentifierId    voidId      = storage.add<std::string>(std::string("Void"));
     TypeId          voidType    = getNameFromScopeStack<Type>(voidId);
     FunctionId      funcId      = scopeFunctionAdd(anonName(), listId, voidType);
 
-
-    return scopeObjectAddFunction(conId, convert<Function, Type>(funcId), code, init);
+    return scopeFunctionOpen(conId, convert<Function, Type>(funcId));
 }
-
 // ------------------
 
-ObjectId Action::scopeDestructorAdd(StatementCodeBlockId code)
+ObjectFunctionId Action::scopeDestructorOpen()
 {
     ScopePrinter scope("scopeDestructorAdd");
     IdentifierId        desId       = storage.add<std::string>(std::string("$destructor"));
@@ -279,9 +300,8 @@ ObjectId Action::scopeDestructorAdd(StatementCodeBlockId code)
     IdentifierId        voidId      = storage.add<std::string>(std::string("Void"));
     TypeId              voidType    = getNameFromScopeStack<Type>(voidId);
     FunctionId          funcId      = scopeFunctionAdd(anonName(), listId, voidType);
-    MemberInitListId    initId      = storage.add(MemberInitList{});
 
-    return scopeObjectAddFunction(desId, convert<Function, Type>(funcId), code, initId);
+    return scopeFunctionOpen(desId, convert<Function, Type>(funcId));
 }
 // ------------------
 

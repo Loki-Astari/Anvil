@@ -2,6 +2,22 @@
 
 #include "test/Utility.h"
 
+TEST(GeneratorTest, Std)
+{
+    std::stringstream    result;
+    std::stringstream    file = buildStream(R"(
+namespace Std
+{
+    class Integer {}
+    class String  {}
+}
+    )");
+
+    GeneratorCompiler  compiler(file, result);
+
+    EXPECT_TRUE_OR_DEBUG(compiler.compile(std::cout), result);
+
+}
 TEST(GeneratorTest, CallPrintOnConsole)
 {
     std::stringstream    result;

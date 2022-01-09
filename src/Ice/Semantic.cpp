@@ -64,7 +64,7 @@ ObjectVariable& Semantic::scopeObjectAddVariableV(Scope& top, Identifier name, T
     return object;
 }
 
-ObjectFunction& Semantic::scopeObjectAddFunctionV(Scope& top, Identifier name, Type const& type, StatementCodeBlock& code, MemberInitList init)
+ObjectOverload& Semantic::scopeAddFunctionOverload(Scope& top, Identifier name, Type const& type)
 {
     ObjectOverload& objectOverload = getOrAddDeclToScope<ObjectOverload>(top, name);
     Overload const& overload = dynamic_cast<Overload const&>(objectOverload.getType());
@@ -76,11 +76,23 @@ ObjectFunction& Semantic::scopeObjectAddFunctionV(Scope& top, Identifier name, T
         error("Function Already defined: ", name);
     }
 
-    ObjectFunction& func = Action::scopeObjectAddFunctionV(top, std::move(name), type, code, std::move(init));
+    return objectOverload;
+}
 
-    objectOverload.addOverload(func);
+ObjectFunction& Semantic::scopeFunctionOpenV(Scope& top, Identifier name, Type const& typeId)
+{
+    ObjectOverload&  overload   = scopeAddFunctionOverload(top, name, typeId);
+    ObjectFunction&  func       = Action::scopeFunctionOpenV(top, std::move(name), typeId);
+
+    overload.addOverload(func);
     func.setPath(getCurrentScopeFullName());
     return func;
+}
+
+ObjectFunction& Semantic::scopeFunctionCloseV(Scope& top, ObjectFunction& func, StatementCodeBlock& code, MemberInitList init)
+{
+    ObjectFunction&  updatedFunc = Action::scopeFunctionCloseV(top, func, code, std::move(init));
+    return updatedFunc;
 }
 
 void Semantic::addDefaultMethodsToScope(Scope& scope, DeclList declList)
@@ -89,19 +101,21 @@ void Semantic::addDefaultMethodsToScope(Scope& scope, DeclList declList)
     if (!findCons.first)
     {
         // TODO: Need to add constructors and destructors for members.
-        CodeBlock&          codeBlock       = scope.add<CodeBlock>(this);
-        StatementCodeBlock& initCodeInit    = scope.add<StatementCodeBlock>(this, codeBlock, StatementList{});
         Function& constructorType = scope.add<Function>(this, "", TypeCList{}, getRefFromScope<Type>(getGlobalScope(), "Void"));
-        scopeObjectAddFunctionV(scope, "$constructor", constructorType, initCodeInit, MemberInitList{});
+        ObjectFunction& cons = scopeFunctionOpenV(scope, "$constructor", constructorType);
+        CodeBlock&          codeBlock       = cons.add<CodeBlock>(this);
+        StatementCodeBlock& initCodeInit    = cons.add<StatementCodeBlock>(this, codeBlock, StatementList{});
+        scopeFunctionCloseV(cons, cons, initCodeInit, MemberInitList{});
     }
     auto findDest = scope.get("$destructor");
     if (!findDest.first)
     {
         // TODO: Need to add constructors and destructors for members.
-        CodeBlock&          codeBlock       = scope.add<CodeBlock>(this);
-        StatementCodeBlock& deinitCodeInit  = scope.add<StatementCodeBlock>(this, codeBlock, StatementList{});
         Function& destructorType = scope.add<Function>(this, "", TypeCList{}, getRefFromScope<Type>(getGlobalScope(), "Void"));
-        scopeObjectAddFunctionV(scope, "$destructor", destructorType, deinitCodeInit, MemberInitList{});
+        ObjectFunction& des = scopeFunctionOpenV(scope, "$destructor", destructorType);
+        CodeBlock&          codeBlock       = des.add<CodeBlock>(this);
+        StatementCodeBlock& deinitCodeInit  = des.add<StatementCodeBlock>(this, codeBlock, StatementList{});
+        scopeFunctionCloseV(des, des, deinitCodeInit, MemberInitList{});
     }
 
     MemberList data;
@@ -119,7 +133,7 @@ void Semantic::addDefaultMethodsToScope(Scope& scope, DeclList declList)
     for (auto& function: constructorList)
     {
         ObjectFunction&  constructor = dynamic_cast<ObjectFunction&>(function);
-        constructor.addMissingMemberInit(this, scope, data, true);
+        constructor.addMissingMemberInit(this, function, data, true);
     }
 
     auto desFind = scope.get("$destructor");
@@ -127,6 +141,6 @@ void Semantic::addDefaultMethodsToScope(Scope& scope, DeclList declList)
     for (auto& function: destructorList)
     {
         ObjectFunction&  destructor = dynamic_cast<ObjectFunction&>(function);
-        destructor.addMissingMemberInit(this, scope, data, false);
+        destructor.addMissingMemberInit(this, function, data, false);
     }
 }

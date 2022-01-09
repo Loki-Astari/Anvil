@@ -135,8 +135,11 @@ using FunctionCRef          = std::reference_wrapper<Function const>;
 using ObjectId              = Id<Object>;
 using ObjectRef             = std::reference_wrapper<Object>;
 using ObjectCRef            = std::reference_wrapper<Object const>;
-using ObjectFunctionRef     = std::reference_wrapper<ObjectFunction>;
 using ObjectAccess          = IdAccess<Object>;
+
+using ObjectFunctionId      = Id<ObjectFunction>;
+using ObjectFunctionRef     = std::reference_wrapper<ObjectFunction>;
+using ObjectFunctionAccess  = IdAccess<ObjectFunction>;
 
 using StatementId           = Id<Statement>;
 using StatementAccess       = IdAccess<Statement>;

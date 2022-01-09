@@ -26,7 +26,11 @@ class Generator
 
     public:
         // Visitor Pattern
-        void outputNotImplementedYet(Decl const&, std::ostream& output);
+        void outputNotImplementedYet(Decl const& decl, std::ostream& output);
+        void outputNamespace(Namespace const& ns, std::ostream& output);
+        void outputFunction(ObjectFunction const& func, std::ostream& output);
+        void outputCodeBlock(StatementCodeBlock const& func, std::ostream& output);
+        void outputCodeBlock(CodeBlock const& func, std::ostream& output);
 };
 
 }

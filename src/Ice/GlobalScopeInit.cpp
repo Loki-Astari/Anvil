@@ -9,16 +9,17 @@ GlobalScopeInit::GlobalScopeInit(Action& action, Scope& /*scope*/)
     ClassId              voidId     = action.scopeClassOpen(voidName);
 
     TypeCListId          typeListId = action.listCreate<Type const>();
-    MemberInitListId     initListId = action.listCreate<MemberInit>();
+    ObjectFunctionId     con        = action.scopeConstructorOpen(typeListId);
     CodeBlockId          conBlock   = action.scopeCodeBlockOpen();
     StatementListId      conCode    = action.listCreate<Statement>();
     StatementCodeBlockId conStat    = action.scopeCodeBlockClose(conBlock, conCode);
-    ObjectId             con        = action.scopeConstructorAdd(typeListId, initListId, conStat);
+    action.scopeFunctionClose(con, conStat, action.listCreate<MemberInit>());
 
+    ObjectFunctionId     des        = action.scopeDestructorOpen();
     CodeBlockId          desBlock   = action.scopeCodeBlockOpen();
     StatementListId      desCode    = action.listCreate<Statement>();
     StatementCodeBlockId desStat    = action.scopeCodeBlockClose(desBlock, desCode);
-    ObjectId             des        = action.scopeDestructorAdd(desStat);
+    action.scopeFunctionClose(des, desStat, action.listCreate<MemberInit>());
 
     DeclListId      voidDeclId  = action.listCreate<Decl>();
     voidDeclId = action.listAppend<Decl>(voidDeclId, con);

@@ -146,7 +146,7 @@ Id<Base<Dst>> Action::addDeclToScope(Id<Param>... id)
 }
 
 template<typename Dst, typename... Param>
-Dst& Action::getOrAddDeclToScope(Scope& scope, std::string declName, Param... param)
+Dst& Action::getOrAddDeclToScope(Scope& scope, std::string declName, Param&&... param)
 {
     auto find = scope.get(declName);
     if (find.first)

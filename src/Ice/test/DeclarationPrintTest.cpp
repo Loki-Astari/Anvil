@@ -150,7 +150,8 @@ TEST(DeclarationPrintTest, ObjectFunction)
     ExpressionLiteral<void*>    value(nullptr, nullptr);
     CodeBlock                   codeBlock(nullptr);
     StatementCodeBlock          code(nullptr, codeBlock, StatementList{});
-    ObjectFunction              function(nullptr, "Function", Void::getInstance(), code, MemberInitList{});
+    ObjectFunction              function(nullptr, "Function", Void::getInstance());
+    function.addCode(code, MemberInitList{});
     std::string output = (std::stringstream{} << function).str();
     auto find = output.find("Decl::Object::ObjectFunction\n");
     EXPECT_TRUE(find != std::string::npos);
@@ -172,7 +173,8 @@ TEST(DeclarationPrintTest, ObjectOverloadWithMember)
     CodeBlock           codeBlock(nullptr);
     StatementCodeBlock  code(nullptr, codeBlock, StatementList{});
     ObjectOverload      functionOverload(nullptr, "function");
-    ObjectFunction      function(nullptr, "function", functionType, code, MemberInitList{});
+    ObjectFunction      function(nullptr, "function", functionType);
+    function.addCode(code, MemberInitList{});
     functionOverload.addOverload(function);
 
     std::string output = (std::stringstream{} << functionOverload).str();
@@ -265,7 +267,8 @@ TEST(DeclarationPrintTest, ExpressionFuncCall)
     StatementCodeBlock  code(nullptr, codeBlock, StatementList{});
     ObjectOverload&     functionOverload = classType.add<ObjectOverload>(nullptr, "function");
 
-    ObjectFunction      function(nullptr, "function", functionType, code, MemberInitList{});
+    ObjectFunction      function(nullptr, "function", functionType);
+    function.addCode(code, MemberInitList{});
     functionOverload.addOverload(function);
 
     Object            object(nullptr, "Object", classType);
@@ -286,7 +289,8 @@ TEST(DeclarationPrintTest, ExpressionFuncCallWithParam)
     StatementCodeBlock  code(nullptr, codeBlock, StatementList{});
     ObjectOverload&     functionOverload = classType.add<ObjectOverload>(nullptr, "function");
 
-    ObjectFunction      function(nullptr, "function", functionType, code, MemberInitList{});
+    ObjectFunction      function(nullptr, "function", functionType);
+    function.addCode(code, MemberInitList{});
     functionOverload.addOverload(function);
 
     Object              object(nullptr, "Object", classType);

@@ -30,7 +30,7 @@ std::string const& Decl::declName(bool) const
     return emptyName;
 }
 
-void Decl::generateCode(Generator& gen, std::ostream& output)
+void Decl::generateCode(Generator& gen, std::ostream& output) const
 {
     gen.outputNotImplementedYet(*this, output);
 }
@@ -133,6 +133,11 @@ void CodeBlock::print(std::ostream& stream, int s, bool showName) const
     Scope::print(stream, s, false);
 }
 
+void CodeBlock::generateCode(Generator& gen, std::ostream& output) const
+{
+    gen.outputCodeBlock(*this, output);
+}
+
 void MemberInit::print(std::ostream& stream, int s, bool showName) const
 {
     if (showName)
@@ -177,6 +182,11 @@ void Type::print(std::ostream& stream, int s, bool showName) const
         stream << indent(s) << "Decl::Scope::NamedScope::Type\n";
     }
     //NamedScope::print(stream, s, false);
+}
+
+void Namespace::generateCode(Generator& gen, std::ostream& output) const
+{
+    gen.outputNamespace(*this, output);
 }
 
 Void& Void::getInstance()
@@ -300,7 +310,7 @@ void Object::print(std::ostream& stream, int s, bool showName) const
     {
         stream << indent(s) << "Decl::Object\n";
     }
-    stream << indent(s+1) << "name: " << name << "\n";
+    NamedScope::print(stream, s, false);
     stream << indent(s+1) << "type\n";
     type.print(stream, s+2, true);
 }
@@ -330,7 +340,14 @@ void ObjectFunction::print(std::ostream& stream, int s, bool showName) const
     }
     Object::print(stream, s, false);
     stream << indent(s+1) << "code\n";
-    code.print(stream, s+2, true);
+    if (code != nullptr)
+    {
+        code->print(stream, s+2, true);
+    }
+    else
+    {
+        stream << indent(s+2) << ">>NO CODE ATTACHED<<\n";
+    }
     int count = 0;
     stream << indent(s+1) << "init\n";
     for (auto const& i: init)
@@ -339,6 +356,11 @@ void ObjectFunction::print(std::ostream& stream, int s, bool showName) const
         i.get().print(stream, s+3, true);
         ++count;
     }
+}
+
+void ObjectFunction::generateCode(Generator& gen, std::ostream& output) const
+{
+    gen.outputFunction(*this, output);
 }
 
 void ObjectFunction::addMissingMemberInit(ActionRef action, Scope& scope, MemberList const& members, bool con)
@@ -384,7 +406,7 @@ void ObjectFunction::addMemberInit(ActionRef action, Scope& scope, ObjectRef dat
     ExpressionMemberAccess& method = scope.add<ExpressionMemberAccess>(action, object, std::move(methodName));
     Expression& callInit    = scope.add<ExpressionFuncCall>(action, method, std::move(memberInit.expressionList()));
     Statement&  initMember  = scope.add<StatementExpression>(action, callInit);
-    code.prefix(initMember);
+    code->prefix(initMember);
 }
 
 
@@ -502,6 +524,10 @@ void StatementCodeBlock::print(std::ostream& stream, int s, bool showName) const
         stat.get().print(stream, s+3, true);
         ++count;
     }
+}
+void StatementCodeBlock::generateCode(Generator& gen, std::ostream& output) const
+{
+    gen.outputCodeBlock(*this, output);
 }
 
 void Expression::print(std::ostream& /*stream*/, int /*s*/, bool showName) const

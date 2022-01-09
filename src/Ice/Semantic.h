@@ -23,10 +23,11 @@ class Semantic: public Action
         virtual Class&          scopeClassOpenV(Scope& top, Identifier className) override;
         virtual Class&          scopeClassCloseV(Scope& top, Class& cl, DeclList decl) override;
         virtual ObjectVariable& scopeObjectAddVariableV(Scope& top, Identifier name, Type const& type, ExpressionList init) override;
-        virtual ObjectFunction& scopeObjectAddFunctionV(Scope& top, Identifier name, Type const& type, StatementCodeBlock& code, MemberInitList init) override;
+        virtual ObjectFunction& scopeFunctionOpenV(Scope& top, Identifier name, Type const& id) override;
+        virtual ObjectFunction& scopeFunctionCloseV(Scope& top, ObjectFunction& id, StatementCodeBlock& code, MemberInitList init) override;
     private:
         void addDefaultMethodsToScope(Scope& scope, DeclList declList);
-        ObjectFunction& addFunctionToScope(Scope& scope, std::string name, Type const& type, StatementCodeBlock& code, MemberInitList init);
+        ObjectOverload& scopeAddFunctionOverload(Scope& top, Identifier name, Type const& type);
 
 };
 
