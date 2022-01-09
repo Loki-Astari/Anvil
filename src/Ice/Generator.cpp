@@ -1,9 +1,6 @@
 #include "Generator.h"
-#include "Declaration.h"
 
-#include <vector>
-#include <iterator>
-#include <numeric>
+#include <ostream>
 
 using namespace ThorsAnvil::Anvil::Ice;
 

@@ -2,11 +2,11 @@
 #define THORSANVIL_ANVIL_ICE_DECLARATION_H
 
 #include "Common.h"
-#include <list>
 #include <map>
 #include <string>
-#include <numeric>
-#include <sstream>
+#include <ostream>
+#include <memory>
+#include <utility>
 
 namespace ThorsAnvil::Anvil::Ice
 {

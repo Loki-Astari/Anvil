@@ -2,7 +2,6 @@
 #define THORSANVIL_ANVIL_ICE_SEMANTIC_H
 
 #include "Action.h"
-#include "Lexer.h"
 #include "Declaration.h"
 #include "Common.h"
 

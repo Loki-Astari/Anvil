@@ -2,6 +2,7 @@
 #include "StorageAccess.h"
 #include "Action.h"
 
+#include <numeric>
 #include <vector>
 #include <set>
 

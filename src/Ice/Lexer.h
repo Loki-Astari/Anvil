@@ -5,12 +5,12 @@
 #include <FlexLexer.h>
 #endif
 
-#include "Action.h"
 #include <string_view>
 
 namespace ThorsAnvil::Anvil::Ice
 {
 
+class Action;
 class Lexer: public yyFlexLexer
 {
     bool started;

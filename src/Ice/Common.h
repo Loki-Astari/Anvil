@@ -3,7 +3,10 @@
 
 #include <map>
 #include <list>
+#include <vector>
 #include <string>
+#include <memory>
+#include <functional>
 
 #if 0
 class Decl

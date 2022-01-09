@@ -5,6 +5,8 @@
 #include "StorageAccess.h"
 #include "Utility/View.h"
 
+#include <sstream>
+
 namespace ThorsAnvil::Anvil::Ice
 {
 

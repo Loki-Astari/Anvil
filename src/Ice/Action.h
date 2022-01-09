@@ -5,7 +5,7 @@
 #include "Common.h"
 
 #include <vector>
-#include <sstream>
+#include <string>
 #include <iostream>
 
 namespace ThorsAnvil::Anvil::Ice
@@ -137,7 +137,6 @@ class Action
         Id<std::string>     assemblyInit();
         void                assembleyAppend(Id<std::string> id);
         // Parsing virtual methods
-        using Reuse = std::function<Int()>;
         virtual VoidId              anvilProgramV(Scope& top, NamespaceList);
         virtual Namespace&          scopeNamespaceOpenV(Scope& top, Identifier);
         virtual Namespace&          scopeNamespaceCloseV(Scope& top, Namespace&, DeclList list);

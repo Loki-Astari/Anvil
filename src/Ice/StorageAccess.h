@@ -2,6 +2,8 @@
 #define THORSANVIL_ANVIL_ICE_STORAGE_ACCESS_H
 
 #include "Common.h"
+#include <utility>
+#include <functional>
 
 namespace ThorsAnvil::Anvil::Ice
 {
