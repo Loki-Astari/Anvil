@@ -1,6 +1,7 @@
 #include "Declaration.h"
 #include "StorageAccess.h"
 #include "Action.h"
+#include "Generator.h"
 
 #include <numeric>
 #include <vector>
@@ -27,6 +28,11 @@ std::string const& Decl::declName(bool) const
     static std::string emptyName;  // using an empty name forces the scope to generate
                                    // an anonymous name for the object. See: Scope::add
     return emptyName;
+}
+
+void Decl::generateCode(Generator& gen, std::ostream& output)
+{
+    gen.outputNotImplementedYet(*this, output);
 }
 
 Scope::Scope(ActionRef action)

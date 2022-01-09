@@ -11,6 +11,7 @@
 namespace ThorsAnvil::Anvil::Ice
 {
 
+class Generator;
 class Decl
 {
     public:
@@ -26,6 +27,7 @@ class Decl
         virtual int  storageSize() const    {return 0;}
         virtual bool overloadable() const   {return false;}
         virtual void print(std::ostream&, int indent, bool showName) const = 0;
+        virtual void generateCode(Generator& gen, std::ostream& output);
 
         static constexpr bool valid = true;
     protected:

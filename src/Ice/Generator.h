@@ -16,6 +16,17 @@ class Generator
         Generator(Scope& globalScope, NamespaceDecOrder& namespaceDecOrder);
 
         void generate(std::ostream& output);
+    private:
+        void generateInitialize(std::ostream& output);
+        void generateNameSpaceInit(std::ostream& output);
+        void generateCallToApplication(std::ostream& output);
+        void generateNameSpaceDeInit(std::ostream& output);
+        void generateCallToQuitApp(std::ostream& output);
+
+
+    public:
+        // Visitor Pattern
+        void outputNotImplementedYet(Decl const&, std::ostream& output);
 };
 
 }
