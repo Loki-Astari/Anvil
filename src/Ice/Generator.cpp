@@ -92,6 +92,7 @@ void Generator::outputNotImplementedYet(Decl const& decl, std::ostream& output)
 void Generator::outputNamespace(Namespace const& ns, std::ostream& output)
 {
     output << "// Generating Namespace objects: " << ns.declName() << "\n";
+    // This simply loop over the function declarations only.
     for (auto const& decl: ns)
     {
         decl.generateCode(*this, output);
@@ -114,13 +115,7 @@ void Generator::outputFunction(ObjectFunction const& func, std::ostream& output)
 void Generator::outputCodeBlock(StatementCodeBlock const& statement, std::ostream& output)
 {
     output << "// Generating StatementCodeBlock:\n";
-    statement.codeBlock.generateCode(*this, output);
-}
-
-void Generator::outputCodeBlock(CodeBlock const& codeBlock, std::ostream& output)
-{
-    output << "// Generating CodeBlock:\n";
-    for (auto const& statement: codeBlock)
+    for (auto const& statement: statement)
     {
         output << "ST: " << statement.declName() << "\n";
         //statement.generateCode(*this, output);

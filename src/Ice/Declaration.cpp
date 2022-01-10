@@ -133,11 +133,6 @@ void CodeBlock::print(std::ostream& stream, int s, bool showName) const
     Scope::print(stream, s, false);
 }
 
-void CodeBlock::generateCode(Generator& gen, std::ostream& output) const
-{
-    gen.outputCodeBlock(*this, output);
-}
-
 void MemberInit::print(std::ostream& stream, int s, bool showName) const
 {
     if (showName)
@@ -535,7 +530,7 @@ void Expression::print(std::ostream& /*stream*/, int /*s*/, bool showName) const
     // Expression is a virtual class so can not be printed.
     if (showName == true)
     {
-        throw std::runtime_error("Should never be called with true");
+        throw std::domain_error("Should never be called with true");
     }
     // The next class down is Decl (there is no implementation of print so no further action).
 }

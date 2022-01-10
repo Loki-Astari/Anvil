@@ -88,6 +88,8 @@ using ScopeIter             = MemberStorage::const_iterator;
 using DeclId                = Id<Decl>;
 using DeclRef               = std::reference_wrapper<Decl>;
 using DeclList              = std::list<DeclRef>;
+using DeclIter              = DeclList::iterator;
+using DeclCIter             = DeclList::const_iterator;
 using DeclListId            = Id<DeclList>;
 using DeclListAccess        = IdAccess<DeclList>;
 
@@ -145,6 +147,8 @@ using StatementId           = Id<Statement>;
 using StatementAccess       = IdAccess<Statement>;
 using StatementRef          = std::reference_wrapper<Statement>;
 using StatementList         = std::list<StatementRef>;
+using StatementIter         = StatementList::iterator;
+using StatementCIter        = StatementList::const_iterator;
 using StatementListId       = Id<StatementList>;
 using StatementListAccess   = IdAccess<StatementList>;
 

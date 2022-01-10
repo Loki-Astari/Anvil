@@ -99,7 +99,7 @@ NamespaceId Action::scopeNamespaceClose(NamespaceId id, DeclListId listId)
     Namespace&  ns = scopeNamespaceCloseV(currentScope.back(), access, moveAccess(DeclListAccess(storage, listId)));
     return storage.add(NamespaceRef{ns});
 }
-Namespace& Action::scopeNamespaceCloseV(Scope& top, Namespace& ns, DeclList /*decl*/)
+Namespace& Action::scopeNamespaceCloseV(Scope& top, Namespace& ns, DeclList decl)
 {
     Namespace*      topNS = dynamic_cast<Namespace*>(&top);
 
@@ -107,6 +107,7 @@ Namespace& Action::scopeNamespaceCloseV(Scope& top, Namespace& ns, DeclList /*de
     {
         throw std::domain_error("Internal Error: Scope Note correctly aligned from Namespace");
     }
+    ns.addDecl(std::move(decl));
     currentScope.pop_back();
     return ns;
 }
@@ -135,7 +136,7 @@ ClassId Action::scopeClassClose(ClassId id, DeclListId listId)
     Class& cl = scopeClassCloseV(currentScope.back(), access, moveAccess(DeclListAccess(storage, listId)));
     return storage.add(ClassRef{cl});
 }
-Class& Action::scopeClassCloseV(Scope& top, Class& cl, DeclList /*decl*/)
+Class& Action::scopeClassCloseV(Scope& top, Class& cl, DeclList decl)
 {
     Class*          topClass = dynamic_cast<Class*>(&top);
 
@@ -143,6 +144,7 @@ Class& Action::scopeClassCloseV(Scope& top, Class& cl, DeclList /*decl*/)
     {
         throw std::domain_error("Internal Error: Scope Note correctly aligned from Class");
     }
+    cl.addDecl(std::move(decl));
     currentScope.pop_back();
     return cl;
 }
@@ -258,7 +260,7 @@ ObjectFunction& Action::scopeFunctionCloseV(Scope& top, ObjectFunction& func, St
     {
         throw std::domain_error("Internal Error: Scope Note correctly aligned from Function");
     }
-    func.addCode(code, init);
+    func.addCode(code, std::move(init));
     currentScope.pop_back();
     return func;
 }

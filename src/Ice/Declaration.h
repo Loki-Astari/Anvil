@@ -11,6 +11,7 @@
 namespace ThorsAnvil::Anvil::Ice
 {
 
+enum class DeclGroup { Declaration, Data, Function};
 class Generator;
 class Decl
 {
@@ -24,6 +25,7 @@ class Decl
         Decl& operator=(Decl&&) = delete;
 
         virtual std::string const& declName(bool = false) const;
+        virtual DeclGroup declGroup() const {return DeclGroup::Declaration;}
         virtual int  storageSize() const    {return 0;}
         virtual bool overloadable() const   {return false;}
         virtual void print(std::ostream&, int indent, bool showName) const = 0;
@@ -40,6 +42,7 @@ inline std::ostream& operator<<(std::ostream& stream, Decl const& decl)
     return stream;
 }
 
+/*
 class ScopeIterator
 {
     ScopeIter    iter;
@@ -54,7 +57,7 @@ class ScopeIterator
         bool operator==(ScopeIterator const& rhs) const {return iter == rhs.iter;}
         bool operator!=(ScopeIterator const& rhs) const {return iter != rhs.iter;}
 };
-
+*/
 
 class Scope: public Decl
 {
@@ -75,8 +78,6 @@ class Scope: public Decl
 
         std::size_t getMemberSize() const {return nextObjectId;}
 
-        ScopeIterator begin()   const   {return ScopeIterator(members.begin());}
-        ScopeIterator end()     const   {return ScopeIterator(members.end());}
     private:
         Decl& saveMember(ActionRef action, std::unique_ptr<Decl>&& member);
         char hex(std::size_t halfByte);
@@ -89,7 +90,6 @@ class CodeBlock: public Scope
         using Scope::Scope;
         virtual std::string const& declName(bool = false) const override {static std::string name;return name;}
         virtual void print(std::ostream& stream, int indent, bool showName) const override;
-        virtual void generateCode(Generator& gen, std::ostream& output) const override;
 
         static constexpr bool valid = true;
 };
@@ -127,8 +127,26 @@ class NamedScope: public Scope
         void setPath(std::string path) {fullName = std::move(path);}
 };
 
+class FunctionIterator
+{
+    DeclCIter    iter;
+    public:
+        FunctionIterator(){}
+        FunctionIterator(FunctionIterator const& copy): iter(copy.iter) {}
+        FunctionIterator operator=(FunctionIterator const& copy) {iter = copy.iter;return *this;}
+        FunctionIterator(DeclCIter iter): iter(iter) {}
+        FunctionIterator operator++(){++iter;return *this;}
+        FunctionIterator operator++(int){FunctionIterator tmp(iter);++iter;return tmp;}
+        Decl& operator*() {return *iter;}
+        bool operator==(FunctionIterator const& rhs) const {return iter == rhs.iter;}
+        bool operator!=(FunctionIterator const& rhs) const {return iter != rhs.iter;}
+};
+
 class Namespace: public NamedScope
 {
+    DeclList    functions;
+    DeclList    objects;
+    DeclList    other;
     public:
         Namespace(ActionRef action, std::string name)
             : NamedScope(action, std::move(name))
@@ -136,6 +154,23 @@ class Namespace: public NamedScope
 
         virtual void print(std::ostream& stream, int indent, bool showName) const override;
         virtual void generateCode(Generator& gen, std::ostream& output) const override;
+
+        void addDecl(DeclList declList)
+        {
+            for (auto& decl: declList)
+            {
+                switch (decl.get().declGroup())
+                {
+                    case DeclGroup::Declaration:    other.emplace_back(decl);       break;
+                    case DeclGroup::Data:           objects.emplace_back(decl);     break;
+                    case DeclGroup::Function:       functions.emplace_back(decl);   break;
+                    default:
+                        throw std::domain_error("Unknown DeclGroup");
+                }
+            }
+        }
+        FunctionIterator    begin() const {return FunctionIterator(functions.begin());}
+        FunctionIterator    end()   const {return FunctionIterator(functions.end());}
         static constexpr bool valid = true;
 };
 
@@ -145,17 +180,36 @@ class Type: public NamedScope
         using NamedScope::NamedScope;
         virtual void print(std::ostream& stream, int indent, bool showName) const override;
         virtual std::string getExtension() const {return declName();}
-        virtual void generateCode(Generator& /*gen*/, std::ostream& /*output*/) const override {/* Do Nothing */}
 
         static constexpr bool valid = true;
 };
 
 class Class: public Type
 {
+    DeclList    functions;
+    DeclList    objects;
+    DeclList    other;
     public:
         using Type::Type;
         virtual bool storeFunctionsInContainer() const override {return true;}
         virtual void print(std::ostream& stream, int indent, bool showName) const override;
+
+        void addDecl(DeclList declList)
+        {
+            for (auto& decl: declList)
+            {
+                switch (decl.get().declGroup())
+                {
+                    case DeclGroup::Declaration:    other.emplace_back(decl);       break;
+                    case DeclGroup::Data:           objects.emplace_back(decl);     break;
+                    case DeclGroup::Function:       functions.emplace_back(decl);   break;
+                    default:
+                        throw std::domain_error("Unknown DeclGroup");
+                }
+            }
+        }
+        FunctionIterator    begin() const {return FunctionIterator(functions.begin());}
+        FunctionIterator    end()   const {return FunctionIterator(functions.end());}
 
         static constexpr bool valid = true;
 };
@@ -226,9 +280,9 @@ class ObjectVariable: public Object
             : Object(action, std::move(name), type)
             , init(std::move(init))
         {}
+        virtual DeclGroup declGroup() const override {return DeclGroup::Data;}
         virtual int storageSize() const override {return 1;}
         virtual void print(std::ostream& stream, int indent, bool showName) const override;
-        virtual void generateCode(Generator& /*gen*/, std::ostream& /*output*/) const override {/* Do Nothing */}
 };
 
 class ObjectFunction: public Object
@@ -242,15 +296,16 @@ class ObjectFunction: public Object
             : Object(action, name += type.getExtension(), type)
             , code(nullptr)
         {}
+        virtual DeclGroup declGroup() const override {return DeclGroup::Function;}
+        virtual int storageSize() const override {return 0;}
+        virtual void print(std::ostream& stream, int indent, bool showName) const override;
+        virtual void generateCode(Generator& gen, std::ostream& output) const override;
+
         void addCode(StatementCodeBlock& codeRef, MemberInitList initList)
         {
             code    = &codeRef;
             init    = std::move(initList);
         }
-        virtual int storageSize() const override {return 0;}
-        virtual void print(std::ostream& stream, int indent, bool showName) const override;
-        virtual void generateCode(Generator& gen, std::ostream& output) const override;
-
         void addMissingMemberInit(ActionRef action, Scope& scope, MemberList const& members, bool con);
         void addMemberInit(ActionRef action, Scope& scope, ObjectRef data, MemberInit&& memberInit, bool con);
 };
@@ -283,7 +338,6 @@ class ObjectOverload: public Object
         virtual bool overloadable() const override {return true;}
         virtual int storageSize() const override;
         virtual void print(std::ostream& stream, int indent, bool showName) const override;
-        virtual void generateCode(Generator& /*gen*/, std::ostream& /*output*/) const override {/* Do Nothing */}
         void addOverload(ObjectFunction& func);
 
         OverloadIterator begin()    {return OverloadIterator(overloadData.begin());}
@@ -335,6 +389,21 @@ class StatementAssembley: public Statement
         virtual void print(std::ostream& stream, int indent, bool showName) const override;
 };
 
+class StatementIterator
+{
+    StatementCIter    iter;
+    public:
+        StatementIterator(){}
+        StatementIterator(StatementIterator const& copy): iter(copy.iter) {}
+        StatementIterator operator=(StatementIterator const& copy) {iter = copy.iter;return *this;}
+        StatementIterator(StatementCIter iter): iter(iter) {}
+        StatementIterator operator++(){++iter;return *this;}
+        StatementIterator operator++(int){StatementIterator tmp(iter);++iter;return tmp;}
+        Decl& operator*() {return *iter;}
+        bool operator==(StatementIterator const& rhs) const {return iter == rhs.iter;}
+        bool operator!=(StatementIterator const& rhs) const {return iter != rhs.iter;}
+};
+
 class StatementCodeBlock: public Statement
 {
     friend class Generator;
@@ -352,6 +421,9 @@ class StatementCodeBlock: public Statement
 
         void prefix(Statement& pre)     {list.emplace_front(pre);}
         void postfix(Statement& post)   {list.emplace_back(post);}
+
+        StatementIterator begin() const {return StatementIterator(list.begin());}
+        StatementIterator end() const   {return StatementIterator(list.end());}
 };
 
 class Expression: public Decl
