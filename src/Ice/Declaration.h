@@ -11,7 +11,7 @@
 namespace ThorsAnvil::Anvil::Ice
 {
 
-enum class DeclGroup { Declaration, Data, Function};
+enum class DeclGroup { Declaration, Definition};
 class Generator;
 class Decl
 {
@@ -144,9 +144,8 @@ class FunctionIterator
 
 class Namespace: public NamedScope
 {
-    DeclList    functions;
-    DeclList    objects;
-    DeclList    other;
+    DeclList    declaration;
+    DeclList    definition;
     public:
         Namespace(ActionRef action, std::string name)
             : NamedScope(action, std::move(name))
@@ -161,16 +160,15 @@ class Namespace: public NamedScope
             {
                 switch (decl.get().declGroup())
                 {
-                    case DeclGroup::Declaration:    other.emplace_back(decl);       break;
-                    case DeclGroup::Data:           objects.emplace_back(decl);     break;
-                    case DeclGroup::Function:       functions.emplace_back(decl);   break;
+                    case DeclGroup::Declaration:    declaration.emplace_back(decl); break;
+                    case DeclGroup::Definition:     definition.emplace_back(decl);  break;
                     default:
                         throw std::domain_error("Unknown DeclGroup");
                 }
             }
         }
-        FunctionIterator    begin() const {return FunctionIterator(functions.begin());}
-        FunctionIterator    end()   const {return FunctionIterator(functions.end());}
+        FunctionIterator    begin() const {return FunctionIterator(definition.begin());}
+        FunctionIterator    end()   const {return FunctionIterator(definition.end());}
         static constexpr bool valid = true;
 };
 
@@ -186,13 +184,13 @@ class Type: public NamedScope
 
 class Class: public Type
 {
-    DeclList    functions;
-    DeclList    objects;
-    DeclList    other;
+    DeclList    declaration;
+    DeclList    definition;
     public:
         using Type::Type;
         virtual bool storeFunctionsInContainer() const override {return true;}
         virtual void print(std::ostream& stream, int indent, bool showName) const override;
+        virtual DeclGroup declGroup() const override {return DeclGroup::Definition;}
 
         void addDecl(DeclList declList)
         {
@@ -200,16 +198,15 @@ class Class: public Type
             {
                 switch (decl.get().declGroup())
                 {
-                    case DeclGroup::Declaration:    other.emplace_back(decl);       break;
-                    case DeclGroup::Data:           objects.emplace_back(decl);     break;
-                    case DeclGroup::Function:       functions.emplace_back(decl);   break;
+                    case DeclGroup::Declaration:    declaration.emplace_back(decl); break;
+                    case DeclGroup::Definition:     definition.emplace_back(decl);  break;
                     default:
                         throw std::domain_error("Unknown DeclGroup");
                 }
             }
         }
-        FunctionIterator    begin() const {return FunctionIterator(functions.begin());}
-        FunctionIterator    end()   const {return FunctionIterator(functions.end());}
+        FunctionIterator    begin() const {return FunctionIterator(definition.begin());}
+        FunctionIterator    end()   const {return FunctionIterator(definition.end());}
 
         static constexpr bool valid = true;
 };
@@ -280,7 +277,6 @@ class ObjectVariable: public Object
             : Object(action, std::move(name), type)
             , init(std::move(init))
         {}
-        virtual DeclGroup declGroup() const override {return DeclGroup::Data;}
         virtual int storageSize() const override {return 1;}
         virtual void print(std::ostream& stream, int indent, bool showName) const override;
 };
@@ -296,7 +292,7 @@ class ObjectFunction: public Object
             : Object(action, name += type.getExtension(), type)
             , code(nullptr)
         {}
-        virtual DeclGroup declGroup() const override {return DeclGroup::Function;}
+        virtual DeclGroup declGroup() const override {return DeclGroup::Definition;}
         virtual int storageSize() const override {return 0;}
         virtual void print(std::ostream& stream, int indent, bool showName) const override;
         virtual void generateCode(Generator& gen, std::ostream& output) const override;

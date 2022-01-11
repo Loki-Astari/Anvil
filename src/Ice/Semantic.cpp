@@ -25,8 +25,8 @@ Namespace& Semantic::scopeNamespaceOpenV(Scope& top, std::string namespaceName)
 
 Namespace& Semantic::scopeNamespaceCloseV(Scope& top, Namespace& ns, DeclList decl)
 {
-    addDefaultMethodsToScope(top, std::move(decl));
-    Namespace& updatedNS = Action::scopeNamespaceCloseV(top, ns, decl);
+    addDefaultMethodsToScope(top, decl);
+    Namespace& updatedNS = Action::scopeNamespaceCloseV(top, ns, std::move(decl));
     return updatedNS;
 }
 
@@ -40,8 +40,8 @@ Class& Semantic::scopeClassOpenV(Scope& top, Identifier className)
 
 Class& Semantic::scopeClassCloseV(Scope& top, Class& cl, DeclList decl)
 {
-    addDefaultMethodsToScope(top, std::move(decl));
-    Class&  updatedClass = Action::scopeClassCloseV(top, cl, decl);
+    addDefaultMethodsToScope(top, decl);
+    Class&  updatedClass = Action::scopeClassCloseV(top, cl, std::move(decl));
     return updatedClass;
 }
 
