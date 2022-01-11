@@ -190,6 +190,7 @@ class Class: public Type
         using Type::Type;
         virtual bool storeFunctionsInContainer() const override {return true;}
         virtual void print(std::ostream& stream, int indent, bool showName) const override;
+        virtual void generateCode(Generator& gen, std::ostream& output) const override;
         virtual DeclGroup declGroup() const override {return DeclGroup::Definition;}
 
         void addDecl(DeclList declList)

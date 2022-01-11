@@ -99,6 +99,16 @@ void Generator::outputNamespace(Namespace const& ns, std::ostream& output)
     }
 }
 
+void Generator::outputClass(Class const& cl, std::ostream& output)
+{
+    output << "// Generating Class objects: " << cl.declName() << "\n";
+    // This simply loop over the function declarations only.
+    for (auto const& decl: cl)
+    {
+        decl.generateCode(*this, output);
+    }
+}
+
 void Generator::outputFunction(ObjectFunction const& func, std::ostream& output)
 {
     output << "// Generating Function: " << func.declName() << "\n"

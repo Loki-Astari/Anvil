@@ -213,6 +213,11 @@ void Class::print(std::ostream& stream, int s, bool showName) const
     Type::print(stream, s, false);
 }
 
+void Class::generateCode(Generator& gen, std::ostream& output) const
+{
+    gen.outputClass(*this, output);
+}
+
 void Function::print(std::ostream& stream, int s, bool showName) const
 {
     if (showName)
