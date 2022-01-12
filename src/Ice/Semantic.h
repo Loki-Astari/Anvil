@@ -26,7 +26,7 @@ class Semantic: public Action
         virtual ObjectFunction& scopeFunctionOpenV(Scope& top, Identifier name, Type const& id) override;
         virtual ObjectFunction& scopeFunctionCloseV(Scope& top, ObjectFunction& id, StatementCodeBlock& code, MemberInitList init) override;
     private:
-        void addDefaultMethodsToScope(Scope& scope, DeclList declList);
+        void addDefaultMethodsToScope(Scope& scope, DeclList& declList);
         ObjectOverload& scopeAddFunctionOverload(Scope& top, Identifier name, Type const& type);
 
 };

@@ -95,27 +95,29 @@ ObjectFunction& Semantic::scopeFunctionCloseV(Scope& top, ObjectFunction& func, 
     return updatedFunc;
 }
 
-void Semantic::addDefaultMethodsToScope(Scope& scope, DeclList declList)
+void Semantic::addDefaultMethodsToScope(Scope& scope, DeclList& declList)
 {
     auto findCons = scope.get("$constructor");
     if (!findCons.first)
     {
         // TODO: Need to add constructors and destructors for members.
-        Function& constructorType = scope.add<Function>(this, "", TypeCList{}, getRefFromScope<Type>(getGlobalScope(), "Void"));
-        ObjectFunction& cons = scopeFunctionOpenV(scope, "$constructor", constructorType);
-        CodeBlock&          codeBlock       = cons.add<CodeBlock>(this);
-        StatementCodeBlock& initCodeInit    = cons.add<StatementCodeBlock>(this, codeBlock, StatementList{});
-        scopeFunctionCloseV(cons, cons, initCodeInit, MemberInitList{});
+        Function&           constructorType = scope.add<Function>(this, "", TypeCList{}, getRefFromScope<Type>(getGlobalScope(), "Void"));
+        ObjectFunction&     cons1           = scopeFunctionOpenV(scope, "$constructor", constructorType);
+        CodeBlock&          codeBlock       = cons1.add<CodeBlock>(this);
+        StatementCodeBlock& initCodeInit    = cons1.add<StatementCodeBlock>(this, codeBlock, StatementList{});
+        ObjectFunction&     cons2           = scopeFunctionCloseV(cons1, cons1, initCodeInit, MemberInitList{});
+        declList.emplace_back(cons2);
     }
     auto findDest = scope.get("$destructor");
     if (!findDest.first)
     {
         // TODO: Need to add constructors and destructors for members.
-        Function& destructorType = scope.add<Function>(this, "", TypeCList{}, getRefFromScope<Type>(getGlobalScope(), "Void"));
-        ObjectFunction& des = scopeFunctionOpenV(scope, "$destructor", destructorType);
-        CodeBlock&          codeBlock       = des.add<CodeBlock>(this);
-        StatementCodeBlock& deinitCodeInit  = des.add<StatementCodeBlock>(this, codeBlock, StatementList{});
-        scopeFunctionCloseV(des, des, deinitCodeInit, MemberInitList{});
+        Function&           destructorType  = scope.add<Function>(this, "", TypeCList{}, getRefFromScope<Type>(getGlobalScope(), "Void"));
+        ObjectFunction&     des1            = scopeFunctionOpenV(scope, "$destructor", destructorType);
+        CodeBlock&          codeBlock       = des1.add<CodeBlock>(this);
+        StatementCodeBlock& deinitCodeInit  = des1.add<StatementCodeBlock>(this, codeBlock, StatementList{});
+        ObjectFunction&     des2            = scopeFunctionCloseV(des1, des1, deinitCodeInit, MemberInitList{});
+        declList.emplace_back(des2);
     }
 
     MemberList data;
